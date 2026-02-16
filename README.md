@@ -28,9 +28,7 @@ cd Silvershield
 2. Install dependencies
 pip install -r requirements.txt   # or manually install Flask, requests, etc.
 
-3. Create a .env or config file for API keys
-- Example: config/GROQKEY.py containing GROQ_KEY = "<your_key>"
-- Example: config/TWILIOKEY.py if using Twilio for OTP (We do have a final called TWOFA.py that is on this github repository)
+3. Create a .env using .env.example as a template
 
 4. Run the server
 python app.py
