@@ -22,7 +22,7 @@ Prerequisies:
 
 Installation & Run
 1. Clone the repo
-git clone https://github.com/Terra-lynn/Silvershield.git
+git clone https://github.com/ethan-t-lee/Silvershield.git
 cd Silvershield
 
 2. Install dependencies
