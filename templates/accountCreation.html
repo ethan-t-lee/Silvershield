@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset = "UTF-8">
+    <meta name = "viewport" content = "width=device-width, initial-scale = 1.0">
+    <title>Account Creation</title>
+  <link rel = "stylesheet" href = "{{ url_for('static', filename='style.css') }}">
+  <link rel = "stylesheet" href = "{{ url_for('static', filename='accountStyle.css') }}">
+</head>
+<body>
+    <div class = "account-creation-container">
+
+        <!-- Center page - Account Creation form -->
+         <div class = "account-center">
+            <div class = "account-creation-wrapper">
+                <form class = "account-form" id = "signupForm">
+                    <div class = "account-form-group slide active" id = "slide1">
+                        <h2>Create Username</h2>
+                        <input type = "text" id = "username" name = "username" placeholder = "Username" required>
+                        <ul>
+                            <li>Username may only contain alphanumeric characters</li>
+                            <li>Username must be between 5 and 15 characters long</li>
+                        </ul>
+                        <button class = "btn next-btn" type = "button">Continue</button>
+                    </div>
+
+                    <div class = "account-form-group slide" id = "slide2">
+                        <h2>Create Password</h2>
+                        <input type = "password" id = "password" name = "password" placeholder = "Password" required>
+                        <ul>
+                            <li>Must be a minimum of 8 characters</li>
+                            <l1>Must have at least one capital and lowercase letter</l1>
+                            <li>Must include atleast one number</li>
+                            <li>Must include one special character</li>
+                        </ul>
+
+                        <div class = "btn-group">
+                            <button class = "btn back-btn" type = "button">Back</button>
+                            <button class = "btn next-btn" type = "button">Continue</button>
+                        </div>
+                    </div>
+
+                    <div class = "account-form-group slide" id = "slide3">
+                        <h2>Input Email</h2>
+                        <input type = "email" id = "email" name = "email" placeholder = "Email" required>
+                        <ul>
+                            <li>Must use a valid email address</li>
+                        </ul>
+
+                        <div class = "btn-group">
+                            <button class = "btn back-btn" type = "button">Back</button>
+                            <button class = "btn next-btn" type = "button">Continue</button>
+                        </div>
+                    </div> 
+
+                    <div class = "account-form-group slide" id = "slide4">
+                        <h2>Input Phone Number</h2>
+                        <input type = "tel" id = "phone-number" name = "phone" placeholder = "###-###-####" required>
+                        <ul>
+                            <li>Please input a phone number that receives text messages for login verification purposes</li>
+                        </ul>
+
+                        <button id = "send-otp-btn" type = "button" class = "btn">Send OTP</button>
+
+                        <div id = "otp-section" style = "display:none;">
+                            <input type = "text" id = "otp-code" placeholder = "Enter OTP">
+                            <button id = "verify-otp-btn" class = "btn" type = "button">Verify OTP</button>
+                            <div id = "otp-error" class = "error-message"></div>
+                        </div>
+
+                        <div class = "btn-group">
+                            <button class = "btn back-btn" type = "button">Back</button>
+                            <button class = "btn next-btn" type = "button" disabled>Continue</button>
+                        </div>
+                    </div> 
+
+                    <div class = "account-form-group slide" id = "slide5">
+                        <h2>Input address</h2><br>
+                        
+                        <label for = "Street-Address">Street Address:</label>
+                        <input type = "text" id = "street-address" name = "address" placeholder = "Street" required><br><br>
+
+                        <label for = "City">City:</label>
+                        <input type = "text" id = "city" name = "city" placeholder = "City" required><br><br>
+
+                        <label for = "State">State:</label>
+                        <select id = "state" name = "state" required>
+                            <option value = "">Select a state</option>
+                        </select>
+                        <br><br>
+
+                        <label for = "Zip-Code">Zip Code:</label>
+                        <input type = "text" id = "zip-code" name = "zip" placeholder = "Zip Code" required><br>
+
+                        <div class = "btn-group">
+                            <button class = "btn back-btn" type = "button">Back</button>
+                            <button id = "submit" class = "btn" type = "button">Submit</button>
+                        </div>
+                    </div> 
+                </form>
+            </div>     
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='auth.js') }}"></script>
+</body>
+</html>

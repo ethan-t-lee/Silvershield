@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silver Shield Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='landingStyle.css') }}">
+    <style>
+        /* Dashboard layout */
+        body {
+            background-color: darkgrey;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboardContainer {
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        .modulesGrid {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+            margin-top: 60px;
+        }
+
+        .moduleCard {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+            width: 500px;
+            height: 400px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .moduleCard:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .moduleImage {
+            width: 100%;
+            height: 220px;
+            object-fit: contain;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            background-color:#f0f0f0;
+            transition: transform 0.3s ease;
+        }
+
+        .moduleCard:hover .moduleImage{
+            transform: scale(1.05);
+        }
+
+        .moduleContent {
+            padding: 25px;
+            text-align: center;
+        }
+
+        .moduleContent h2 {
+            color: #005bb5;
+            font-size:1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .moduleContent p {
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .loginBanner .btn a,
+        .loginBanner .loginButton a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .loginBanner {
+            text-align: center;
+            padding: 20px;
+            background-color: ##141F35;
+            color: white;
+        }
+
+        .loginRegisterButtons button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .loginRegisterButtons .btn {
+            background-color: grey;
+        }
+
+        .loginRegisterButtons .loginButton {
+            background-color: midnightblue;
+        }
+
+        .loginRegisterButtons a {
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Banner -->
+    <div class="loginBanner">
+        <h1>SilverShield</h1>
+        <div class="loginRegisterButtons">
+            <button class="btn">
+                <a href="{{ url_for('save_progress') }}">Save</a>
+            </button>
+            <button class="loginButton">
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboardContainer">
+        <h1>Welcome to Your Learning Dashboard</h1>
+        <p>Select a module below to begin your interactive learning experience.</p>
+
+        <div class="modulesGrid">
+
+            <!-- Module 1: Desktop -->
+            <div class="moduleCard" onclick="location.href='{{ url_for('module1') }}'">
+                <img class="moduleImage" src="{{ url_for('static',filename='images/module1Image.jpg')}}" alt="Desktop simulation">
+                <div class="moduleContent">
+                    <h2>Module 1: Desktop Simulation</h2>
+                    <p>Learn to identify phishing and scams through a simulated Desktop experience.</p>
+                </div>
+            </div>
+
+            <!-- Module 2: Cellphone -->
+            <div class="moduleCard" onclick="location.href='{{ url_for('module2') }}'">
+                <img class="moduleImage" src="{{ url_for('static', filename= 'images/module2Image.jpg')}}" alt="Cellphone simulation">
+                <div class="moduleContent">
+                    <h2>Module 2: Cellphone Simulation</h2>
+                    <p>Learn to identify phishing and scams through a simulated Cellphone experience.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
+
+

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset = "UTF-8">
+  <meta name = "viewport" content = "width=device-width, initial-scale = 1.0">
+  <title>Desktop Module</title>
+  <link rel = "stylesheet" href = "{{ url_for('static', filename = 'style.css') }}">
+  <link rel = "stylesheet" href = "{{ url_for('static', filename = 'desktopStyle.css') }}">
+</head>
+<body>
+    <!-- Desktop Icons -->
+    <div class = "desktop">
+        <div class = "icon email"></div>
+        <div class = "icon internet"></div>
+    </div>
+
+    <!-- Bottom Taskbar -->
+    <div class = "taskbar">
+        <div class = "taskbar-left">
+            <div class = "menuIcon"></div>
+            <div class = "searchIcon"></div>
+        </div>
+
+        <div class = "taskbar-right">
+            <div class = "cornerIcon"></div>
+        </div>
+    </div>
+
+    <!-- ------------ -->
+    <!-- Email Window -->
+    <!-- ------------ -->
+    <div class = "popup" id = "emailWindow">
+        <div class = "popup-header">
+            Email
+            <span class = "popup-close">X</span>
+        </div>
+
+        <div class = "popup-body">
+            <!-- AI generated email content -->
+            <div id = "emailContent" class = "email-overlay">Loading...</div>
+
+            <!-- Real/fake buttons -->
+            <div id = "emailButtons" class = "rf-container" style = "display:none;">
+                <button id = "realBtn" class = "rf-btn real">REAL</button>
+                <button id = "fakeBtn" class = "rf-btn fake">FAKE</button>
+            </div>
+
+            <!-- Feedback -->
+            <div id = "emailFeedback" class = "feedback-box" style = "display:none;"></div>
+        </div>
+
+        <!-- Email notification -->
+        <div id = "desktopNotificationEmail" class = "notification hidden">
+            <div id = "notificationTitleEmail"></div>
+            <div id = "notificationMessageEmail"></div>
+        </div>
+    </div>
+
+
+    <!-- --------------- -->
+    <!-- Internet Window -->
+    <!-- --------------- -->
+    <div class = "popup" id = "internetWindow">
+        <div class = "popup-header">
+            Internet
+            <span class = "popup-close">X</span>
+        </div>
+
+        <div class = "popup-body">
+            <!-- Address Bar -->
+            <div class = "browser-bar">
+                <input id = "addressBar" value = "https://search.cyber-training.local/?q=security+alerts" readonly>
+            </div>
+
+            <!-- AI generated search results & website content -->
+            <div id = "internetContent" class = "internet-content">Loading...</div>
+
+            <!-- Internet Real/Fake Buttons -->
+            <div id = "internetButtons" class = "site-actions" style = "display:none;">
+                <button id = "internetRealBtn" class = "rf-btn real">REAL</button>
+                <button id = "internetFakeBtn" class = "rf-btn fake">FAKE</button>
+            </div>
+
+            <!-- Feedback -->
+            <div id = "internetFeedback" class = "feedback-box"></div>
+        </div>
+
+        <!-- Internet notification -->
+        <div id = "desktopNotificationInternet" class = "notification hidden">
+            <div id = "notificationTitleInternet"></div>
+            <div id = "notificationMessageInternet"></div>
+        </div>
+    </div>
+
+    <!-- Script Files -->
+    <script src = "{{ url_for('static', filename = 'desktopEmail.js') }}"></script>
+    <script src = "{{ url_for('static', filename = 'desktopInternet.js') }}"></script>
+    <script src = "{{ url_for('static', filename = 'notification.js') }}"></script>
+</body>
+</html>

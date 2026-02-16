@@ -1,0 +1,97 @@
+.loginBanner {
+    padding-left: 1em;
+    background-color: #141F35;
+    color: black;
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    /*text-align: left;*/
+    justify-content: space-between;
+    filter: drop-shadow(0px 1px 5px);
+    z-index:3;
+}
+.loginBanner > h1 {
+    margin-top:auto;
+    margin-bottom: auto;
+}
+
+.loginRegisterButtons {
+    padding-right: 2em;
+    margin: 2em;
+    display: block;
+    justify-self: right;
+    display: flex;
+    flex-direction: row;
+    /*text-align: right;*/
+}
+
+.loginButton {
+    width: 100%;
+    margin-right: 1em;
+    padding: 12px;
+    background: white;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+
+
+    display: block;
+}
+
+    .loginButton:hover {
+        background: silver
+    }
+
+
+
+.registerButton {
+    padding: 0.5em;
+    background: silver;
+    border: none;
+    border-radius: 1em;
+}
+
+    .registerButton:hover {
+        background: #607070;
+        color: white;
+    }
+
+.introImageInformation {
+    padding: 5em, 0;
+    text-align:center;
+    background-image: url('images.pexels.com/photos/3791664/pexels-photo-3791664.jpeg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+    .introImageInformation > a {
+        color: white;
+        /*text-decoration: none;*/
+    }
+
+    .introImageInformation > p {
+        padding: 0 20%;
+    }
+.imageContainer{
+    width: 100%;
+    position: relative;
+    z-index:1;
+}
+.imageText{
+    position: absolute;
+    top: 20%;
+    right: 10%;
+    text-align:right;
+    filter:drop-shadow(0px 0px 10px);
+    z-index:2;
+}
+.emphasizedBlue {
+    color: skyblue;
+    font-weight:bolder;
+    /*font-size: xx-large;*/
+}

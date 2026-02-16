@@ -1,0 +1,58 @@
+/* Main container: two equal columns */
+.login-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Left side login form*/
+.login-left {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #141F35;
+}
+
+.login-form-wrapper {
+  width: 80%;
+  max-width: 350px;
+}
+
+/* Right side - background image */
+.login-right {
+  flex: 1; /* Take other 50% */
+  background-image: url(images/Silvershield_logo.png);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Error message styles */
+.login-otp-error {
+    color: red;
+    font-size: 14px;
+    margin-top: 2.5px;
+    padding-top: 3px;
+}
+
+.login-otp-error.success {
+    color: green;
+}
+
+/* Login slides */
+.login-slide {
+    display:none;
+}
+
+.login-slide.active {
+    display: block;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+  .login-right {
+    display: none;
+  }
+}

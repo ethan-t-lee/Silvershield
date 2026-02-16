@@ -1,0 +1,32 @@
+<div class="call-app">
+
+    <p id="difficultyLabel" class="difficulty-label"></p>
+
+    <!-- Incoming call-->
+
+    <div class="call-header">
+        <div class="call-type">Audio Call</div>
+        <div class="call-number" id="call-number">(000) 000-0000</div>
+        <div class="call-caller" id="call-caller">Unknown Caller</div>
+    </div>
+
+
+    <!-- fake call buttons -->
+    <div class="call-controls">
+        <button class="call-btn">Mute</button>
+        <button class="call-btn end" onclick="backToApps()">End</button>
+        <button class="call-btn">Speaker</button>
+    </div>
+
+    <!-- Transcript -->
+    <div class="call-transcript" id="call-transcript">
+        Call transcript will appear here...
+    </div>
+
+    <div class="actions">
+        <button id="markScam"  class = "btn danger">Report Scam Call</button>
+        <button id="markSafe" class="btn safe">Looks Safe</button>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+</div>

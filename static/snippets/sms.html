@@ -1,0 +1,32 @@
+<div class="sms-app">
+
+    <div class ="top-bar">
+        <button class="back-button" onclick = "backToApps()">← Back</button>
+    </div>
+
+
+      <!-- Flip phone top bar -->
+    <div class="flip-status-bar">
+        <span class="signal">📶</span>
+        <span class="carrier">Cingular</span>
+        <span class="battery">🔋</span>
+    </div>
+
+       <!-- SMS thread -->
+    <div class="flip-thread">
+        <div class="flip-bubble incoming">
+            <div id="smsBody">SMS content goes here...</div>
+        </div>
+
+        <div class="flip-meta" id="smsNumber">+1 000 000 0000</div>
+        <div class="flip-time" id="smsTime">12:04 PM</div>
+    </div>
+
+
+    <div class="actions">
+        <button class="scam-btn" onclick="analyzeChoice('scam')">Fake</button>
+        <button class="safe-btn" onclick="analyzeChoice('not_scam')">Real</button>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+</div>

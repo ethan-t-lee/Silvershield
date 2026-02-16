@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Module</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mobileStyle.css') }}">
+</head>
+<body>
+
+<main>
+    <div class="phone">
+
+        <!-- PHONE HEADER -->
+        <div class="phone-header">
+            <span class="time">3:09</span>
+            <span class="camera">⚫</span>
+            <span class="icons">📶 🛜 🔋</span>
+        </div>
+
+        <!-- APP SELECTION SCREEN -->
+        <div class="apps" id="appMenu">
+            <h2>Select an app:</h2>
+            <div class="app-buttons">
+
+                <button onclick="openApp('email')">
+                    <img src="{{url_for('static', filename='images/email.jpeg')}}" alt="Email">
+                    <span>Email</span>
+                </button>
+
+                <button onclick="openApp('web')">
+                    <img src="{{url_for('static', filename='images/web.jpeg')}}" alt="Web">
+                    <span>Web</span>
+                </button>
+
+                <button onclick="openApp('call')">
+                    <img src="{{url_for('static', filename='images/call.jpeg')}}" alt="Calls">
+                    <span>Phone</span>
+                </button>
+
+                <button onclick="openApp('sms')">
+                    <img src="{{url_for('static', filename='images/message.jpeg')}}" alt="Messages">
+                    <span>Messages</span>
+                </button>
+
+            </div>
+        </div>
+
+        <!-- Scenario content -->
+        <div id ="scenarioBody" class="scenario"></div>
+
+    </div>
+</main>
+   <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
