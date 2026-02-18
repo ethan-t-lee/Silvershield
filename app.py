@@ -8,7 +8,6 @@ GROQ_KEY = os.getenv('GROQ_KEY')
 import sqlite3
 import json
 import requests
-import database
 from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
