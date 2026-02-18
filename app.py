@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, jsonify, flash, session
+import os
 from user_login import user_registration, verifying_login
 from TWOFA import send_otp, verify_otp
-from config.GROQKEY import GROQ_KEY
+
+# Read GROQ key from environment (.env). Use single .env file as source of truth.
+GROQ_KEY = os.getenv('GROQ_KEY')
 import sqlite3
 import json
 import requests
