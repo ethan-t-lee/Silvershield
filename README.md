@@ -28,13 +28,9 @@ cd Silvershield
 2. Install dependencies
 pip install -r requirements.txt   # or manually install Flask, requests, etc.
 
-<<<<<<< Updated upstream
-3. Create a .env using .env.example as a template
-=======
 3. Create a `.env` file for API keys (use the provided `.env.example` as a template)
 - The project reads all secrets from a single `.env` file at startup.
 - Required variables (in `.env`): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SID`, `GROQ_KEY`
->>>>>>> Stashed changes
 
 4. Run the server
 python app.py
