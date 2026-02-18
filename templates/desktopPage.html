@@ -39,10 +39,13 @@
             <!-- AI generated email content -->
             <div id = "emailContent" class = "email-overlay">Loading...</div>
 
-            <!-- Real/fake buttons -->
-            <div id = "emailButtons" class = "rf-container" style = "display:none;">
-                <button id = "realBtn" class = "rf-btn real">REAL</button>
-                <button id = "fakeBtn" class = "rf-btn fake">FAKE</button>
+            <!-- Controls: Read aloud + Real/fake buttons -->
+            <div class="email-controls" style="display:flex;gap:8px;align-items:center;margin-top:12px;">
+                <button id="readAloudBtn" class="rf-btn">Read aloud</button>
+                <div id = "emailButtons" class = "rf-container" style = "display:none;">
+                    <button id = "realBtn" class = "rf-btn real">REAL</button>
+                    <button id = "fakeBtn" class = "rf-btn fake">FAKE</button>
+                </div>
             </div>
 
             <!-- Feedback -->
@@ -93,6 +96,7 @@
     </div>
 
     <!-- Script Files -->
+    <script src = "{{ url_for('static', filename = 'tts.js') }}"></script>
     <script src = "{{ url_for('static', filename = 'desktopEmail.js') }}"></script>
     <script src = "{{ url_for('static', filename = 'desktopInternet.js') }}"></script>
     <script src = "{{ url_for('static', filename = 'notification.js') }}"></script>

@@ -16,6 +16,13 @@ app = Flask(__name__)
 
 app.secret_key = "SECRET KEY"
 
+# Register multimodal blueprint (text-to-speech) if available
+try:
+    from multimodal import multimodal_bp
+    app.register_blueprint(multimodal_bp)
+except Exception as _err:
+    print('Multimodal blueprint not registered:', _err)
+
 ################################
 # Loading difficulty from
 #       the database
