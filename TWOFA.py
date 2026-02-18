@@ -20,11 +20,7 @@ def send_otp(phone):
 
 
 def verify_otp(phone, code):
-<<<<<<< Updated upstream:config/TWOFA.py
-    check = client.verify.v2.services(verify_sid).verification_checks.create(to = phone, code = code)
-    return check.status == "approved"
-=======
     client, verify_sid = _get_twilio_client_and_service()
     check = client.verify.v2.services(verify_sid).verification_checks.create(to=phone, code=code)
     return check.status == "approved"
->>>>>>> Stashed changes:TWOFA.py
+
