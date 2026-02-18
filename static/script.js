@@ -243,6 +243,9 @@ function backToApps(){
     if(scenarioBody) scenarioBody.innerHTML = "";
     if(appsGrid) appsGrid.style.display = "block"; //restore grid
 
+    // Stop any playing TTS when user navigates back
+    if (window.stopTTS) try { window.stopTTS(); } catch (e) {}
+
     console.log("Back button clicked --> Returning to app menu.")
 }
 
