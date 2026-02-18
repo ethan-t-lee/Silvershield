@@ -59,12 +59,40 @@ const ScenarioEngine = {
 
         this.fill(type, sc);
 
+        // After filling UI, if email was loaded, attempt to preload TTS
+        if (type === 'email' && currentMessage) {
+            try {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = currentMessage;
+                const plain = (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
+                if (window.preloadTTS) {
+                    // fire-and-forget preload (internal dedupe prevents duplicates)
+                    try { window.preloadTTS(plain, { lang: 'en', slow: false }); } catch(e) { /* ignore */ }
+                }
+            } catch (e) { console.warn('Preload TTS failed', e); }
+        }
+
         // Hook up scam/safe buttons
         const scamBtn = document.getElementById("markScam");
         const safeBtn = document.getElementById("markSafe");
+        const readAloudMobile = document.getElementById('readAloudMobile');
 
-        if (scamBtn) scamBtn.onclick = () => analyzeChoice("scam");
-        if (safeBtn) safeBtn.onclick = () => analyzeChoice("not_scam");
+        if (scamBtn) scamBtn.onclick = () => { if (window.stopTTS) try { window.stopTTS(); } catch(e){}; analyzeChoice("scam"); };
+        if (safeBtn) safeBtn.onclick = () => { if (window.stopTTS) try { window.stopTTS(); } catch(e){}; analyzeChoice("not_scam"); };
+
+        if (readAloudMobile) {
+            readAloudMobile.onclick = async () => {
+                try {
+                    const tmp = document.createElement('div'); tmp.innerHTML = currentMessage;
+                    const plain = (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
+                    if (window.playPreloaded) {
+                        const played = await window.playPreloaded(plain);
+                        if (played) return;
+                    }
+                    if (window.speak) await window.speak(plain, { lang: 'en', slow: false });
+                } catch (e) { console.warn('Mobile TTS play failed', e); }
+            };
+        }
     },
 
     fill(type, sc) {
@@ -218,6 +246,13 @@ function backToApps(){
     console.log("Back button clicked --> Returning to app menu.")
 }
 
+// stop any TTS when leaving the scenario
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && window.stopTTS) {
+        try { window.stopTTS(); } catch (e) {}
+    }
+});
+
 async function analyzeChoice(choice) {
     try {
         const response = await fetch("/api/analyze", {
@@ -261,12 +296,38 @@ document.addEventListener("click", () => {
     const fakeBtn = document.getElementById("markScam"); //mobile fake
     const desktopReal = document.getElementById("realBtn");
     const desktopFake = document.getElementById("fakeBtn");
+    // Bind handlers once and ensure TTS is stopped before submitting
+    if (realBtn && !realBtn.dataset.bound) {
+        realBtn.dataset.bound = true;
+        realBtn.onclick = () => {
+            if (window.stopTTS) try { window.stopTTS(); } catch (e) {}
+            analyzeChoice("not_scam");
+        };
+    }
 
-    if (realBtn) realBtn.onclick = () => analyzeChoice("not_scam");
-    if (fakeBtn) fakeBtn.onclick = () => analyzeChoice("scam")
+    if (fakeBtn && !fakeBtn.dataset.bound) {
+        fakeBtn.dataset.bound = true;
+        fakeBtn.onclick = () => {
+            if (window.stopTTS) try { window.stopTTS(); } catch (e) {}
+            analyzeChoice("scam");
+        };
+    }
 
-    if(desktopReal) desktopReal.onclick = () => analyzeChoice("not_scam");
-    if(desktopFake) desktop.Fake.onclick = () => analyzeChoice("scam");
+    if (desktopReal && !desktopReal.dataset.bound) {
+        desktopReal.dataset.bound = true;
+        desktopReal.onclick = () => {
+            if (window.stopTTS) try { window.stopTTS(); } catch (e) {}
+            analyzeChoice("not_scam");
+        };
+    }
+
+    if (desktopFake && !desktopFake.dataset.bound) {
+        desktopFake.dataset.bound = true;
+        desktopFake.onclick = () => {
+            if (window.stopTTS) try { window.stopTTS(); } catch (e) {}
+            analyzeChoice("scam");
+        };
+    }
 });
 
 window.analyzeChoice = analyzeChoice;

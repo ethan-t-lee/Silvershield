@@ -198,3 +198,6 @@ async function speak(text, options = {}) {
 // Expose globally for easy use in templates
 window.speak = speak;
 window.stopTTS = stopTTS;
+// Expose preload/play helpers
+window.preloadTTS = preloadTTS;
+window.playPreloaded = playPreloaded;

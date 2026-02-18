@@ -25,22 +25,22 @@
             <div class="app-buttons">
 
                 <button onclick="openApp('email')">
-                    <img src="{{url_for('static', filename='images/email.jpeg')}}" alt="Email">
+                    <img src="{{url_for('static', filename='images/gmailIcon.png')}}" alt="Email">
                     <span>Email</span>
                 </button>
 
                 <button onclick="openApp('web')">
-                    <img src="{{url_for('static', filename='images/web.jpeg')}}" alt="Web">
+                    <img src="{{url_for('static', filename='images/internetIcon.png')}}" alt="Web">
                     <span>Web</span>
                 </button>
 
                 <button onclick="openApp('call')">
-                    <img src="{{url_for('static', filename='images/call.jpeg')}}" alt="Calls">
+                    <img src="{{url_for('static', filename='images/call.png')}}" alt="Calls">
                     <span>Phone</span>
                 </button>
 
                 <button onclick="openApp('sms')">
-                    <img src="{{url_for('static', filename='images/message.jpeg')}}" alt="Messages">
+                    <img src="{{url_for('static', filename='images/message.png')}}" alt="Messages">
                     <span>Messages</span>
                 </button>
 
@@ -52,6 +52,7 @@
 
     </div>
 </main>
-   <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='tts.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
