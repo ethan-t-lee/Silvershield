@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pre-Survey</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f6f7fb; margin:0; }
+    .wrap { max-width: 700px; margin: 40px auto; padding: 0 16px; }
+    .card { background:white; border-radius:16px; padding:24px; box-shadow:0 10px 24px rgba(0,0,0,.08); }
+    h1 { margin:0 0 8px; font-size:28px; }
+    p { margin:0 0 16px; color:#444; }
+    label { display:block; font-weight:600; margin-top:18px; margin-bottom:8px; }
+    select { width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; font-size:16px; }
+    button { margin-top:24px; width:100%; padding:14px; border:none; border-radius:12px; font-size:18px; background:#2563eb; color:white; cursor:pointer; }
+    .err { color:#b91c1c; font-weight:600; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Quick Pre-Survey</h1>
+      <p>Please answer these questions before starting.</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="err">{{ messages[0] }}</div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST">
+        <label>Age</label>
+        <select name="age" required>
+          <option value="">Select</option>
+          <option value="Under 18">Under 18</option>
+          <option value="18-24">18–24</option>
+          <option value="25-34">25–34</option>
+          <option value="35-44">35–44</option>
+          <option value="45-54">45–54</option>
+          <option value="55-64">55–64</option>
+          <option value="65+">65+</option>
+        </select>
+
+        <label>Have you ever been scammed (online or by phone)?</label>
+        <select name="scammed" required>
+          <option value="">Select</option>
+          <option value="No">No</option>
+          <option value="Yes - attempted">Yes (someone tried)</option>
+          <option value="Yes - happened">Yes (it happened)</option>
+          <option value="Not sure">Not sure</option>
+        </select>
+
+        <label>How good are you with technology?</label>
+        <select name="tech_level" required>
+          <option value="">Select</option>
+          <option value="Beginner">Beginner</option>
+          <option value="Okay">Okay</option>
+          <option value="Good">Good</option>
+          <option value="Very good">Very good</option>
+        </select>
+
+        <label>What device do you use most?</label>
+        <select name="device" required>
+          <option value="">Select</option>
+          <option value="Phone">Phone</option>
+          <option value="Computer">Computer/Laptop</option>
+          <option value="Both">Both</option>
+        </select>
+
+        <label>How confident do you feel about spotting scams right now?</label>
+        <select name="confidence" required>
+          <option value="">Select</option>
+          <option value="1">1 (Not confident)</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5 (Very confident)</option>
+        </select>
+
+        <button type="submit">Continue</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
