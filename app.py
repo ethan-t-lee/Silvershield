@@ -29,6 +29,8 @@ def init_presurvey_table():
             age TEXT NOT NULL,
             scammed TEXT NOT NULL,
             tech_level TEXT NOT NULL,
+            device TEXT NOT NULL DEFAULT '',
+            confidence INTEGER NOT NULL DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
         """)
