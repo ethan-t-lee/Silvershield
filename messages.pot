@@ -1,0 +1,241 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-03-05 13:07-0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Mobile Module"
+msgstr ""
+
+msgid "Select an app:"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Web"
+msgstr ""
+
+msgid "Calls"
+msgstr ""
+
+msgid "Phone"
+msgstr ""
+
+msgid "Messages"
+msgstr ""
+
+msgid "Account Creation"
+msgstr ""
+
+msgid "Create Username"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Username may only contain alphanumeric characters"
+msgstr ""
+
+msgid "Username must be between 5 and 15 characters long"
+msgstr ""
+
+msgid "Continue"
+msgstr ""
+
+msgid "Create Password"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Must be a minimum of 8 characters"
+msgstr ""
+
+msgid "Must have at least one capital and lowercase letter"
+msgstr ""
+
+msgid "Must include at least one number"
+msgstr ""
+
+msgid "Must include one special character"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Input Email"
+msgstr ""
+
+msgid "Must use a valid email address"
+msgstr ""
+
+msgid "Input Phone Number"
+msgstr ""
+
+msgid "###-###-####"
+msgstr ""
+
+msgid ""
+"Please input a phone number that receives text messages for login "
+"verification purposes"
+msgstr ""
+
+msgid "Send OTP"
+msgstr ""
+
+msgid "Enter OTP"
+msgstr ""
+
+msgid "Verify OTP"
+msgstr ""
+
+msgid "Input Address"
+msgstr ""
+
+msgid "Street Address"
+msgstr ""
+
+msgid "Street"
+msgstr ""
+
+msgid "City"
+msgstr ""
+
+msgid "State"
+msgstr ""
+
+msgid "Select a state"
+msgstr ""
+
+msgid "Zip Code"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "Silver Shield Dashboard"
+msgstr ""
+
+msgid "Language"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Logout"
+msgstr ""
+
+msgid "Welcome to Your Learning Dashboard"
+msgstr ""
+
+msgid "Select a module below to begin your interactive learning experience."
+msgstr ""
+
+msgid "Desktop simulation"
+msgstr ""
+
+msgid "Module 1: Desktop Simulation"
+msgstr ""
+
+msgid ""
+"Learn to identify phishing and scams through a simulated Desktop "
+"experience."
+msgstr ""
+
+msgid "Cellphone simulation"
+msgstr ""
+
+msgid "Module 2: Cellphone Simulation"
+msgstr ""
+
+msgid ""
+"Learn to identify phishing and scams through a simulated Cellphone "
+"experience."
+msgstr ""
+
+msgid "Desktop Module"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "REAL"
+msgstr ""
+
+msgid "FAKE"
+msgstr ""
+
+msgid "Internet"
+msgstr ""
+
+msgid "Silver Shield Home Page"
+msgstr ""
+
+msgid "Log In"
+msgstr ""
+
+msgid "Register"
+msgstr ""
+
+msgid "Browse with confidence"
+msgstr ""
+
+msgid "And Safety"
+msgstr ""
+
+msgid "AI-driven lessons"
+msgstr ""
+
+msgid "engineered to help you"
+msgstr ""
+
+msgid "With a guide powered by"
+msgstr ""
+
+msgid "browse simulated spaces and learn how to identify spam and scams in a"
+msgstr ""
+
+msgid "safe and practical"
+msgstr ""
+
+msgid "way."
+msgstr ""
+
+msgid "Register now"
+msgstr ""
+
+msgid "Silvershield Login"
+msgstr ""
+
+msgid "Welcome"
+msgstr ""
+
+msgid "Please log in to continue."
+msgstr ""
+
+msgid "Email or Username"
+msgstr ""
+
+msgid "Forgot password?"
+msgstr ""
+
+msgid "Create account"
+msgstr ""
+
+msgid "Verification"
+msgstr ""
+
+msgid "Enter OTP sent to your phone:"
+msgstr ""
+
+msgid "OTP"
+msgstr ""
+
