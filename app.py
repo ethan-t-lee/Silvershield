@@ -1,19 +1,17 @@
-from flask import Flask, render_template, request, jsonify, flash, session
+from flask import Flask, render_template, request, jsonify, flash, session, redirect, url_for
 import os
+import sqlite3
+from dotenv import load_dotenv
+import requests
 from user_login import user_registration, verifying_login
 from TWOFA import send_otp, verify_otp
 
-# Read GROQ key from environment (.env). Use single .env file as source of truth.
-GROQ_KEY = os.getenv('GROQ_KEY')
-import sqlite3
-import json
-import requests
-from dotenv import load_dotenv
+load_dotenv()
 
-load_dotenv()  # Load environment variables from .env file
+# Read GROQ key from environment (.env)
+GROQ_KEY = os.getenv("GROQ_KEY")
 
 app = Flask(__name__)
-
 app.secret_key = "SECRET KEY"
 
 # Register multimodal blueprint (text-to-speech) if available
@@ -32,28 +30,26 @@ def get_difficulty(category):
     if not username:
         return 1
 
-    with sqlite3.connect('silvershieldDatabase.db') as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(f'SELECT {category} FROM users WHERE username = ?', (username,))
         row = cursor.fetchone()
 
-    return row[0] \
-        if row \
-        else 1
+    return row[0] if row else 1
 
 ################################
 # Saving difficulty to the
 #        database
 ################################
 def set_difficulty(category, level):
-    #1 - easy, 2 - medium, 3 - hard, 4 - very hard
+    # 1 - easy, 2 - medium, 3 - hard, 4 - very hard
     level = max(1, min(4, level))
 
     username = session.get('username')
     if not username:
         return
 
-    with sqlite3.connect('silvershieldDatabase.db') as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(f'UPDATE users SET {category} = ? WHERE username = ?', (level, username))
         conn.commit()
@@ -61,21 +57,98 @@ def set_difficulty(category, level):
 ################################
 #         Page routes
 ################################
+# Pre Survey #####################
+
 @app.route('/')
 def index():
     return render_template("homePage.html")
+
+
+@app.route('/pre_survey', methods=['GET', 'POST'])
+def pre_survey():
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    # If already completed, skip
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
+        if cur.fetchone():
+            return redirect('/dashboard')
+
+    # ✅ POST BLOCK IS INSIDE FUNCTION (INDENTED)
+    if request.method == 'POST':
+        age = request.form.get('age')
+        scammed = request.form.get('scammed')
+        tech_level = request.form.get('tech_level')
+        device = request.form.get('device')
+        confidence = request.form.get('confidence')
+
+        if not age or not scammed or not tech_level or not device or not confidence:
+            flash("Please answer all questions.")
+            return render_template("preSurvey.html")
+
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO pre_survey (username, age, scammed, tech_level, device, confidence)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(username) DO UPDATE SET
+                    age=excluded.age,
+                    scammed=excluded.scammed,
+                    tech_level=excluded.tech_level,
+                    device=excluded.device,
+                    confidence=excluded.confidence,
+                    created_at=CURRENT_TIMESTAMP
+            """, (username, age, scammed, tech_level, device, int(confidence)))
+            conn.commit()
+
+        return redirect('/dashboard')
+
+    # ✅ GET loads the form
+    return render_template("preSurvey.html")
+
+
+
+
 
 @app.route('/login', methods=['GET'])
 def login():
     return render_template("loginPage.html")
 
+
 @app.route('/account_creation')
 def account_creation():
     return render_template("accountCreation.html")
 
+
 @app.route('/dashboard')
 def dashboard():
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
+        done = cur.fetchone() is not None
+
+    if not done:
+        return redirect('/pre_survey')
+
     return render_template("dashboard.html")
+
+
+
+@app.route("/reset_presurvey")
+def reset_presurvey():
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("DROP TABLE IF EXISTS pre_survey")
+        conn.commit()
+    return "pre_survey table dropped. Restart the server now."
+
 
 @app.route('/module1')
 def module1():
@@ -86,10 +159,13 @@ def module1():
 def module2():
     return render_template("MobilePage.html")
 
+
 @app.route('/logout')
 def logout():
+    session.clear()
     flash('You have been logged out.', 'info')
-    return render_template("loginPage.html")
+    return redirect('/login')
+
 
 @app.route('/save_progress')
 def save_progress():
@@ -110,10 +186,10 @@ def register():
     success, message = user_registration(username, password, email, phone, address)
     return jsonify(success=success, message=message)
 
+
 ################################
 #      Logging in route
 ################################
-#Login route for credential validation and OTP verification
 @app.route('/login', methods=['POST'])
 def login_post():
     usernameorEmail = request.form['username'].strip()
@@ -127,7 +203,7 @@ def login_post():
     if not phone.startswith("+"):
         phone = "+1" + phone
 
-    #Storing logged in user for session
+    # Storing logged in user for session
     session["username"] = usernameorEmail
 
     try:
