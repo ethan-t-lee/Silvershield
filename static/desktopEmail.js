@@ -2,6 +2,7 @@
       Email Functions
 **************************/
 let lastGeneratedEmail = "";
+let emailLoadTime = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     const emailIcon = document.querySelector(".icon.email");
@@ -34,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
             {
                 emailContent.innerHTML = data.email;
                 lastGeneratedEmail = data.email;
+                emailLoadTime = Date.now();  // Record time email was displayed
                 rfContainer.style.display = "block";
 
                 // Preload TTS immediately to reduce play delay
@@ -71,6 +73,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return showNotification(false, "No email loaded to analyze.", "email");
         }
 
+        // Calculate time spent on email (in seconds)
+        const timeSpent = emailLoadTime ? Math.round((Date.now() - emailLoadTime) / 1000) : 0;
+
         try
         {
             const response = await fetch("/api/analyze", {
@@ -78,7 +83,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     user_choice: choice,
-                    message: lastGeneratedEmail
+                    message: lastGeneratedEmail,
+                    time_spent_seconds: timeSpent
                 })
             });
 

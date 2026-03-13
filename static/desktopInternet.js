@@ -5,6 +5,7 @@
 let currentWebsiteHTML = "";
 let currentWebsiteType = "";
 let currentInternetDifficulty = "";
+let websiteLoadTime = null;
 
 const internetContent = document.getElementById("internetContent");
 const internetButtons = document.getElementById("internetButtons");
@@ -105,6 +106,9 @@ async function openDesktopWebsite(linkElement) {
             </div>
         `;
 
+        // Record time website was displayed
+        websiteLoadTime = Date.now();
+
         // Show the REAL/FAKE buttons
         internetButtons.style.display = "flex";
 
@@ -124,6 +128,9 @@ async function analyzeDesktopWebsite(choice) {
         return;
     }
 
+    // Calculate time spent on website (in seconds)
+    const timeSpent = websiteLoadTime ? Math.round((Date.now() - websiteLoadTime) / 1000) : 0;
+
     try {
         const response = await fetch("/api/analyze_website", {
             method: "POST",
@@ -131,7 +138,8 @@ async function analyzeDesktopWebsite(choice) {
             body: JSON.stringify({
                 user_choice: choice,
                 ai_context: currentWebsiteHTML,
-                site_type: currentWebsiteType
+                site_type: currentWebsiteType,
+                time_spent_seconds: timeSpent
             })
         });
 

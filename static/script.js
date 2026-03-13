@@ -4,6 +4,7 @@
 let currentMessage = "";
 let currentType = "";
 let currentDifficulty = "";
+let scenarioLoadTime = null;
 
 const ScenarioEngine = {
     endpoints: {
@@ -49,6 +50,9 @@ const ScenarioEngine = {
 
         const diffLabel = document.getElementById("difficultyLabel");
         if (diffLabel) diffLabel.innerText = "Level: " + currentDifficulty;
+
+        // Record time scenario was displayed
+        scenarioLoadTime = Date.now();
 
         // Map returned data to scenario object for UI
         let sc = null;
@@ -258,13 +262,18 @@ document.addEventListener('visibilitychange', () => {
 
 async function analyzeChoice(choice) {
     try {
-        const response = await fetch("/api/analyze", {
+        // Calculate time spent on scenario (in seconds)
+        const timeSpent = scenarioLoadTime ? Math.round((Date.now() - scenarioLoadTime) / 1000) : 0;
+
+        const response = await fetch("/api/analyze_any", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 type: currentType,
+                platform: "mobile",
                 user_choice: choice,
-                message: currentMessage
+                message: currentMessage,
+                time_spent_seconds: timeSpent
             })
         });
 
