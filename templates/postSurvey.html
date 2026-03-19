@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Post-Survey</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f6f7fb; margin:0; }
+    .wrap { max-width: 700px; margin: 40px auto; padding: 0 16px; }
+    .card { background:white; border-radius:16px; padding:24px; box-shadow:0 10px 24px rgba(0,0,0,.08); }
+    h1 { margin:0 0 8px; font-size:28px; }
+    p { margin:0 0 16px; color:#444; }
+    label { display:block; font-weight:600; margin-top:18px; margin-bottom:8px; }
+    select { width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; font-size:16px; }
+    button { margin-top:24px; width:100%; padding:14px; border:none; border-radius:12px; font-size:18px; background:#2563eb; color:white; cursor:pointer; }
+    .err { color:#b91c1c; font-weight:600; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Post-Survey</h1>
+      <p>You've completed the training! Please answer these final questions.</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="err">{{ messages[0] }}</div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST">
+
+        <label>How confident do you feel about spotting scams now?</label>
+        <select name="confidence_rating" required>
+          <option value="">Select</option>
+          <option value="1">1 (Not confident)</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5 (Very confident)</option>
+        </select>
+
+        <label>How useful did you find this training platform?</label>
+        <select name="perceived_usefulness" required>
+          <option value="">Select</option>
+          <option value="1">1 (Not useful)</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5 (Very useful)</option>
+        </select>
+
+        <label>Do you feel your online safety behavior has changed after this training?</label>
+        <select name="behavior_change" required>
+          <option value="">Select</option>
+          <option value="No change">No change</option>
+          <option value="Slightly changed">Slightly changed</option>
+          <option value="Moderately changed">Moderately changed</option>
+          <option value="Significantly changed">Significantly changed</option>
+        </select>
+
+        <label>How likely are you to recommend this training to others?</label>
+        <select name="recommendation_likelihood" required>
+          <option value="">Select</option>
+          <option value="1">1 (Not likely)</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5 (Very likely)</option>
+        </select>
+
+        <label>How much do you feel you learned from this training?</label>
+        <select name="learning_rating" required>
+          <option value="">Select</option>
+          <option value="1">1 (Nothing)</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5 (A lot)</option>
+        </select>
+
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

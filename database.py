@@ -65,5 +65,28 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS users (
                 difficulty_call_mobile INTEGER DEFAULT 1,
                 difficulty_web_mobile INTEGER DEFAULT 1)
 ''')
+cursor.execute('''CREATE TABLE IF NOT EXISTS pre_survey (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                age TEXT,
+                scammed TEXT,
+                tech_level TEXT,
+                device TEXT,
+                confidence INTEGER,
+                completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(username) REFERENCES users(username))
+''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS post_survey (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                confidence_rating INTEGER,
+                perceived_usefulness INTEGER,
+                behavior_change TEXT,
+                recommendation_likelihood INTEGER,
+                learning_rating INTEGER,
+                completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(username) REFERENCES users(username))
+''')
 connect.commit()
 connect.close()
