@@ -165,6 +165,41 @@ def dashboard():
 
     return render_template("dashboard.html")
 
+@app.route('/post_survey', methods=['GET', 'POST'])
+def post_survey():
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    if request.method == 'POST':
+        confidence_rating = request.form.get('confidence_rating')
+        perceived_usefulness = request.form.get('perceived_usefulness')
+        behavior_change = request.form.get('behavior_change')
+        recommendation_likelihood = request.form.get('recommendation_likelihood')
+        learning_rating = request.form.get('learning_rating')
+
+        if not all([confidence_rating, perceived_usefulness, behavior_change,
+                    recommendation_likelihood, learning_rating]):
+            flash("Please answer all questions.")
+            return render_template("postSurvey.html")
+
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO post_survey (username, confidence_rating, perceived_usefulness,
+                    behavior_change, recommendation_likelihood, learning_rating)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (username,
+                  int(confidence_rating),
+                  int(perceived_usefulness),
+                  behavior_change,
+                  int(recommendation_likelihood),
+                  int(learning_rating)))
+            conn.commit()
+
+        return redirect('/dashboard')
+
+    return render_template("postSurvey.html")
 
 
 @app.route("/reset_presurvey")

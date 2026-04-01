@@ -25,13 +25,18 @@
     <div class="dropdownContent">
         <a href="{{ url_for('set_language', lang='en') }}">English</a>
         <a href="{{ url_for('set_language', lang='es') }}">Español</a>
-        <!-- Add more languages here if needed -->
     </div>
-</div>
+    </div>
 
 <button class="btn">
 <a href="{{ url_for('save_progress') }}">
 {{ _("Save") }}
+</a>
+</button>
+
+<button class="btn" style="background-color: #2563eb;">
+<a href="{{ url_for('post_survey') }}">
+{{ _("Post-Survey") }}
 </a>
 </button>
 
