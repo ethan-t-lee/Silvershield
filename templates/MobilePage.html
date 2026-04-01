@@ -55,7 +55,7 @@
 
 <button onclick="openApp('call')">
 
-<img src="{{ url_for('static', filename='images/call.jpeg') }}"
+<img src="{{ url_for('static', filename='images/call.png') }}"
      alt="{{ _('Calls') }}">
 
 <span>{{ _("Phone") }}</span>
@@ -65,7 +65,7 @@
 
 <button onclick="openApp('sms')">
 
-<img src="{{ url_for('static', filename='images/message.jpeg') }}"
+<img src="{{ url_for('static', filename='images/message.png') }}"
      alt="{{ _('Messages') }}">
 
 <span>{{ _("Messages") }}</span>
@@ -84,9 +84,7 @@
 </div>
 
 </main>
-
-
+<script src="{{ url_for('static', filename='tts.js') }}"></script>
 <script src="{{ url_for('static', filename='script.js') }}"></script>
-
 </body>
 </html>

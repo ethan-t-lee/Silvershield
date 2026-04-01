@@ -1,18 +1,25 @@
-from flask import Flask, render_template, request, jsonify, flash, session, redirect
+from flask import Flask, render_template, request, jsonify, flash, session, redirect, url_for
 import os
+import sqlite3
+from dotenv import load_dotenv
+import requests
 from user_login import user_registration, verifying_login
 from TWOFA import send_otp, verify_otp
-from flask_babel import Babel, gettext, get_locale,_
-from flask import session, request, redirect, url_for
-
-# Read GROQ key from environment (.env). Use single .env file as source of truth.
-GROQ_KEY = os.getenv('GROQ_KEY')
-import sqlite3
+from flask_babel import Babel, gettext, get_locale, _
 import json
-import requests
-from dotenv import load_dotenv
+from datetime import datetime
+import time
+from metrics import (log_scenario_attempt, log_critical_indicators, 
+                     update_module_progress, get_user_performance, get_module_progress, 
+                     get_attempt_history, get_survey_comparison, get_learning_metrics)
 
-load_dotenv()  # Load environment variables from .env file
+load_dotenv()
+
+# Read GROQ key from environment (.env)
+GROQ_KEY = os.getenv("GROQ_KEY")
+
+# Database path
+DB_PATH = "silvershieldDatabase.db"
 
 app = Flask(__name__)
 app.secret_key = "SECRET KEY"
@@ -31,6 +38,13 @@ def set_language(lang):
     session['lang'] = lang
     return redirect(request.referrer or url_for('home'))
 
+# Register multimodal blueprint (text-to-speech) if available
+try:
+    from multimodal import multimodal_bp
+    app.register_blueprint(multimodal_bp)
+except Exception as _err:
+    print('Multimodal blueprint not registered:', _err)
+
 ################################
 # Loading difficulty from
 #       the database
@@ -40,28 +54,26 @@ def get_difficulty(category):
     if not username:
         return 1
 
-    with sqlite3.connect('silvershieldDatabase.db') as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(f'SELECT {category} FROM users WHERE username = ?', (username,))
         row = cursor.fetchone()
 
-    return row[0] \
-        if row \
-        else 1
+    return row[0] if row else 1
 
 ################################
 # Saving difficulty to the
 #        database
 ################################
 def set_difficulty(category, level):
-    #1 - easy, 2 - medium, 3 - hard, 4 - very hard
+    # 1 - easy, 2 - medium, 3 - hard, 4 - very hard
     level = max(1, min(4, level))
 
     username = session.get('username')
     if not username:
         return
 
-    with sqlite3.connect('silvershieldDatabase.db') as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(f'UPDATE users SET {category} = ? WHERE username = ?', (level, username))
         conn.commit()
@@ -69,23 +81,100 @@ def set_difficulty(category, level):
 ################################
 #         Page routes
 ################################
+# Pre Survey #####################
+
 @app.route('/')
 def home():
     # Use the same function as Babel
     current_lang = session.get('lang', request.accept_languages.best_match(['en', 'es']))
     return render_template('homePage.html', current_lang=current_lang)
 
+
+@app.route('/pre_survey', methods=['GET', 'POST'])
+def pre_survey():
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    # If already completed, skip
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
+        if cur.fetchone():
+            return redirect('/dashboard')
+
+    # ✅ POST BLOCK IS INSIDE FUNCTION (INDENTED)
+    if request.method == 'POST':
+        age = request.form.get('age')
+        scammed = request.form.get('scammed')
+        tech_level = request.form.get('tech_level')
+        device = request.form.get('device')
+        confidence = request.form.get('confidence')
+
+        if not age or not scammed or not tech_level or not device or not confidence:
+            flash("Please answer all questions.")
+            return render_template("preSurvey.html")
+
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO pre_survey (username, age, scammed, tech_level, device, confidence)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(username) DO UPDATE SET
+                    age=excluded.age,
+                    scammed=excluded.scammed,
+                    tech_level=excluded.tech_level,
+                    device=excluded.device,
+                    confidence=excluded.confidence,
+                    created_at=CURRENT_TIMESTAMP
+            """, (username, age, scammed, tech_level, device, int(confidence)))
+            conn.commit()
+
+        return redirect('/dashboard')
+
+    # ✅ GET loads the form
+    return render_template("preSurvey.html")
+
+
+
+
+
 @app.route('/login', methods=['GET'])
 def login():
     return render_template("loginPage.html")
+
 
 @app.route('/account_creation')
 def account_creation():
     return render_template("accountCreation.html")
 
+
 @app.route('/dashboard')
 def dashboard():
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
+        done = cur.fetchone() is not None
+
+    if not done:
+        return redirect('/pre_survey')
+
     return render_template("dashboard.html")
+
+
+
+@app.route("/reset_presurvey")
+def reset_presurvey():
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("DROP TABLE IF EXISTS pre_survey")
+        conn.commit()
+    return "pre_survey table dropped. Restart the server now."
+
 
 @app.route('/module1')
 def module1():
@@ -96,10 +185,95 @@ def module1():
 def module2():
     return render_template("MobilePage.html")
 
+
 @app.route('/logout')
 def logout():
+    session.clear()
     flash('You have been logged out.', 'info')
-    return render_template("loginPage.html")
+    return redirect('/login')
+
+
+################################
+# Assessment & Analytics Endpoints
+################################
+@app.route('/api/user_performance', methods=['GET'])
+def api_user_performance():
+    """
+    Get overall performance summary for a user across all scenario types.
+    """
+    username = session.get('username')
+    if not username:
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
+
+    result = get_user_performance(username)
+    if not result['success']:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@app.route('/api/module_progress', methods=['GET'])
+def api_module_progress():
+    """
+    Get module completion progress for a user.
+    """
+    username = session.get('username')
+    if not username:
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
+
+    result = get_module_progress(username)
+    if not result['success']:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@app.route('/api/attempt_history', methods=['GET'])
+def api_attempt_history():
+    """
+    Get detailed history of scenario attempts for a user.
+    """
+    username = session.get('username')
+    if not username:
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
+
+    scenario_type = request.args.get('type')
+    limit = request.args.get('limit', 20, type=int)
+
+    result = get_attempt_history(username, scenario_type, limit)
+    if not result['success']:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@app.route('/api/survey_comparison', methods=['GET'])
+def api_survey_comparison():
+    """
+    Compare pre-survey and post-survey results for behavioral change assessment.
+    """
+    username = session.get('username')
+    if not username:
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
+
+    result = get_survey_comparison(username)
+    if not result['success']:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@app.route('/api/learning_metrics', methods=['GET'])
+def api_learning_metrics():
+    """
+    Comprehensive learning metrics including time spent, difficulty progression,
+    and identified critical indicators.
+    """
+    username = session.get('username')
+    if not username:
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
+
+    result = get_learning_metrics(username)
+    if not result['success']:
+        return jsonify(result), 500
+    return jsonify(result)
+
 
 @app.route('/save_progress')
 def save_progress():
@@ -120,10 +294,10 @@ def register():
     success, message = user_registration(username, password, email, phone, address)
     return jsonify(success=success, message=message)
 
+
 ################################
 #      Logging in route
 ################################
-#Login route for credential validation and OTP verification
 @app.route('/login', methods=['POST'])
 def login_post():
     usernameorEmail = request.form['username'].strip()
@@ -137,7 +311,7 @@ def login_post():
     if not phone.startswith("+"):
         phone = "+1" + phone
 
-    #Storing logged in user for session
+    # Storing logged in user for session
     session["username"] = usernameorEmail
 
     try:
@@ -337,7 +511,11 @@ Generate a NEW realistic email now.
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze_email():
-    data = request.get_json()
+    data = request.get_json() or {}
+
+    # Backward-compatible fallback: mobile clients may still post to /api/analyze.
+    if data.get("type"):
+        return analyze_any()
 
     user_choice = data.get("user_choice")
     message = data.get("message")
@@ -432,10 +610,18 @@ No text outside JSON.
         })
 
     # Apply difficulty update
-    if parsed.get("correct") is True:
+    is_correct = parsed.get("correct", False)
+    if is_correct:
         set_difficulty("difficulty_email_desktop", difficulty + 1)
     else:
         set_difficulty("difficulty_email_desktop", 1)
+
+    username = session.get('username')
+    if username:
+        correct_answer = user_choice if is_correct else ("fake" if user_choice == "real" else "real")
+        time_spent = request.get_json().get("time_spent_seconds")
+        log_scenario_attempt(username, "email", "desktop", user_choice, correct_answer, is_correct, difficulty, json.dumps(parsed), duration_seconds=time_spent, message=message)
+        update_module_progress(username, "email_desktop")
 
     return jsonify({
         "success": True,
@@ -690,10 +876,18 @@ NO commentary.
         })
 
     # Difficulty adjustment
-    if parsed.get("correct"):
+    is_correct = parsed.get("correct", False)
+    if is_correct:
         set_difficulty("difficulty_internet_desktop", difficulty + 1)
     else:
         set_difficulty("difficulty_internet_desktop", 1)
+
+    username = session.get('username')
+    if username:
+        time_spent = request.get_json().get("time_spent_seconds")
+        ai_context = request.get_json().get("ai_context")
+        log_scenario_attempt(username, "internet", "desktop", user_choice, site_type, is_correct, difficulty, json.dumps(parsed), duration_seconds=time_spent, message=ai_context)
+        update_module_progress(username, "internet_desktop")
 
     return jsonify({
         "success": True,
@@ -946,11 +1140,7 @@ Theme={theme}
         "web": web_obj
     })
 
-################################
-#   Unified Analyzer mostly
-#   used for the mobile apps
-################################
-@app.route("/api/analyze", methods=["POST"])
+@app.route("/api/analyze_any", methods=["POST"])
 def analyze_any():
     """
     Unified analyzer for: desktop email, desktop internet,
@@ -966,6 +1156,7 @@ def analyze_any():
 
     data = request.get_json() or {}
     msg_type = data.get("type", "").lower()
+    time_spent = data.get("time_spent_seconds")
     user_choice = data.get("user_choice")
     message = data.get("message")
 
@@ -991,7 +1182,25 @@ def analyze_any():
     if msg_type not in difficulty_map:
         return jsonify({"success": False, "error": "Unknown message type"}), 400
 
+    platform_map = {
+        "email": "desktop",
+        "internet": "desktop",
+        "sms": "mobile",
+        "call": "mobile",
+        "web": "mobile",
+    }
+
+    platform = platform_map[msg_type]
+
+    # Allow caller to override platform (e.g. mobile email vs desktop email)
+    request_platform = data.get("platform", "").lower()
+    if request_platform in ("mobile", "desktop"):
+        platform = request_platform
+
     category = difficulty_map[msg_type]
+    if msg_type == "email" and platform == "mobile":
+        category = "difficulty_email_mobile"
+
     difficulty = get_difficulty(category)
 
     #Human-readable label (for prompt)
@@ -1069,10 +1278,18 @@ The trainee selected: {choice.upper()} (SCAM vs NOT SCAM)
     #####################
     # Updating difficulty
     #####################
-    if parsed.get("correct") is True:
+    is_correct = parsed.get("correct", False)
+    if is_correct:
         set_difficulty(category, difficulty + 1)
     else:
         set_difficulty(category, 1)
+
+    username = session.get('username')
+    if username:
+        correct_answer = choice if is_correct else ("not_scam" if choice == "scam" else "scam")
+        scenario_type_full = f"{msg_type}_{platform}"
+        log_scenario_attempt(username, scenario_type_full, platform, user_choice, correct_answer, is_correct, difficulty, json.dumps(parsed), duration_seconds=time_spent, message=message)
+        update_module_progress(username, scenario_type_full)
 
     return jsonify({
         "success": True,
