@@ -1,0 +1,235 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Silvershield 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-05 00:00+0000\n"
+"PO-Revision-Date: 2026-03-05 00:00+0000\n"
+"Last-Translator: Alex Romero <>\n"
+"Language-Team: Spanish <>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Mobile Module"
+msgstr "Módulo Móvil"
+
+msgid "Select an app:"
+msgstr "Seleccione una aplicación:"
+
+msgid "Email"
+msgstr "Correo electrónico"
+
+msgid "Web"
+msgstr "Web"
+
+msgid "Calls"
+msgstr "Llamadas"
+
+msgid "Phone"
+msgstr "Teléfono"
+
+msgid "Messages"
+msgstr "Mensajes"
+
+msgid "Account Creation"
+msgstr "Creación de cuenta"
+
+msgid "Create Username"
+msgstr "Crear nombre de usuario"
+
+msgid "Username"
+msgstr "Nombre de usuario"
+
+msgid "Username may only contain alphanumeric characters"
+msgstr "El nombre de usuario solo puede contener caracteres alfanuméricos"
+
+msgid "Username must be between 5 and 15 characters long"
+msgstr "El nombre de usuario debe tener entre 5 y 15 caracteres"
+
+msgid "Continue"
+msgstr "Continuar"
+
+msgid "Create Password"
+msgstr "Crear contraseña"
+
+msgid "Password"
+msgstr "Contraseña"
+
+msgid "Must be a minimum of 8 characters"
+msgstr "Debe tener al menos 8 caracteres"
+
+msgid "Must have at least one capital and lowercase letter"
+msgstr "Debe tener al menos una letra mayúscula y una minúscula"
+
+msgid "Must include at least one number"
+msgstr "Debe incluir al menos un número"
+
+msgid "Must include one special character"
+msgstr "Debe incluir un carácter especial"
+
+msgid "Back"
+msgstr "Atrás"
+
+msgid "Input Email"
+msgstr "Ingrese correo electrónico"
+
+msgid "Must use a valid email address"
+msgstr "Debe usar una dirección de correo válida"
+
+msgid "Input Phone Number"
+msgstr "Ingrese número de teléfono"
+
+msgid "###-###-####"
+msgstr "###-###-####"
+
+msgid "Please input a phone number that receives text messages for login verification purposes"
+msgstr "Por favor ingrese un número de teléfono que reciba mensajes de texto para la verificación de inicio de sesión"
+
+msgid "Send OTP"
+msgstr "Enviar OTP"
+
+msgid "Enter OTP"
+msgstr "Ingrese OTP"
+
+msgid "Verify OTP"
+msgstr "Verificar OTP"
+
+msgid "Input Address"
+msgstr "Ingrese dirección"
+
+msgid "Street Address"
+msgstr "Dirección"
+
+msgid "Street"
+msgstr "Calle"
+
+msgid "City"
+msgstr "Ciudad"
+
+msgid "State"
+msgstr "Estado"
+
+msgid "Select a state"
+msgstr "Seleccione un estado"
+
+msgid "Zip Code"
+msgstr "Código postal"
+
+msgid "Submit"
+msgstr "Enviar"
+
+msgid "Silver Shield Dashboard"
+msgstr "Panel de Silver Shield"
+
+msgid "Language"
+msgstr "Idioma"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Logout"
+msgstr "Cerrar sesión"
+
+msgid "Welcome to Your Learning Dashboard"
+msgstr "Bienvenido a su panel de aprendizaje"
+
+msgid "Select a module below to begin your interactive learning experience."
+msgstr "Seleccione un módulo a continuación para comenzar su experiencia de aprendizaje interactiva."
+
+msgid "Desktop simulation"
+msgstr "Simulación de escritorio"
+
+msgid "Module 1: Desktop Simulation"
+msgstr "Módulo 1: Simulación de escritorio"
+
+msgid "Learn to identify phishing and scams through a simulated Desktop experience."
+msgstr "Aprenda a identificar phishing y estafas a través de una simulación de escritorio."
+
+msgid "Cellphone simulation"
+msgstr "Simulación de celular"
+
+msgid "Module 2: Cellphone Simulation"
+msgstr "Módulo 2: Simulación de celular"
+
+msgid "Learn to identify phishing and scams through a simulated Cellphone experience."
+msgstr "Aprenda a identificar phishing y estafas a través de una simulación de celular."
+
+msgid "Desktop Module"
+msgstr "Módulo de escritorio"
+
+msgid "Loading..."
+msgstr "Cargando..."
+
+msgid "REAL"
+msgstr "REAL"
+
+msgid "FAKE"
+msgstr "FALSO"
+
+msgid "Internet"
+msgstr "Internet"
+
+msgid "Silver Shield Home Page"
+msgstr "Página de inicio de Silver Shield"
+
+msgid "Log In"
+msgstr "Iniciar sesión"
+
+msgid "Register"
+msgstr "Registrarse"
+
+msgid "Browse with confidence"
+msgstr "Navegue con confianza"
+
+msgid "And Safety"
+msgstr "y seguridad"
+
+msgid "AI-driven lessons"
+msgstr "Lecciones impulsadas por IA"
+
+msgid "engineered to help you"
+msgstr "diseñadas para ayudarle"
+
+msgid "With a guide powered by"
+msgstr "Con una guía impulsada por"
+
+msgid "browse simulated spaces and learn how to identify spam and scams in a"
+msgstr "explore espacios simulados y aprenda a identificar spam y estafas en un"
+
+msgid "safe and practical"
+msgstr "manera segura y práctica"
+
+msgid "way."
+msgstr "."
+
+msgid "Register now"
+msgstr "Regístrese ahora"
+
+msgid "Silvershield Login"
+msgstr "Inicio de sesión SilverShield"
+
+msgid "Welcome"
+msgstr "Bienvenido"
+
+msgid "Please log in to continue."
+msgstr "Por favor, inicie sesión para continuar."
+
+msgid "Email or Username"
+msgstr "Correo electrónico o nombre de usuario"
+
+msgid "Forgot password?"
+msgstr "¿Olvidó su contraseña?"
+
+msgid "Create account"
+msgstr "Crear cuenta"
+
+msgid "Verification"
+msgstr "Verificación"
+
+msgid "Enter OTP sent to your phone:"
+msgstr "Ingrese el OTP enviado a su teléfono:"
+
+msgid "OTP"
+msgstr "OTP"
