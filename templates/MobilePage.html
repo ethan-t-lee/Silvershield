@@ -84,6 +84,37 @@
 </div>
 
 </main>
+<script>
+globalThis.mobileTranslations = {
+     ttsLang: {{ get_locale()|string|tojson }},
+     loadingScenario: {{ _("Loading scenario...")|tojson }},
+     errorLoadingScenario: {{ _("Error loading scenario.")|tojson }},
+     level: {{ _("Level")|tojson }},
+     back: {{ _("Back")|tojson }},
+     loadingEmail: {{ _("Loading email...")|tojson }},
+     readAloud: {{ _("Read aloud")|tojson }},
+     fake: {{ _("Fake")|tojson }},
+     real: {{ _("Real")|tojson }},
+     audioCall: {{ _("Audio Call")|tojson }},
+     unknownCaller: {{ _("Unknown Caller")|tojson }},
+     mute: {{ _("Mute")|tojson }},
+     end: {{ _("End")|tojson }},
+     speaker: {{ _("Speaker")|tojson }},
+     callTranscriptPlaceholder: {{ _("Call transcript will appear here...")|tojson }},
+     reportScamCall: {{ _("Report Scam Call")|tojson }},
+     looksSafe: {{ _("Looks Safe")|tojson }},
+     smsPlaceholder: {{ _("SMS content goes here...")|tojson }},
+     chrome: {{ _("Chrome")|tojson }},
+     fakeSearchValue: {{ _("how to make money fast")|tojson }},
+     googleFooter: {{ _("Google © 2025")|tojson }},
+     searchResults: {{ _("Search Results")|tojson }},
+     sponsored: {{ _("Sponsored")|tojson }},
+     nextPage: {{ _("Next >")|tojson }},
+     errorAnalyzingResponse: {{ _("Error analyzing response.")|tojson }},
+     currentDifficulty: {{ _("Current difficulty")|tojson }},
+     serverErrorAnalyzingChoice: {{ _("Server error analyzing choice.")|tojson }}
+};
+</script>
 <script src="{{ url_for('static', filename='tts.js') }}"></script>
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

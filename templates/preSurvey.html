@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pre-Survey</title>
+  <title>{{ _("Pre-Survey") }}</title>
   <style>
     body { font-family: Arial, sans-serif; background:#f6f7fb; margin:0; }
     .wrap { max-width: 700px; margin: 40px auto; padding: 0 16px; }
@@ -19,8 +19,8 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Quick Pre-Survey</h1>
-      <p>Please answer these questions before starting.</p>
+      <h1>{{ _("Quick Pre-Survey") }}</h1>
+      <p>{{ _("Please answer these questions before starting.") }}</p>
 
       {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -29,10 +29,10 @@
       {% endwith %}
 
       <form method="POST">
-        <label>Age</label>
+        <label>{{ _("Age") }}</label>
         <select name="age" required>
-          <option value="">Select</option>
-          <option value="Under 18">Under 18</option>
+          <option value="">{{ _("Select") }}</option>
+          <option value="Under 18">{{ _("Under 18") }}</option>
           <option value="18-24">18–24</option>
           <option value="25-34">25–34</option>
           <option value="35-44">35–44</option>
@@ -41,43 +41,43 @@
           <option value="65+">65+</option>
         </select>
 
-        <label>Have you ever been scammed (online or by phone)?</label>
+        <label>{{ _("Have you ever been scammed (online or by phone)?") }}</label>
         <select name="scammed" required>
-          <option value="">Select</option>
-          <option value="No">No</option>
-          <option value="Yes - attempted">Yes (someone tried)</option>
-          <option value="Yes - happened">Yes (it happened)</option>
-          <option value="Not sure">Not sure</option>
+          <option value="">{{ _("Select") }}</option>
+          <option value="No">{{ _("No") }}</option>
+          <option value="Yes - attempted">{{ _("Yes (someone tried)") }}</option>
+          <option value="Yes - happened">{{ _("Yes (it happened)") }}</option>
+          <option value="Not sure">{{ _("Not sure") }}</option>
         </select>
 
-        <label>How good are you with technology?</label>
+        <label>{{ _("How good are you with technology?") }}</label>
         <select name="tech_level" required>
-          <option value="">Select</option>
-          <option value="Beginner">Beginner</option>
-          <option value="Okay">Okay</option>
-          <option value="Good">Good</option>
-          <option value="Very good">Very good</option>
+          <option value="">{{ _("Select") }}</option>
+          <option value="Beginner">{{ _("Beginner") }}</option>
+          <option value="Okay">{{ _("Okay") }}</option>
+          <option value="Good">{{ _("Good") }}</option>
+          <option value="Very good">{{ _("Very good") }}</option>
         </select>
 
-        <label>What device do you use most?</label>
+        <label>{{ _("What device do you use most?") }}</label>
         <select name="device" required>
-          <option value="">Select</option>
-          <option value="Phone">Phone</option>
-          <option value="Computer">Computer/Laptop</option>
-          <option value="Both">Both</option>
+          <option value="">{{ _("Select") }}</option>
+          <option value="Phone">{{ _("Phone") }}</option>
+          <option value="Computer">{{ _("Computer/Laptop") }}</option>
+          <option value="Both">{{ _("Both") }}</option>
         </select>
 
-        <label>How confident do you feel about spotting scams right now?</label>
+        <label>{{ _("How confident do you feel about spotting scams right now?") }}</label>
         <select name="confidence" required>
-          <option value="">Select</option>
-          <option value="1">1 (Not confident)</option>
+          <option value="">{{ _("Select") }}</option>
+          <option value="1">{{ _("1 (Not confident)") }}</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
-          <option value="5">5 (Very confident)</option>
+          <option value="5">{{ _("5 (Very confident)") }}</option>
         </select>
 
-        <button type="submit">Continue</button>
+        <button type="submit">{{ _("Continue") }}</button>
       </form>
     </div>
   </div>

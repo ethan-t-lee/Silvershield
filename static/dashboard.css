@@ -1,0 +1,339 @@
+.dashboardContainer {
+    padding-top: 10rem;
+    padding-bottom: 4rem;
+}
+
+.dashboardFlash {
+    margin: 0 auto 1.5rem;
+    max-width: 1100px;
+    padding: 0.9rem 1.1rem;
+    border-radius: 14px;
+    font-weight: 600;
+}
+
+.dashboardFlash-success {
+    background: #dff6e8;
+    color: #165c35;
+}
+
+.dashboardFlash-info {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.dashboardHero,
+.analyticsSection,
+.modulesGrid {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.modulesGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.dashboardHero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr);
+    gap: 1.5rem;
+    align-items: stretch;
+    margin-bottom: 2rem;
+}
+
+.dashboardEyebrow {
+    margin: 0 0 0.7rem;
+    color: #2b5db3;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.heroSurveyCard,
+.panelCard,
+.metricCard {
+    background: #ffffff;
+    border: 1px solid rgba(20, 31, 53, 0.08);
+    border-radius: 22px;
+    box-shadow: 0 18px 40px rgba(20, 31, 53, 0.08);
+}
+
+.heroSurveyCard {
+    padding: 1.5rem;
+    background: linear-gradient(140deg, #17305d 0%, #24559a 100%);
+    color: #ffffff;
+}
+
+.heroSurveyCard h2,
+.heroSurveyCard p {
+    color: inherit;
+}
+
+.heroAction {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1.2rem;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #17305d;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.analyticsSection {
+    margin-bottom: 2rem;
+}
+
+.sectionHeadingRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.sectionHeadingRow h2,
+.panelHeader h3,
+.heroSurveyCard h2 {
+    margin: 0;
+}
+
+.sectionHeadingRow p,
+.panelHeader p {
+    margin: 0.35rem 0 0;
+    color: #53627d;
+}
+
+.metricsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.metricCard {
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.metricCard::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #17305d, #49a3ff);
+}
+
+.metricLabel {
+    display: block;
+    margin-bottom: 0.55rem;
+    color: #53627d;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.metricValue {
+    font-size: 2rem;
+    color: #141f35;
+}
+
+.analyticsPanels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.panelCard {
+    padding: 1.25rem;
+}
+
+.panelWide {
+    grid-column: 1 / -1;
+}
+
+.stackList,
+.difficultyGrid {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.attemptHistoryScroll {
+    max-height: 31rem;
+    overflow-y: auto;
+    padding-right: 0.35rem;
+}
+
+.attemptHistoryScroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.attemptHistoryScroll::-webkit-scrollbar-thumb {
+    background: rgba(36, 74, 136, 0.35);
+    border-radius: 999px;
+}
+
+.attemptHistoryScroll::-webkit-scrollbar-track {
+    background: rgba(219, 228, 240, 0.6);
+    border-radius: 999px;
+}
+
+.loadingState,
+.emptyState {
+    color: #53627d;
+}
+
+.performanceItem,
+.attemptItem,
+.surveyMetric,
+.difficultyItem,
+.progressItem {
+    border-radius: 16px;
+    background: #f7f9fc;
+    border: 1px solid rgba(20, 31, 53, 0.06);
+    padding: 1rem;
+}
+
+.performanceTop,
+.attemptTop,
+.progressTop,
+.surveyMetric {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+}
+
+.performanceMeta,
+.attemptMeta,
+.surveyMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.8rem;
+    color: #53627d;
+    font-size: 0.92rem;
+}
+
+.pillTag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: #e6efff;
+    color: #244a88;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.progressBar {
+    width: 100%;
+    height: 10px;
+    margin-top: 0.85rem;
+    border-radius: 999px;
+    background: #dbe4f0;
+    overflow: hidden;
+}
+
+.progressBar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #17305d, #49a3ff);
+}
+
+.difficultyGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.difficultyItem strong,
+.performanceItem strong,
+.attemptItem strong,
+.progressItem strong,
+.surveyMetric strong {
+    color: #141f35;
+}
+
+.moduleCard {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid rgba(20, 31, 53, 0.08);
+    border-radius: 22px;
+    box-shadow: 0 18px 40px rgba(20, 31, 53, 0.08);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.moduleCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 48px rgba(20, 31, 53, 0.14);
+}
+
+.moduleImage {
+    display: block;
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.moduleContent {
+    padding: 1.25rem;
+}
+
+.moduleContent h2 {
+    color: #141f35;
+    margin-bottom: 0.65rem;
+    font-size: 1.2rem;
+}
+
+.moduleContent p {
+    color: #53627d;
+    margin-bottom: 0;
+    line-height: 1.55;
+}
+
+@media (max-width: 860px) {
+    .dashboardContainer {
+        padding-top: 11.5rem;
+    }
+}
+
+@media (max-width: 960px) {
+    .dashboardHero,
+    .analyticsPanels,
+    .metricsGrid,
+    .difficultyGrid,
+    .modulesGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .sectionHeadingRow,
+    .performanceTop,
+    .attemptTop,
+    .progressTop,
+    .surveyMetric {
+        align-items: start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboardContainer {
+        padding-top: 13rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .loginRegisterButtons {
+        gap: 0.6rem;
+        margin: 1rem;
+        padding-right: 1rem;
+        flex-wrap: wrap;
+    }
+}

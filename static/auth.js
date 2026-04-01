@@ -1,6 +1,22 @@
 /*************************
    Registration elements
 **************************/
+const authTranslations = globalThis.authTranslations || {};
+
+function authLabel(key, fallback = key)
+{
+    return authTranslations[key] || fallback;
+}
+
+function authTemplate(key, replacements = {}, fallback = key)
+{
+    let template = authLabel(key, fallback);
+    Object.entries(replacements).forEach(([name, value]) => {
+        template = template.replaceAll(`{${name}}`, value);
+    });
+    return template;
+}
+
 const nextButtons = document.querySelectorAll(".next-btn")
 const backButtons = document.querySelectorAll(".back-btn")
 const submit = document.getElementById("submit")
@@ -91,7 +107,7 @@ if(loginNext)
 
         if (!username || !password)
         {
-            alert ("Please fill in username and password");
+            alert(authLabel("fillUsernamePassword", "Please fill in username and password"));
             return;
         }
 
@@ -113,7 +129,7 @@ if(loginNext)
             currentPhoneLogin = result.phone;
             showLoginSlide(2);
             loginOTPCodeInput.focus();
-            loginOtpError.textContent = "OTP sent to your registered phone";
+            loginOtpError.textContent = authLabel("otpSentRegisteredPhone", "OTP sent to your registered phone");
         }
     })
 }
@@ -125,7 +141,7 @@ if(loginVerifyOTPBtn)
 
         if (!code)
         {
-            loginOtpError.textContent = "Please enter the OTP.";
+            loginOtpError.textContent = authLabel("enterOtpPrompt", "Please enter the OTP.");
             return;
         }
 
@@ -138,7 +154,7 @@ if(loginVerifyOTPBtn)
 
         if (result.success)
         {
-            alert("Login successful!");
+            alert(authLabel("loginSuccessful", "Login successful!"));
             window.location.href = "/dashboard";
         }
         else
@@ -160,19 +176,19 @@ async function validateUsername(usernameValue)
 
     if (usernameValue === '')
     {
-        usernameError.textContent = 'Username cannot be blank.';
+        usernameError.textContent = authLabel('usernameBlank', 'Username cannot be blank.');
         usernameInput.classList.add('error');
         return false;
     }
     else if (!alphaReg.test(usernameValue))
     {
-        usernameError.textContent = 'Username can only contain letters and numbers';
+        usernameError.textContent = authLabel('usernameLettersNumbers', 'Username can only contain letters and numbers');
         usernameInput.classList.add('error');
         return false;
     }
     else if (usernameValue.length < minLength || usernameValue.length > maxLength)
     {
-        usernameError.textContent = `Username must be a minimum of ${minLength} characters or maximum of ${maxLength} characters long.`;
+        usernameError.textContent = authTemplate('usernameLength', { min: minLength, max: maxLength }, 'Username must be a minimum of {min} characters or maximum of {max} characters long.');
         usernameInput.classList.add('error');
         return false;
     }
@@ -184,14 +200,14 @@ async function validateUsername(usernameValue)
 
         if (data.exists)
         {
-            usernameError.textContent = 'Username already exists.';
+            usernameError.textContent = authLabel('usernameExists', 'Username already exists.');
             usernameInput.classList.add('error');
             return false;
         }
     }
     catch (error)
     {
-        usernameError.textContent = 'Could not verify username.';
+        usernameError.textContent = authLabel('usernameVerifyError', 'Could not verify username.');
         usernameInput.classList.add('error');
         return false;
     }
@@ -213,37 +229,37 @@ async function validatePassword(passwordValue)
 
     if (passwordValue === '')
     {
-        passwordError.textContent = 'Password cannot be blank.';
+        passwordError.textContent = authLabel('passwordBlank', 'Password cannot be blank.');
         passwordInput.classList.add('error');
         return false;
     }
     else if (passwordValue.length < minLength || passwordValue.length > maxLength)
     {
-        passwordError.textContent = `Password must be between ${minLength} and ${maxLength} characters.`;
+        passwordError.textContent = authTemplate('passwordLength', { min: minLength, max: maxLength }, 'Password must be between {min} and {max} characters.');
         passwordInput.classList.add('error');
         return false;
     }
     else if (!hasUppercase.test(passwordValue))
     {
-        passwordError.textContent = 'Must contain at least one uppercase letter.';
+        passwordError.textContent = authLabel('passwordUpper', 'Must contain at least one uppercase letter.');
         passwordInput.classList.add('error');
         return false;
     }
     else if (!hasLowercase.test(passwordValue))
     {
-        passwordError.textContent = 'Must contain at least one lowercase letter.';
+        passwordError.textContent = authLabel('passwordLower', 'Must contain at least one lowercase letter.');
         passwordInput.classList.add('error');
         return false;
     }
     else if (!hasNumber.test(passwordValue))
     {
-        passwordError.textContent = 'Must contain at least one number.';
+        passwordError.textContent = authLabel('passwordNumber', 'Must contain at least one number.');
         passwordInput.classList.add('error');
         return false;
     }
     else if (!hasSpecial.test(passwordValue))
     {
-        passwordError.textContent = 'Must contain at least one special character.';
+        passwordError.textContent = authLabel('passwordSpecial', 'Must contain at least one special character.');
         passwordInput.classList.add('error');
         return false;
     }
@@ -262,19 +278,19 @@ async function validateEmail(emailValue)
 
     if (emailValue === '')
     {
-        emailError.textContent = 'Email cannot be blank.';
+        emailError.textContent = authLabel('emailBlank', 'Email cannot be blank.');
         emailInput.classList.add('error');
         return false;
     }
     else if (emailValue.length < minLength || emailValue.length > maxLength)
     {
-        emailError.textContent = `Email must be between ${minLength} and ${maxLength} characters.`;
+        emailError.textContent = authTemplate('emailLength', { min: minLength, max: maxLength }, 'Email must be between {min} and {max} characters.');
         emailInput.classList.add('error');
         return false;
     }
     else if (!emailReg.test(emailValue))
     {
-        emailError.textContent = 'Enter a valid email.';
+        emailError.textContent = authLabel('emailInvalid', 'Enter a valid email.');
         emailInput.classList.add('error');
         return false;
     }
@@ -286,14 +302,14 @@ async function validateEmail(emailValue)
 
         if (data.exists)
         {
-            emailError.textContent = 'Email already exists.';
+            emailError.textContent = authLabel('emailExists', 'Email already exists.');
             emailInput.classList.add('error');
             return false;
         }
     }
     catch (error)
     {
-        emailError.textContent = 'Could not verify email.';
+        emailError.textContent = authLabel('emailVerifyError', 'Could not verify email.');
         emailInput.classList.add('error');
         return false;
     }
@@ -310,13 +326,13 @@ async function validatePhone(phoneValue)
 
     if (phoneValue === '')
     {
-        phoneError.textContent = 'Phone number cannot be blank';
+        phoneError.textContent = authLabel('phoneBlank', 'Phone number cannot be blank');
         phoneInput.classList.add('error');
         return false;
     }
     else if (!phoneReg.test(phoneValue))
     {
-        phoneError.textContent = 'Enter a valid phone number';
+        phoneError.textContent = authLabel('phoneInvalid', 'Enter a valid phone number');
         phoneInput.classList.add('error');
         return false;
     }
@@ -333,13 +349,13 @@ function validateStreet(streetValue)
 
     if (streetValue === '')
     {
-        streetAddressInputError.textContent = 'Street cannot be blank.';
+        streetAddressInputError.textContent = authLabel('streetBlank', 'Street cannot be blank.');
         streetAddressInput.classList.add('error');
         return false;
     }
     else if (!streetReg.test(streetValue))
     {
-        streetAddressInputError.textContent = 'Enter a valid street address';
+        streetAddressInputError.textContent = authLabel('streetInvalid', 'Enter a valid street address');
         streetAddressInput.classList.add('error');
         return false;
     }
@@ -356,13 +372,13 @@ function validateCity(cityValue)
 
     if (cityValue === '')
     {
-        cityError.textContent = 'City cannot be blank.';
+        cityError.textContent = authLabel('cityBlank', 'City cannot be blank.');
         cityInput.classList.add('error');
         return false;
     }
     else if (!cityReg.test(cityValue))
     {
-        cityError.textContent = 'Enter a valid city name.';
+        cityError.textContent = authLabel('cityInvalid', 'Enter a valid city name.');
         cityInput.classList.add('error');
         return false;
     }
@@ -379,7 +395,7 @@ async function validateState(stateValue)
     if(!stateValue)
     {
         const stateError = errorElement(stateInput);
-        stateError.textContent = "Please select a state";
+        stateError.textContent = authLabel('selectStatePrompt', 'Please select a state');
         stateInput.classList.add("error");
         return false;
     }
@@ -395,13 +411,13 @@ function validateZip(zipValue)
 
     if (zipValue === '')
     {
-        zipCodeInputError.textContent = 'Zip code cannot be blank.';
+        zipCodeInputError.textContent = authLabel('zipBlank', 'Zip code cannot be blank.');
         zipCodeInput.classList.add('error');
         return false;
     }
     else if (!zipReg.test(zipValue))
     {
-        zipCodeInputError.textContent = 'Enter a valid zip code';
+        zipCodeInputError.textContent = authLabel('zipInvalid', 'Enter a valid zip code');
         zipCodeInput.classList.add('error');
         return false;
     }
@@ -448,7 +464,7 @@ if(nextButtons.length > 0)
                     const otpMessage = otpError.textContent.toLowerCase();
                     if (!otpMessage.includes("verified"))
                     {
-                        otpError.textContent = "Please verify your phone number before continuing.";
+                        otpError.textContent = authLabel('verifyPhoneBeforeContinue', 'Please verify your phone number before continuing.');
                         letProceed = false;
                     }
                     break;
@@ -498,7 +514,7 @@ if(sendOTPBtn)
         if(result.success)
         {
             otpSection.style.display = "block";
-            otpError.textContent = "OTP sent to your phone";
+            otpError.textContent = authLabel('otpSentPhone', 'OTP sent to your phone');
             currentPhoneReg = phone;
         }
         else
@@ -521,8 +537,8 @@ if(verifyOTPBtn)
 
         const result = await response.json();
         if (result.success) {
-            alert("Phone verified!");
-            otpError.textContent = "Phone verified!";
+            alert(authLabel('phoneVerified', 'Phone verified!'));
+            otpError.textContent = authLabel('phoneVerified', 'Phone verified!');
             otpSection.style.display = "none";
             document.querySelector("#slide4 .next-btn").disabled = false;
         }
@@ -563,12 +579,12 @@ if(submit)
 
         if(result.success)
         {
-            alert("Registration successful");
+            alert(authLabel('registrationSuccessful', 'Registration successful'));
             window.location.href = "/";
         }
         else
         {
-            alert("Registration failed: " + result.message);
+            alert(`${authLabel('registrationFailedPrefix', 'Registration failed:')} ${result.message}`);
         }
     });
 }

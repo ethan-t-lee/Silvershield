@@ -1,7 +1,9 @@
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
+from database import init_database
 
 def connecting_to_database():
+    init_database()
     connect = sqlite3.connect('silvershieldDatabase.db')
     connect.row_factory = sqlite3.Row
     return connect

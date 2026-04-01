@@ -129,8 +129,44 @@
 <div class="login-right"></div>
 
 </div>
-
-
+<script>
+globalThis.authTranslations = {
+       fillUsernamePassword: {{ _("Please fill in username and password")|tojson }},
+       otpSentRegisteredPhone: {{ _("OTP sent to your registered phone")|tojson }},
+       enterOtpPrompt: {{ _("Please enter the OTP.")|tojson }},
+       loginSuccessful: {{ _("Login successful!")|tojson }},
+       usernameBlank: {{ _("Username cannot be blank.")|tojson }},
+       usernameLettersNumbers: {{ _("Username can only contain letters and numbers")|tojson }},
+       usernameLength: {{ _("Username must be a minimum of {min} characters or maximum of {max} characters long.")|tojson }},
+       usernameExists: {{ _("Username already exists.")|tojson }},
+       usernameVerifyError: {{ _("Could not verify username.")|tojson }},
+       passwordBlank: {{ _("Password cannot be blank.")|tojson }},
+       passwordLength: {{ _("Password must be between {min} and {max} characters.")|tojson }},
+       passwordUpper: {{ _("Must contain at least one uppercase letter.")|tojson }},
+       passwordLower: {{ _("Must contain at least one lowercase letter.")|tojson }},
+       passwordNumber: {{ _("Must contain at least one number.")|tojson }},
+       passwordSpecial: {{ _("Must contain at least one special character.")|tojson }},
+       emailBlank: {{ _("Email cannot be blank.")|tojson }},
+       emailLength: {{ _("Email must be between {min} and {max} characters.")|tojson }},
+       emailInvalid: {{ _("Enter a valid email.")|tojson }},
+       emailExists: {{ _("Email already exists.")|tojson }},
+       emailVerifyError: {{ _("Could not verify email.")|tojson }},
+       phoneBlank: {{ _("Phone number cannot be blank")|tojson }},
+       phoneInvalid: {{ _("Enter a valid phone number")|tojson }},
+       streetBlank: {{ _("Street cannot be blank.")|tojson }},
+       streetInvalid: {{ _("Enter a valid street address")|tojson }},
+       cityBlank: {{ _("City cannot be blank.")|tojson }},
+       cityInvalid: {{ _("Enter a valid city name.")|tojson }},
+       selectStatePrompt: {{ _("Please select a state")|tojson }},
+       zipBlank: {{ _("Zip code cannot be blank.")|tojson }},
+       zipInvalid: {{ _("Enter a valid zip code")|tojson }},
+       verifyPhoneBeforeContinue: {{ _("Please verify your phone number before continuing.")|tojson }},
+       otpSentPhone: {{ _("OTP sent to your phone")|tojson }},
+       phoneVerified: {{ _("Phone verified!")|tojson }},
+       registrationSuccessful: {{ _("Registration successful")|tojson }},
+       registrationFailedPrefix: {{ _("Registration failed:")|tojson }}
+};
+</script>
 <script src="{{ url_for('static', filename='auth.js') }}"></script>
 
 </body>

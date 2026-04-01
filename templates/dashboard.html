@@ -9,6 +9,7 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='landingStyle.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
 
 </head>
 
@@ -53,15 +54,119 @@
 
 <div class="dashboardContainer">
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% set category, message = messages[0] %}
+<div class="dashboardFlash dashboardFlash-{{ category }}">{{ message }}</div>
+{% endif %}
+{% endwith %}
+
+<section class="dashboardHero">
+
+<div>
+
+<p class="dashboardEyebrow">{{ _("Training overview") }}</p>
+
 <h1>{{ _("Welcome to Your Learning Dashboard") }}</h1>
 
 <p>
 {{ _("Select a module below to begin your interactive learning experience.") }}
 </p>
 
+</div>
+
+<div class="heroSurveyCard">
+
+<h2>{{ _("Finish the assessment loop") }}</h2>
+
+<p>{{ _("Complete the post-survey after training to compare your confidence and learning outcomes.") }}</p>
+
+<a class="heroAction" href="{{ url_for('post_survey') }}">{{ _("Open Post-Survey") }}</a>
+
+</div>
+
+</section>
+
+<section class="analyticsSection">
+
+<div class="sectionHeadingRow">
+<h2>{{ _("Learning Analytics") }}</h2>
+<p>{{ _("Your scenario performance, progress, and survey results update automatically.") }}</p>
+</div>
+
+<div class="metricsGrid" id="metricsGrid">
+
+<article class="metricCard">
+<span class="metricLabel">{{ _("Total Attempts") }}</span>
+<strong class="metricValue" id="totalAttempts">--</strong>
+</article>
+
+<article class="metricCard">
+<span class="metricLabel">{{ _("Success Rate") }}</span>
+<strong class="metricValue" id="successRate">--</strong>
+</article>
+
+<article class="metricCard">
+<span class="metricLabel">{{ _("Time Spent") }}</span>
+<strong class="metricValue" id="timeSpent">--</strong>
+</article>
+
+<article class="metricCard">
+<span class="metricLabel">{{ _("Indicators Found") }}</span>
+<strong class="metricValue" id="indicatorsFound">--</strong>
+</article>
+
+</div>
+
+<div class="analyticsPanels">
+
+<section class="panelCard">
+<div class="panelHeader">
+<h3>{{ _("Performance by Scenario") }}</h3>
+<p>{{ _("Accuracy, attempts, and clue recognition across each scam type.") }}</p>
+</div>
+<div id="performanceList" class="stackList loadingState">{{ _("Loading analytics...") }}</div>
+</section>
+
+<section class="panelCard">
+<div class="panelHeader">
+<h3>{{ _("Scenario Progress") }}</h3>
+<p>{{ _("Track how far you have progressed in each training stream.") }}</p>
+</div>
+<div id="moduleProgressList" class="stackList loadingState">{{ _("Loading progress...") }}</div>
+</section>
+
+<section class="panelCard">
+<div class="panelHeader">
+<h3>{{ _("Recent Attempts") }}</h3>
+<p>{{ _("Review your latest decisions and difficulty levels.") }}</p>
+</div>
+<div id="attemptHistoryList" class="stackList loadingState">{{ _("Loading attempt history...") }}</div>
+</section>
+
+<section class="panelCard">
+<div class="panelHeader">
+<h3>{{ _("Survey Comparison") }}</h3>
+<p>{{ _("Measure changes between your pre-survey and post-survey responses.") }}</p>
+</div>
+<div id="surveyComparisonCard" class="stackList loadingState">{{ _("Loading survey results...") }}</div>
+</section>
+
+<section class="panelCard panelWide">
+<div class="panelHeader">
+<h3>{{ _("Current Difficulty Levels") }}</h3>
+<p>{{ _("Your current adaptive difficulty for each training scenario.") }}</p>
+</div>
+<div id="difficultyList" class="difficultyGrid loadingState">{{ _("Loading difficulty progression...") }}</div>
+</section>
+
+</div>
+
+</section>
+
 <div class="modulesGrid">
 
-<div class="moduleCard" onclick="location.href='{{ url_for('module1') }}'">
+<a class="moduleCard" href="{{ url_for('module1') }}">
 
 <img class="moduleImage"
 src="{{ url_for('static',filename='images/module1Image.jpg')}}"
@@ -76,10 +181,10 @@ alt="{{ _('Desktop simulation') }}">
 </p>
 
 </div>
-</div>
+</a>
 
 
-<div class="moduleCard" onclick="location.href='{{ url_for('module2') }}'">
+<a class="moduleCard" href="{{ url_for('module2') }}">
 
 <img class="moduleImage"
 src="{{ url_for('static', filename='images/module2Image.jpg')}}"
@@ -94,10 +199,46 @@ alt="{{ _('Cellphone simulation') }}">
 </p>
 
 </div>
-</div>
+</a>
 
 </div>
 </div>
+
+<script>
+window.dashboardLabels = {
+    loadingAnalytics: {{ _("Loading analytics...")|tojson }},
+    noPerformance: {{ _("No performance data yet. Complete a few scenarios to populate this section.")|tojson }},
+    noProgress: {{ _("No module progress yet. Start a module to begin tracking progress.")|tojson }},
+    noAttempts: {{ _("No attempts recorded yet.")|tojson }},
+    noSurvey: {{ _("Complete both the pre-survey and post-survey to see a comparison here.")|tojson }},
+    surveyConfidenceChange: {{ _("Confidence change")|tojson }},
+    preSurveyConfidence: {{ _("Pre-survey confidence")|tojson }},
+    postSurveyConfidence: {{ _("Post-survey confidence")|tojson }},
+    behaviorChange: {{ _("Behavior change")|tojson }},
+    recommendationLikelihood: {{ _("Recommendation likelihood")|tojson }},
+    learningRating: {{ _("Learning rating")|tojson }},
+    attempts: {{ _("attempts")|tojson }},
+    correct: {{ _("correct")|tojson }},
+    correctStatus: {{ _("Correct")|tojson }},
+    incorrectStatus: {{ _("Incorrect")|tojson }},
+    avgTime: {{ _("Avg. time")|tojson }},
+    completed: {{ _("completed")|tojson }},
+    difficultyLevel: {{ _("Level")|tojson }},
+    noDifficulty: {{ _("Difficulty data will appear after you start training.")|tojson }},
+    justNow: {{ _("just now")|tojson }},
+    minutes: {{ _("minutes")|tojson }},
+    minute: {{ _("minute")|tojson }},
+    seconds: {{ _("seconds")|tojson }},
+    desktop: {{ _("Desktop")|tojson }},
+    mobile: {{ _("Mobile")|tojson }},
+    email: {{ _("Email")|tojson }},
+    internet: {{ _("Internet")|tojson }},
+    sms: {{ _("SMS")|tojson }},
+    call: {{ _("Call")|tojson }},
+    web: {{ _("Web")|tojson }}
+};
+</script>
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
 
 </body>
 </html>

@@ -22,8 +22,9 @@ def _connect():
     return sqlite3.connect(DB_PATH, timeout=10)
 
 
-def log_scenario_attempt(username, scenario_type, platform, user_choice, correct_answer, 
-                         is_correct, difficulty_level, ai_feedback=None, start_time=None, duration_seconds=None, message=None):
+def log_scenario_attempt(username, scenario_type, platform, user_choice, correct_answer,
+                         is_correct, difficulty_level, ai_feedback=None, start_time=None,
+                         duration_seconds=None, message=None, indicators_found=None):
     """
     Log a user's attempt on a scenario.
     
@@ -70,10 +71,22 @@ def log_scenario_attempt(username, scenario_type, platform, user_choice, correct
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (username, scenario_type, platform, user_choice, correct_answer, is_correct, 
               difficulty_level, ai_feedback, start_time_str, end_time_str, duration_seconds, message))
+        attempt_id = cursor.lastrowid
+
+        indicator_list = [indicator for indicator in (indicators_found or []) if indicator]
+        indicator_count = len(indicator_list)
+
+        for indicator in indicator_list:
+            cursor.execute("""
+                INSERT INTO critical_indicators
+                (username, scenario_attempt_id, scenario_type, indicator_name, identified)
+                VALUES (?, ?, ?, ?, ?)
+            """, (username, attempt_id, scenario_type, indicator, True))
         
         # Update performance summary in same transaction to avoid nested connections
         cursor.execute("""
-            SELECT total_attempts, correct_attempts, average_duration_seconds
+                 SELECT total_attempts, correct_attempts, average_duration_seconds,
+                     total_indicators_identified
             FROM performance_summary
             WHERE username = ? AND scenario_type = ?
         """, (username, scenario_type))
@@ -84,6 +97,7 @@ def log_scenario_attempt(username, scenario_type, platform, user_choice, correct
             total_attempts = row[0] + 1
             correct_attempts = row[1] + (1 if is_correct else 0)
             old_avg = row[2]
+            total_indicators = row[3] + indicator_count
             
             if old_avg and duration_seconds:
                 new_duration = (old_avg * (total_attempts - 1) + duration_seconds) / total_attempts
@@ -94,9 +108,11 @@ def log_scenario_attempt(username, scenario_type, platform, user_choice, correct
             
             cursor.execute("""
                 UPDATE performance_summary
-                SET total_attempts = ?, correct_attempts = ?, success_rate = ?, average_duration_seconds = ?
+                SET total_attempts = ?, correct_attempts = ?, success_rate = ?,
+                    average_duration_seconds = ?, total_indicators_identified = ?
                 WHERE username = ? AND scenario_type = ?
-            """, (total_attempts, correct_attempts, success_rate, new_duration, username, scenario_type))
+            """, (total_attempts, correct_attempts, success_rate, new_duration,
+                  total_indicators, username, scenario_type))
         else:
             total_attempts = 1
             correct_attempts = 1 if is_correct else 0
@@ -104,11 +120,14 @@ def log_scenario_attempt(username, scenario_type, platform, user_choice, correct
             
             cursor.execute("""
                 INSERT INTO performance_summary 
-                (username, scenario_type, total_attempts, correct_attempts, success_rate, average_duration_seconds)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (username, scenario_type, total_attempts, correct_attempts, success_rate, duration_seconds if duration_seconds else 0))
+                (username, scenario_type, total_attempts, correct_attempts, success_rate,
+                 average_duration_seconds, total_indicators_identified)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (username, scenario_type, total_attempts, correct_attempts, success_rate,
+                  duration_seconds if duration_seconds else 0, indicator_count))
         
         conn.commit()
+        return attempt_id
 
 
 def log_critical_indicators(username, scenario_attempt_id, scenario_type, indicators_found):
@@ -123,12 +142,21 @@ def log_critical_indicators(username, scenario_attempt_id, scenario_type, indica
     """
     with _connect() as conn:
         cursor = conn.cursor()
+        inserted_count = 0
         for indicator in indicators_found:
             cursor.execute("""
                 INSERT INTO critical_indicators 
                 (username, scenario_attempt_id, scenario_type, indicator_name, identified)
                 VALUES (?, ?, ?, ?, ?)
             """, (username, scenario_attempt_id, scenario_type, indicator, True))
+            inserted_count += 1
+
+        if inserted_count:
+            cursor.execute("""
+                UPDATE performance_summary
+                SET total_indicators_identified = total_indicators_identified + ?
+                WHERE username = ? AND scenario_type = ?
+            """, (inserted_count, username, scenario_type))
         
         conn.commit()
 
@@ -377,16 +405,26 @@ def get_learning_metrics(username):
                 UNION ALL
                 SELECT 'internet_desktop', difficulty_internet_desktop FROM users WHERE username = ?
                 UNION ALL
+                SELECT 'email_mobile', difficulty_email_mobile FROM users WHERE username = ?
+                UNION ALL
                 SELECT 'sms_mobile', difficulty_sms_mobile FROM users WHERE username = ?
                 UNION ALL
                 SELECT 'call_mobile', difficulty_call_mobile FROM users WHERE username = ?
                 UNION ALL
                 SELECT 'web_mobile', difficulty_web_mobile FROM users WHERE username = ?
-            """, (username, username, username, username, username))
+            """, (username, username, username, username, username, username))
+            difficulty_rows = cursor.fetchall()
+
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM critical_indicators
+                WHERE username = ?
+            """, (username,))
+            total_indicators = cursor.fetchone()[0] or 0
             
             difficulty_progression = [
                 {"scenario": row[0], "current_difficulty": row[1]}
-                for row in cursor.fetchall()
+                for row in difficulty_rows
             ]
             
             overall_success_rate = (correct_attempts / total_attempts * 100) if total_attempts > 0 else 0
@@ -397,6 +435,7 @@ def get_learning_metrics(username):
                     "total_time_spent_seconds": int(total_time),
                     "total_attempts": total_attempts,
                     "correct_attempts": correct_attempts,
+                    "total_indicators_identified": total_indicators,
                     "overall_success_rate": round(overall_success_rate, 2),
                     "difficulty_progression": difficulty_progression
                 }

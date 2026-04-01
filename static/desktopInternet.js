@@ -1,6 +1,11 @@
 /*************************
     Internet Functions
 **************************/
+const desktopTranslations = globalThis.desktopTranslations || {};
+
+function desktopLabel(key, fallback = key) {
+    return desktopTranslations[key] || fallback;
+}
 
 let currentWebsiteHTML = "";
 let currentWebsiteType = "";
@@ -19,7 +24,7 @@ const internetFakeBtn = document.getElementById("internetFakeBtn");
 async function generateDesktopFakeSites() {
     if (!internetContent) return;
 
-    internetContent.innerHTML = "<p>Loading search results...</p>";
+    internetContent.innerHTML = `<p>${desktopLabel("loadingSearchResults", "Loading search results...")}</p>`;
     internetButtons.style.display = "none";   // hide buttons here
 
     try {
@@ -32,7 +37,7 @@ async function generateDesktopFakeSites() {
         const data = await response.json();
 
         if (!data.success || !data.results) {
-            internetContent.innerHTML = "<p>Error loading search results.</p>";
+            internetContent.innerHTML = `<p>${desktopLabel("errorLoadingSearchResults", "Error loading search results.")}</p>`;
             return;
         }
 
@@ -57,7 +62,7 @@ async function generateDesktopFakeSites() {
 
     } catch (err) {
         console.error(err);
-        internetContent.innerHTML = "<p>Error loading search results.</p>";
+        internetContent.innerHTML = `<p>${desktopLabel("errorLoadingSearchResults", "Error loading search results.")}</p>`;
     }
 }
 
@@ -70,7 +75,7 @@ async function openDesktopWebsite(linkElement) {
     const url = linkElement.dataset.url;
     const type = linkElement.dataset.type;
 
-    internetContent.innerHTML = "<p>Loading website...</p>";
+    internetContent.innerHTML = `<p>${desktopLabel("loadingWebsite", "Loading website...")}</p>`;
 
     try {
         const response = await fetch("/api/generate_sites", {
@@ -87,7 +92,7 @@ async function openDesktopWebsite(linkElement) {
         const data = await response.json();
 
         if (!data.success) {
-            internetContent.innerHTML = "<p>Error loading website.</p>";
+            internetContent.innerHTML = `<p>${desktopLabel("errorLoadingWebsite", "Error loading website.")}</p>`;
             return;
         }
 
@@ -114,7 +119,7 @@ async function openDesktopWebsite(linkElement) {
 
     } catch (err) {
         console.error(err);
-        internetContent.innerHTML = "<p>Error loading website.</p>";
+        internetContent.innerHTML = `<p>${desktopLabel("errorLoadingWebsite", "Error loading website.")}</p>`;
     }
 }
 
@@ -124,7 +129,7 @@ async function openDesktopWebsite(linkElement) {
 ======================================== */
 async function analyzeDesktopWebsite(choice) {
     if (!currentWebsiteHTML || !currentWebsiteType) {
-        showNotification(false, "Website not loaded properly.", "internet");
+        showNotification(false, desktopLabel("websiteNotLoadedProperly", "Website not loaded properly."), "internet");
         return;
     }
 
@@ -146,18 +151,18 @@ async function analyzeDesktopWebsite(choice) {
         const data = await response.json();
 
         if (!data.success) {
-            showNotification(false, "Error analyzing website.", "internet");
+            showNotification(false, desktopLabel("errorAnalyzingWebsite", "Error analyzing website."), "internet");
             return;
         }
 
         const fb = data.feedback;
-        const message = `${fb.explanation} (Difficulty: ${data.difficulty_now})`;
+        const message = `${fb.explanation} (${desktopLabel("difficulty", "Difficulty")}: ${data.difficulty_now})`;
 
         showNotification(fb.correct, message, "internet");
 
     } catch (err) {
         console.error(err);
-        showNotification(false, "Server error analyzing website.", "internet");
+        showNotification(false, desktopLabel("serverErrorAnalyzingWebsite", "Server error analyzing website."), "internet");
     }
 }
 

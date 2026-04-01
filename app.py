@@ -3,6 +3,7 @@ import os
 import sqlite3
 from dotenv import load_dotenv
 import requests
+from database import init_database
 from user_login import user_registration, verifying_login
 from TWOFA import send_otp, verify_otp
 from flask_babel import Babel, gettext, get_locale, _
@@ -15,6 +16,8 @@ from metrics import (log_scenario_attempt, log_critical_indicators,
 
 load_dotenv()
 
+SUPPORTED_LANGUAGES = ['en', 'es']
+
 # Read GROQ key from environment (.env)
 GROQ_KEY = os.getenv("GROQ_KEY")
 
@@ -23,12 +26,35 @@ DB_PATH = "silvershieldDatabase.db"
 
 app = Flask(__name__)
 app.secret_key = "SECRET KEY"
+init_database()
 
 # Babel locale selector
 def select_locale():
-    return session.get('lang', request.accept_languages.best_match(['en', 'es']))
+    return session.get('lang', request.accept_languages.best_match(SUPPORTED_LANGUAGES))
+
+
+def get_active_language():
+    return session.get('lang', request.accept_languages.best_match(SUPPORTED_LANGUAGES)) or 'en'
+
+
+def ai_language_instruction():
+    if get_active_language() == 'es':
+        return (
+            'Write all user-visible natural language text in Spanish. '
+            'Keep JSON keys in English.'
+        )
+
+    return (
+        'Write all user-visible natural language text in English. '
+        'Keep JSON keys in English.'
+    )
 
 babel = Babel(app, locale_selector=select_locale)
+
+
+@app.context_processor
+def inject_template_helpers():
+    return {"get_locale": get_locale}
 
 # Homepage route
 
@@ -86,7 +112,7 @@ def set_difficulty(category, level):
 @app.route('/')
 def home():
     # Use the same function as Babel
-    current_lang = session.get('lang', request.accept_languages.best_match(['en', 'es']))
+    current_lang = get_active_language()
     return render_template('homePage.html', current_lang=current_lang)
 
 
@@ -112,7 +138,7 @@ def pre_survey():
         confidence = request.form.get('confidence')
 
         if not age or not scammed or not tech_level or not device or not confidence:
-            flash("Please answer all questions.")
+            flash(_("Please answer all questions."))
             return render_template("preSurvey.html")
 
         with sqlite3.connect(DB_PATH) as conn:
@@ -126,7 +152,7 @@ def pre_survey():
                     tech_level=excluded.tech_level,
                     device=excluded.device,
                     confidence=excluded.confidence,
-                    created_at=CURRENT_TIMESTAMP
+                    completed_timestamp=CURRENT_TIMESTAMP
             """, (username, age, scammed, tech_level, device, int(confidence)))
             conn.commit()
 
@@ -180,7 +206,7 @@ def post_survey():
 
         if not all([confidence_rating, perceived_usefulness, behavior_change,
                     recommendation_likelihood, learning_rating]):
-            flash("Please answer all questions.")
+            flash(_("Please answer all questions."))
             return render_template("postSurvey.html")
 
         with sqlite3.connect(DB_PATH) as conn:
@@ -224,7 +250,7 @@ def module2():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('You have been logged out.', 'info')
+    flash(_('You have been logged out.'), 'info')
     return redirect('/login')
 
 
@@ -238,7 +264,7 @@ def api_user_performance():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": "Not authenticated"}), 401
+        return jsonify({"success": False, "error": _("Not authenticated")}), 401
 
     result = get_user_performance(username)
     if not result['success']:
@@ -253,7 +279,7 @@ def api_module_progress():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": "Not authenticated"}), 401
+        return jsonify({"success": False, "error": _("Not authenticated")}), 401
 
     result = get_module_progress(username)
     if not result['success']:
@@ -268,7 +294,7 @@ def api_attempt_history():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": "Not authenticated"}), 401
+        return jsonify({"success": False, "error": _("Not authenticated")}), 401
 
     scenario_type = request.args.get('type')
     limit = request.args.get('limit', 20, type=int)
@@ -286,7 +312,7 @@ def api_survey_comparison():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": "Not authenticated"}), 401
+        return jsonify({"success": False, "error": _("Not authenticated")}), 401
 
     result = get_survey_comparison(username)
     if not result['success']:
@@ -302,7 +328,7 @@ def api_learning_metrics():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": "Not authenticated"}), 401
+        return jsonify({"success": False, "error": _("Not authenticated")}), 401
 
     result = get_learning_metrics(username)
     if not result['success']:
@@ -312,7 +338,7 @@ def api_learning_metrics():
 
 @app.route('/save_progress')
 def save_progress():
-    flash('Progress saved successfully!', 'success')
+    flash(_('Progress saved successfully!'), 'success')
     return render_template("dashboard.html")
 
 ################################
@@ -341,7 +367,7 @@ def login_post():
     valid, phone = verifying_login(usernameorEmail, password)
 
     if not valid:
-        return jsonify({"success": False, "message": "Invalid username or password"})
+        return jsonify({"success": False, "message": _("Invalid username or password")})
 
     if not phone.startswith("+"):
         phone = "+1" + phone
@@ -395,7 +421,7 @@ def send_otp_route():
 
     try:
         send_otp(phone)
-        return jsonify({"success": True, "message": "OTP sent"})
+        return jsonify({"success": True, "message": _("OTP sent")})
     except Exception as e:
         print("Error sending OTP", e)
         return jsonify({"success": False, "message": str(e)})
@@ -410,9 +436,9 @@ def verify_otp_route():
 
     try:
         if verify_otp(phone, code):
-            return jsonify({"success": True, "message": "OTP verified"})
+            return jsonify({"success": True, "message": _("OTP verified")})
         else:
-            return jsonify({"success": False, "message": "OTP not verified"})
+            return jsonify({"success": False, "message": _("OTP not verified")})
     except Exception as e:
         print("Error verifying OTP", e)
         return jsonify({"success": False, "message": str(e)})
@@ -423,17 +449,22 @@ def verify_otp_route():
 @app.route("/generate-email", methods=["POST"])
 def generate_email():
     difficulty = get_difficulty("difficulty_email_desktop")
+    language_instruction = ai_language_instruction()
+    from_label = _("From")
+    to_label = _("To")
+    subject_label = _("Subject")
 
     # Main generation prompt
     prompt = f"""
 You are generating an email for a cybersecurity training simulation.
+{language_instruction}
 
 The email must be formatted like a real email using clean HTML:
 
 REQUIRED STRUCTURE (must appear exactly like this):
-<b>From:</b> sender name &lt;sender@domain.com&gt;<br>
-<b>To:</b> user@example.com<br>
-<b>Subject:</b> (Generate a natural, realistic subject)<br><br>
+<b>{from_label}:</b> sender name &lt;sender@domain.com&gt;<br>
+<b>{to_label}:</b> user@example.com<br>
+<b>{subject_label}:</b> (Generate a natural, realistic subject)<br><br>
 <hr><br>
 
 Then generate 2–4 paragraphs using:
@@ -556,12 +587,14 @@ def analyze_email():
     message = data.get("message")
 
     if not user_choice or not message:
-        return jsonify({"success": False, "error": "Missing fields"}), 400
+        return jsonify({"success": False, "error": _("Missing fields")}), 400
 
     difficulty = get_difficulty("difficulty_email_desktop")
+    language_instruction = ai_language_instruction()
 
     prompt = f"""
 You are analyzing whether an email is REAL (legitimate) or FAKE (phishing).
+{language_instruction}
 
 Here is the email:
 
@@ -638,7 +671,7 @@ No text outside JSON.
             "success": True,
             "feedback": {
                 "correct": False,
-                "feedback": "Could not parse AI response.",
+                "feedback": _("Could not parse AI response."),
                 "clues": []
             },
             "difficulty_now": difficulty
@@ -655,7 +688,20 @@ No text outside JSON.
     if username:
         correct_answer = user_choice if is_correct else ("fake" if user_choice == "real" else "real")
         time_spent = request.get_json().get("time_spent_seconds")
-        log_scenario_attempt(username, "email", "desktop", user_choice, correct_answer, is_correct, difficulty, json.dumps(parsed), duration_seconds=time_spent, message=message)
+        indicators_found = parsed.get("clues", []) if is_correct else []
+        log_scenario_attempt(
+            username,
+            "email",
+            "desktop",
+            user_choice,
+            correct_answer,
+            is_correct,
+            difficulty,
+            json.dumps(parsed),
+            duration_seconds=time_spent,
+            message=message,
+            indicators_found=indicators_found
+        )
         update_module_progress(username, "email_desktop")
 
     return jsonify({
@@ -676,6 +722,7 @@ def generate_sites():
     data = request.json
     mode = data.get("mode")
     difficulty = get_difficulty("difficulty_internet_desktop")
+    language_instruction = ai_language_instruction()
 
     headers = {
         "Authorization": f"Bearer {GROQ_KEY}",
@@ -700,20 +747,22 @@ def generate_sites():
     ################################
     if mode == "list":
 
-        legit_prompt = """
+        legit_prompt = f"""
 Generate one SAFE, legitimate website search result.
+{language_instruction}
 
 Return ONLY JSON:
-{
+{{
   "title": "Example Title",
   "url": "https://example.com",
   "description": "Short 1-2 sentence description.",
   "site_type": "legit"
-}
+}}
 """
 
-        phishing_prompt = """
+        phishing_prompt = f"""
 Generate one PHISHING website search result.
+{language_instruction}
 
 Rules:
 - URL must look similar to a real brand but be wrong
@@ -721,12 +770,12 @@ Rules:
 - No obvious fake giveaways
 
 Return ONLY JSON:
-{
+{{
   "title": "Example Scam Title",
   "url": "https://brand-secure-check.com",
   "description": "Short 1-2 sentence phishing lure.",
   "site_type": "phishing"
-}
+}}
 """
 
         results = []
@@ -788,6 +837,7 @@ Return ONLY JSON:
 
         open_prompt = f"""
         You are generating a realistic website.
+        {language_instruction}
 
         DIFFICULTY LEVEL: {difficulty}
 
@@ -850,12 +900,14 @@ def analyze_website():
     site_type = data.get("site_type")
 
     if not user_choice or not html or not site_type:
-        return jsonify({"success": False, "error": "Missing fields"}), 400
+        return jsonify({"success": False, "error": _("Missing fields")}), 400
 
     difficulty = get_difficulty("difficulty_internet_desktop")
+    language_instruction = ai_language_instruction()
 
     prompt = f"""
 You are a cybersecurity classifier.
+{language_instruction}
 
 Determine if the website shown below is SAFE (legit) or PHISHING.
 
@@ -905,7 +957,7 @@ NO commentary.
             "success": True,
             "feedback": {
                 "correct": False,
-                "explanation": "Could not parse AI response.",
+                "explanation": _("Could not parse AI response."),
                 "clues": []
             }
         })
@@ -921,7 +973,20 @@ NO commentary.
     if username:
         time_spent = request.get_json().get("time_spent_seconds")
         ai_context = request.get_json().get("ai_context")
-        log_scenario_attempt(username, "internet", "desktop", user_choice, site_type, is_correct, difficulty, json.dumps(parsed), duration_seconds=time_spent, message=ai_context)
+        indicators_found = parsed.get("clues", []) if is_correct else []
+        log_scenario_attempt(
+            username,
+            "internet",
+            "desktop",
+            user_choice,
+            site_type,
+            is_correct,
+            difficulty,
+            json.dumps(parsed),
+            duration_seconds=time_spent,
+            message=ai_context,
+            indicators_found=indicators_found
+        )
         update_module_progress(username, "internet_desktop")
 
     return jsonify({
@@ -940,6 +1005,7 @@ def generate_sms():
     Returns JSON.
     """
     difficulty = get_difficulty("difficulty_sms_mobile")
+    language_instruction = ai_language_instruction()
 
     difficulty_text = {
         1: "Make the scam VERY obvious: bad grammar, weird link, over-the-top urgency.",
@@ -952,6 +1018,7 @@ def generate_sms():
 
     prompt = f"""
     You generate a REALISTIC PHISHING TEXT MESSAGE. It must look like real scam texts people receive.
+    {language_instruction}
 
     RULES:
     - Output ONLY valid JSON.
@@ -1023,7 +1090,7 @@ def generate_sms():
             "difficulty": difficulty,
             "sms": {
                 "number": "+1 000 000 0000",
-                "text": "Failed to generate message. Try again.",
+                "text": _("Failed to generate message. Try again."),
                 "time": "12:00 PM",
                 "clues": []
             }
@@ -1042,6 +1109,7 @@ def generate_sms():
 @app.route("/generate-call", methods=["POST"])
 def generate_call():
     difficulty = get_difficulty("difficulty_call_mobile")
+    language_instruction = ai_language_instruction()
 
     difficulty_text = {
         1: "Obvious scam: caller is clearly suspicious.",
@@ -1054,6 +1122,7 @@ def generate_call():
 
     prompt = f"""
 You are generating a REALISTIC PHONE SCAM CALL TRANSCRIPT.
+{language_instruction}
 
 STRICT RULES:
 - Output ONLY VALID JSON.
@@ -1116,6 +1185,7 @@ Theme={theme}
 @app.route("/generate-web", methods=["POST"])
 def generate_web():
     difficulty = get_difficulty("difficulty_web_mobile")
+    language_instruction = ai_language_instruction()
 
     difficulty_text = {
         1: "Obvious scam.",
@@ -1128,6 +1198,7 @@ def generate_web():
 
     prompt = f"""
 Generate extremely realistic FAKE GOOGLE SEARCH RESULTS.
+{language_instruction}
 
 STRICT RULES:
 - Output ONLY JSON.
@@ -1196,7 +1267,7 @@ def analyze_any():
     message = data.get("message")
 
     if not msg_type or not user_choice or not message:
-        return jsonify({"success": False, "error": "Missing fields"}), 400
+        return jsonify({"success": False, "error": _("Missing fields")}), 400
 
     #Normalize user choice
     choice = user_choice.strip().lower()
@@ -1215,7 +1286,7 @@ def analyze_any():
     }
 
     if msg_type not in difficulty_map:
-        return jsonify({"success": False, "error": "Unknown message type"}), 400
+        return jsonify({"success": False, "error": _("Unknown message type")}), 400
 
     platform_map = {
         "email": "desktop",
@@ -1237,6 +1308,7 @@ def analyze_any():
         category = "difficulty_email_mobile"
 
     difficulty = get_difficulty(category)
+    language_instruction = ai_language_instruction()
 
     #Human-readable label (for prompt)
     type_label = {
@@ -1252,6 +1324,7 @@ def analyze_any():
     # -------------------------------------------
     prompt = f"""
 You are a cybersecurity training AI.
+{language_instruction}
 
 The trainee reviewed the following {type_label}:
 
@@ -1306,7 +1379,7 @@ The trainee selected: {choice.upper()} (SCAM vs NOT SCAM)
     except Exception:
         parsed = {
             "correct": False,
-            "feedback": "AI response could not be parsed.",
+            "feedback": _("AI response could not be parsed."),
             "clues": []
         }
 
@@ -1323,7 +1396,20 @@ The trainee selected: {choice.upper()} (SCAM vs NOT SCAM)
     if username:
         correct_answer = choice if is_correct else ("not_scam" if choice == "scam" else "scam")
         scenario_type_full = f"{msg_type}_{platform}"
-        log_scenario_attempt(username, scenario_type_full, platform, user_choice, correct_answer, is_correct, difficulty, json.dumps(parsed), duration_seconds=time_spent, message=message)
+        indicators_found = parsed.get("clues", []) if is_correct else []
+        log_scenario_attempt(
+            username,
+            scenario_type_full,
+            platform,
+            choice,
+            correct_answer,
+            is_correct,
+            difficulty,
+            json.dumps(parsed),
+            duration_seconds=time_spent,
+            message=message,
+            indicators_found=indicators_found
+        )
         update_module_progress(username, scenario_type_full)
 
     return jsonify({
