@@ -256,6 +256,8 @@ const callerNumberEl = document.getElementById("callerNumber");
 const callerAvatarEl = document.getElementById("callerAvatar");
 const hintTextEl = document.getElementById("hintText");
 const scenarioButtons = document.querySelectorAll(".scenarioBtn");
+const speakBtn = document.getElementById("speakBtn");
+let currentAudio = null;
 
 async function postJSON(url, body) {
     const response = await fetch(url, {
@@ -349,6 +351,35 @@ async function getRoleplayLine(scenarioType, promptKey, difficulty = 1) {
     return data.line;
 }
 
+async function speakText(text, lang = "en", slow = false) {
+    if (!text || !text.trim()) return;
+
+    try {
+        const response = await fetch("/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, lang, slow })
+        });
+
+        const data = await response.json();
+
+        if (!data.success || !data.audio) {
+            console.error("TTS failed:", data.message || "Unknown error");
+            return;
+        }
+
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+
+        currentAudio = new Audio(`data:${data.mime};base64,${data.audio}`);
+        await currentAudio.play();
+    } catch (error) {
+        console.error("Error playing TTS:", error);
+    }
+}
+
 async function loadScenario(key) {
     currentScenarioKey = key;
     currentScenario = scenarios[key];
@@ -385,6 +416,9 @@ async function renderNode(nodeKey) {
             <strong>Real-world consequence:</strong> ${node.consequence}
         `;
 
+            speakText(`${node.title}. ${node.feedback} Real world consequence: ${node.consequence}`);
+
+
         await logRoleplayEvent("scenario_completed", node.title);
         await finishRoleplaySession(node);
         return;
@@ -399,6 +433,7 @@ async function renderNode(nodeKey) {
     );
 
     scenarioMessage.textContent = line;
+    speakText(line);
 
     await logRoleplayEvent("dialogue_loaded", node.prompt_key);
 
@@ -421,6 +456,15 @@ scenarioButtons.forEach(button => {
         loadScenario(scenarioKey);
     });
 });
+
+if (speakBtn) {
+    speakBtn.addEventListener("click", () => {
+        const text = scenarioMessage.textContent.trim();
+        if (text && text !== "Loading dialogue...") {
+            speakText(text);
+        }
+    });
+}
 
 restartBtn.addEventListener("click", async () => {
     if (currentScenario) {
