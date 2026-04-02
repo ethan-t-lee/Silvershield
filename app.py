@@ -8,7 +8,7 @@ from user_login import user_registration, verifying_login
 from TWOFA import send_otp, verify_otp
 from flask_babel import Babel, gettext, get_locale, _
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 from metrics import (log_scenario_attempt, log_critical_indicators, 
                      update_module_progress, get_user_performance, get_module_progress, 
@@ -227,6 +227,10 @@ def module1():
 def module2():
     return render_template("MobilePage.html")
 
+@app.route('/phone_roleplay')
+def phone_roleplay():
+    return render_template("phoneRoleplay.html")
+
 
 @app.route('/logout')
 def logout():
@@ -424,6 +428,275 @@ def verify_otp_route():
         print("Error verifying OTP", e)
         return jsonify({"success": False, "message": str(e)})
 
+##############################
+# Phone Roleplay AI
+##############################
+@app.route("/generate-roleplay-line", methods=["POST"])
+def generate_roleplay_line():
+    data = request.get_json() or {}
+
+    scenario_type = data.get("scenario_type")
+    prompt_key = data.get("prompt_key")
+    difficulty = int(data.get("difficulty", 1))
+
+    print("roleplay line request:", scenario_type, prompt_key, difficulty)
+
+    if not scenario_type or not prompt_key:
+        return jsonify({"success": False, "error": "Missing fields"}), 400
+
+    difficulty_text = {
+        1: "Make the scam obvious and easy for beginners to detect.",
+        2: "Make the scam somewhat believable but still noticeable.",
+        3: "Make the scam convincing with subtle warning signs.",
+        4: "Make the scam highly convincing with very subtle red flags."
+    }.get(difficulty, "Make the scam realistic.")
+
+    scenario_guidance = {
+        "bank_fraud": "A caller pretends to be from a bank fraud department and tries to get account details or one-time codes.",
+        "tech_support": "A caller pretends to be tech support and tries to get remote access or frighten the user into acting.",
+        "grandparent": "A caller pretends to be a family member in urgent trouble and pressures the user to send money.",
+        "government": "A caller pretends to be a government agency and uses threats or legal pressure to demand payment or personal information."
+    }.get(scenario_type, "A suspicious scam phone call.")
+
+    prompt_purposes = {
+        "opening": "Generate the opening line of the scam call.",
+        "ask_for_code": "Generate a follow-up line asking for sensitive verification information or a one-time code.",
+        "push_for_account_number": "Generate a line pushing the victim to provide account details.",
+        "urgency_if_call_later": "Generate a line using urgency when the victim says to call later.",
+        "freeze_account_pressure": "Generate a line threatening account freezing or similar pressure.",
+        "fake_name_and_department": "Generate a line where the scammer gives a fake professional identity to sound trustworthy.",
+        "remote_access_request": "Generate a line asking the victim to download software or allow remote access.",
+        "fake_system_alert": "Generate a line claiming the caller received a technical alert from the victim's device.",
+        "family_emergency_opening": "Generate an opening line for a fake family emergency scam.",
+        "family_pressure": "Generate a line pressuring the victim not to verify with others and to send money quickly.",
+        "government_threat_opening": "Generate an opening line for a government impersonation scam.",
+        "gift_card_payment": "Generate a line demanding immediate payment using gift cards or wire transfer.",
+        "refuse_documentation": "Generate a line refusing to send official paperwork and pushing urgency."
+    }
+
+    purpose_text = prompt_purposes.get(prompt_key, "Generate a realistic scammer line.")
+
+    prompt = f"""
+You are generating one short line of spoken dialogue for a cybersecurity training role-play.
+
+Scenario type: {scenario_type}
+Scenario guidance: {scenario_guidance}
+Dialogue purpose: {purpose_text}
+Difficulty level: {difficulty}
+Difficulty guidance: {difficulty_text}
+
+Rules:
+- Output only the scammer's spoken dialogue.
+- Keep it to 1 to 3 sentences.
+- Make it realistic, clear, and suitable for older adults in a training setting.
+- No markdown.
+- No labels.
+- No quotation marks around the whole answer.
+- Do not include explicit violence or extreme threats.
+"""
+
+    headers = {
+        "Authorization": f"Bearer {GROQ_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "model": "llama-3.1-8b-instant",
+        "messages": [{"role": "user", "content": prompt}]
+    }
+
+    resp = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers=headers,
+        json=payload
+    )
+
+    result = resp.json()
+    print("roleplay raw response:", result)
+
+    if "choices" not in result:
+        return jsonify({"success": False, "error": "Groq returned no content"}), 500
+
+    line = result["choices"][0]["message"]["content"].strip()
+
+    if line.startswith("```"):
+        line = line.replace("```", "").strip()
+
+    return jsonify({"success": True, "line": line})
+
+
+################################
+#   Phone Roleplay Assessment
+################################
+@app.route("/phone-roleplay/start-session", methods=["POST"])
+def start_phone_roleplay_session():
+    data = request.get_json() or {}
+
+    username = session.get("username")
+    if not username:
+        return jsonify({"success": False, "error": "Not logged in"}), 401
+
+    scenario_type = data.get("scenario_type")
+    difficulty_level = int(data.get("difficulty_level", 1))
+
+    if not scenario_type:
+        return jsonify({"success": False, "error": "Missing scenario_type"}), 400
+
+    started_at = datetime.now(timezone.utc).isoformat()
+
+    with sqlite3.connect("silvershieldDatabase.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO phone_roleplay_sessions
+            (username, scenario_type, difficulty_level, started_at)
+            VALUES (?, ?, ?, ?)
+        """, (username, scenario_type, difficulty_level, started_at))
+        conn.commit()
+        session_id = cursor.lastrowid
+
+        cursor.execute("""
+            INSERT INTO phone_roleplay_results (session_id)
+            VALUES (?)
+        """, (session_id,))
+        conn.commit()
+
+    return jsonify({"success": True, "session_id": session_id})
+
+
+@app.route("/phone-roleplay/log-event", methods=["POST"])
+def log_phone_roleplay_event():
+    data = request.get_json() or {}
+
+    session_id = data.get("session_id")
+    event_type = data.get("event_type")
+    event_value = data.get("event_value", "")
+    time_offset_seconds = data.get("time_offset_seconds", 0)
+
+    if not session_id or not event_type:
+        return jsonify({"success": False, "error": "Missing fields"}), 400
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    with sqlite3.connect("silvershieldDatabase.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO phone_roleplay_events
+            (session_id, event_type, event_value, timestamp, time_offset_seconds)
+            VALUES (?, ?, ?, ?, ?)
+        """, (session_id, event_type, event_value, timestamp, time_offset_seconds))
+        conn.commit()
+
+    return jsonify({"success": True})
+
+
+@app.route("/phone-roleplay/finish-session", methods=["POST"])
+def finish_phone_roleplay_session():
+    data = request.get_json() or {}
+
+    session_id = data.get("session_id")
+    final_outcome = data.get("final_outcome", "")
+    score = int(data.get("score", 0))
+    attempt_count = int(data.get("attempt_count", 0))
+    critical_indicators_found = int(data.get("critical_indicators_found", 0))
+    critical_indicators_total = int(data.get("critical_indicators_total", 0))
+    used_hint = int(data.get("used_hint", 0))
+    behavior_pattern = data.get("behavior_pattern", "")
+    feedback_shown = data.get("feedback_shown", "")
+
+    if not session_id:
+        return jsonify({"success": False, "error": "Missing session_id"}), 400
+
+    ended_at = datetime.now(timezone.utc).isoformat()
+
+    with sqlite3.connect("silvershieldDatabase.db") as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT started_at FROM phone_roleplay_sessions
+            WHERE id = ?
+        """, (session_id,))
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({"success": False, "error": "Session not found"}), 404
+
+        started_at = datetime.fromisoformat(row[0])
+        ended_dt = datetime.fromisoformat(ended_at)
+        total_time_seconds = (ended_dt - started_at).total_seconds()
+
+        cursor.execute("""
+            UPDATE phone_roleplay_sessions
+            SET ended_at = ?, total_time_seconds = ?, final_outcome = ?, score = ?, completed = 1
+            WHERE id = ?
+        """, (ended_at, total_time_seconds, final_outcome, score, session_id))
+
+        cursor.execute("""
+            UPDATE phone_roleplay_results
+            SET attempt_count = ?,
+                critical_indicators_found = ?,
+                critical_indicators_total = ?,
+                used_hint = ?,
+                behavior_pattern = ?,
+                feedback_shown = ?
+            WHERE session_id = ?
+        """, (
+            attempt_count,
+            critical_indicators_found,
+            critical_indicators_total,
+            used_hint,
+            behavior_pattern,
+            feedback_shown,
+            session_id
+        ))
+
+        conn.commit()
+
+    return jsonify({
+        "success": True,
+        "total_time_seconds": total_time_seconds
+    })
+
+
+@app.route("/phone-roleplay/progress-summary", methods=["GET"])
+def phone_roleplay_progress_summary():
+    username = session.get("username")
+    if not username:
+        return jsonify({"success": False, "error": "Not logged in"}), 401
+
+    with sqlite3.connect("silvershieldDatabase.db") as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT COUNT(*), COALESCE(AVG(score), 0), COALESCE(AVG(total_time_seconds), 0)
+            FROM phone_roleplay_sessions
+            WHERE username = ? AND completed = 1
+        """, (username,))
+        overall = cursor.fetchone()
+
+        cursor.execute("""
+            SELECT scenario_type, COUNT(*), COALESCE(AVG(score), 0)
+            FROM phone_roleplay_sessions
+            WHERE username = ? AND completed = 1
+            GROUP BY scenario_type
+        """, (username,))
+        by_scenario = cursor.fetchall()
+
+    return jsonify({
+        "success": True,
+        "overall": {
+            "completed_sessions": overall[0],
+            "average_score": round(overall[1], 2),
+            "average_time_seconds": round(overall[2], 2)
+        },
+        "by_scenario": [
+            {
+                "scenario_type": row[0],
+                "completed_sessions": row[1],
+                "average_score": round(row[2], 2)
+            }
+            for row in by_scenario
+        ]
+    })
 ################################
 #         Email AI
 ################################
