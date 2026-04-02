@@ -87,6 +87,57 @@
 
 </section>
 
+<div class="modulesGrid">
+
+<a class="moduleCard" href="{{ url_for('module1') }}">
+
+<img class="moduleImage"
+src="{{ url_for('static',filename='images/module1Image.jpg')}}"
+alt="{{ _('Desktop simulation') }}">
+
+<div class="moduleContent">
+
+<h2>{{ _("Module 1: Desktop Simulation") }}</h2>
+
+<p>
+{{ _("Learn to identify phishing and scams through a simulated Desktop experience.") }}
+</p>
+
+</div>
+</a>
+
+
+<a class="moduleCard" href="{{ url_for('module2') }}">
+
+<img class="moduleImage"
+src="{{ url_for('static', filename='images/module2Image.jpg')}}"
+alt="{{ _('Cellphone simulation') }}">
+
+<div class="moduleContent">
+
+<h2>{{ _("Module 2: Cellphone Simulation") }}</h2>
+
+<p>
+{{ _("Learn to identify phishing and scams through a simulated Cellphone experience.") }}
+</p>
+
+</div>
+</a>
+
+ <a class="moduleCard" href="{{ url_for('phone_roleplay') }}">
+
+ <img class="moduleImage"
+  src="{{ url_for('static', filename='images/module3Image.jpg') }}"
+  alt="Phone scam role-play">
+
+  <div class="moduleContent">
+  <h2>Module 3: Phone Scam Role-Play</h2>
+  <p>Practice responding to realistic scam phone calls through interactive role-playing scenarios.</p>
+ </div>
+ </a>
+
+</div>
+
 <section class="analyticsSection">
 
 <div class="sectionHeadingRow">
@@ -163,57 +214,6 @@
 </div>
 
 </section>
-
-<div class="modulesGrid">
-
-<a class="moduleCard" href="{{ url_for('module1') }}">
-
-<img class="moduleImage"
-src="{{ url_for('static',filename='images/module1Image.jpg')}}"
-alt="{{ _('Desktop simulation') }}">
-
-<div class="moduleContent">
-
-<h2>{{ _("Module 1: Desktop Simulation") }}</h2>
-
-<p>
-{{ _("Learn to identify phishing and scams through a simulated Desktop experience.") }}
-</p>
-
-</div>
-</a>
-
-
-<a class="moduleCard" href="{{ url_for('module2') }}">
-
-<img class="moduleImage"
-src="{{ url_for('static', filename='images/module2Image.jpg')}}"
-alt="{{ _('Cellphone simulation') }}">
-
-<div class="moduleContent">
-
-<h2>{{ _("Module 2: Cellphone Simulation") }}</h2>
-
-<p>
-{{ _("Learn to identify phishing and scams through a simulated Cellphone experience.") }}
-</p>
-
-</div>
-</a>
-
- <a class="moduleCard" href="{{ url_for('phone_roleplay') }}">
-
- <img class="moduleImage"
-  src="{{ url_for('static', filename='images/module3Image.jpg') }}"
-  alt="Phone scam role-play">
-
-  <div class="moduleContent">
-  <h2>Module 3: Phone Scam Role-Play</h2>
-  <p>Practice responding to realistic scam phone calls through interactive role-playing scenarios.</p>
- </div>
- </a>
-
-</div>
 </div>
 
 <script>
