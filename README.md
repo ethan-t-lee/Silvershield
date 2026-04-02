@@ -3,16 +3,19 @@ Silvershield - Cybersecurity Training Simulator
 Silvershield is an education web app that simulates phishing, scam SMS, scam call, and malicious site scenarios to help older users learn to spot cyber threats. The platform provides fake but realistic phishing emails, scam calls, scam text messages, and fake websites, and lets users guess whether something is a scam or safe. The system will provide feedback and adjust the difficulty of each simulation as needed.
 
 Features
-- Generate realistic phishing or legitimate content for:
+- Realistic training scenarios for:
   - Email (Mobile & Desktop)
   - SMS (Mobile)
   - Phone Calls (Mobile)
   - Web/Search Results (Mobile & Desktop)
-- Interactive UI simulating a mobil phone for SMS/Call/Web scenarios
-- Session-based user login/registration and two factor authentication
-- Difficulty tracking per user and per content type
-- Feedback system as user marks a scenario as "real" or "fake"
-- SQLite database for user data and difficulty settings
+- New Module 3 phone scam role-play where users practice choosing safe responses during live-style calls
+- Read Aloud support in the role-play simulator so users can hear call dialogue during practice
+- Interactive UI that simulates mobile and desktop experiences for hands-on learning
+- Secure account system with login, registration, and two-factor authentication
+- Learning dashboard with progress tracking, attempt history, and performance analytics
+- Pre-survey and post-survey flow to measure confidence and learning outcomes over time
+- Adaptive difficulty and feedback that respond to each user's choices
+- SQLite database for saving user progress, role-play sessions, and training results
 
 Getting Started - Local setup
 Prerequisies:
