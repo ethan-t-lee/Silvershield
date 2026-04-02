@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Scam Simulator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --page-bg: #E5E7EB;
+            --phone-body: #1E293B;
+            --phone-screen: #F8FAFC;
+            --primary-blue: #1D4ED8;
+            --primary-blue-hover: #2563EB;
+            --soft-blue: #DBEAFE;
+            --text-primary: #0F172A;
+            --text-secondary: #334155;
+            --border: #94A3B8;
+            --white: #FFFFFF;
+            --safe: #15803D;
+            --risk: #B91C1C;
+            --button-secondary: #6B7280;
+            --focus: #EA580C;
+            --shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--page-bg);
+            color: var(--text-primary);
+            font-family: "Segoe UI", Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .page {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px 20px 48px;
+        }
+
+        .hero-card,
+        .scenario-card,
+        .education-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .hero-card {
+            padding: 28px 32px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .hero-card h1 {
+            margin: 0 0 12px;
+            font-size: 40px;
+            font-weight: 700;
+            color: #0B5AB8;
+        }
+
+        .hero-card p {
+            margin: 0;
+            font-size: 20px;
+            color: var(--text-secondary);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: minmax(320px, 430px) minmax(360px, 440px) minmax(260px, 320px);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .scenario-card {
+            padding: 24px;
+        }
+
+        .scenario-card h2,
+        .education-card h2 {
+            margin: 0 0 10px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #0B5AB8;
+        }
+
+        .scenario-card p,
+        .education-card p {
+            margin: 0 0 18px;
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .scenario-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        .scenarioBtn {
+            width: 100%;
+            min-height: 72px;
+            padding: 16px 18px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            background: var(--soft-blue);
+            color: var(--text-primary);
+            font-size: 19px;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+        }
+
+        .scenarioBtn:hover {
+            background: #BFDBFE;
+            border-color: var(--primary-blue);
+            transform: translateY(-1px);
+        }
+
+        .scenarioBtn:focus-visible,
+        .choiceBtn:focus-visible,
+        .actionBtn:focus-visible {
+            outline: 4px solid var(--focus);
+            outline-offset: 3px;
+        }
+
+        .scenario-title {
+            display: block;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .scenario-subtitle {
+            display: block;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .phone-wrap {
+            display: flex;
+            justify-content: center;
+        }
+
+        .phone-frame {
+            width: 100%;
+            max-width: 430px;
+            background: var(--phone-body);
+            border-radius: 34px;
+            padding: 14px;
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.28);
+        }
+
+        .phone-screen {
+            min-height: 760px;
+            background: var(--phone-screen);
+            border-radius: 26px;
+            padding: 20px 18px 18px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .call-header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .call-type {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .avatar-circle {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            background: var(--soft-blue);
+            color: #0B5AB8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px;
+            font-size: 34px;
+            font-weight: 700;
+            border: 2px solid #BFDBFE;
+        }
+
+        .caller-name {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.25;
+            margin-bottom: 6px;
+        }
+
+        .caller-number {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .message-label {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 18px 0 10px;
+        }
+
+        .messageBox {
+            background: var(--white);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            min-height: 160px;
+            font-size: 20px;
+            color: var(--text-primary);
+            line-height: 1.65;
+        }
+
+        .choice-section-label {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 18px 0 10px;
+        }
+
+        .choiceGrid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .choiceBtn {
+            width: 100%;
+            min-height: 56px;
+            padding: 15px 16px;
+            border: 2px solid #C7D2FE;
+            border-radius: 14px;
+            background: #E8EEFC;
+            color: var(--text-primary);
+            font-size: 19px;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .choiceBtn:hover {
+            background: #D8E3FB;
+            border-color: var(--primary-blue);
+        }
+
+        .feedbackBox {
+            display: none;
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 16px;
+            border: 2px solid #C7D2FE;
+            background: #F1F5F9;
+            font-size: 19px;
+            color: var(--text-primary);
+            line-height: 1.65;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: auto;
+            padding-top: 18px;
+        }
+
+        .actionBtn {
+            min-height: 52px;
+            border: none;
+            border-radius: 14px;
+            font-size: 19px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .restartBtn {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .restartBtn:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        .speakBtn {
+            background: var(--safe);
+            color: var(--white);
+        }
+
+        .speakBtn:hover {
+            background: #166534;
+        }
+
+        .backBtn {
+            background: var(--button-secondary);
+            color: var(--white);
+        }
+
+        .backBtn:hover {
+            background: #4B5563;
+        }
+
+        .education-card {
+            padding: 24px;
+        }
+
+        .tip-list {
+            margin: 0;
+            padding-left: 24px;
+        }
+
+        .tip-list li {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .tip-box {
+            margin-top: 18px;
+            padding: 16px;
+            border-radius: 14px;
+            background: #EFF6FF;
+            border: 2px solid #BFDBFE;
+        }
+
+        .tip-box strong {
+            display: block;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #0B5AB8;
+        }
+
+        .tip-box span,
+        #hintText {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 1120px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .phone-wrap {
+                order: 2;
+            }
+
+            .scenario-card {
+                order: 1;
+            }
+
+            .education-card {
+                order: 3;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .page {
+                padding: 16px 12px 32px;
+            }
+
+            .hero-card {
+                padding: 22px 18px;
+            }
+
+            .hero-card h1 {
+                font-size: 32px;
+            }
+
+            .hero-card p {
+                font-size: 18px;
+            }
+
+            .scenario-card,
+            .education-card {
+                padding: 18px;
+            }
+
+            .scenario-card h2,
+            .education-card h2 {
+                font-size: 24px;
+            }
+
+            .phone-screen {
+                min-height: 700px;
+                padding: 18px 14px 16px;
+            }
+
+            .caller-name {
+                font-size: 28px;
+            }
+
+            .messageBox,
+            .choiceBtn,
+            .feedbackBox {
+                font-size: 18px;
+            }
+
+            .actionBtn {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="hero-card" aria-labelledby="page-title">
+            <h1 id="page-title">Phone Scam Simulator</h1>
+            <p>Practice identifying suspicious phone calls and choosing the safest next step.</p>
+        </section>
+
+        <section class="main-layout">
+            <section class="scenario-card" aria-labelledby="scenario-heading">
+                <h2 id="scenario-heading">Choose a Scenario</h2>
+                <p>Select one scam type to begin. Only one scenario is shown at a time to keep the exercise simple and focused.</p>
+
+                <div class="scenario-list" role="group" aria-label="Scam scenario options">
+                    <button class="scenarioBtn" data-scenario="bank_fraud" aria-label="Bank Fraud Call">
+                        <span class="scenario-title">Bank Fraud Call</span>
+                        <span class="scenario-subtitle">Caller claims suspicious activity on your account</span>
+                    </button>
+
+                    <button class="scenarioBtn" data-scenario="tech_support" aria-label="Tech Support Scam">
+                        <span class="scenario-title">Tech Support Scam</span>
+                        <span class="scenario-subtitle">Caller says your computer has a virus</span>
+                    </button>
+
+                    <button class="scenarioBtn" data-scenario="grandparent" aria-label="Grandparent Scam">
+                        <span class="scenario-title">Grandparent Scam</span>
+                        <span class="scenario-subtitle">Caller pretends to be a family member in trouble</span>
+                    </button>
+
+                    <button class="scenarioBtn" data-scenario="government" aria-label="Government Impersonation">
+                        <span class="scenario-title">Government Impersonation</span>
+                        <span class="scenario-subtitle">Caller uses threats or legal pressure</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="phone-wrap" aria-labelledby="simulator-heading">
+                <div class="phone-frame">
+                    <div class="phone-screen">
+                        <div class="status-bar" aria-hidden="true">
+                            <span>9:41 AM</span>
+                            <span>Call Active</span>
+                        </div>
+
+                        <div class="call-header">
+                            <div class="call-type">Incoming Call</div>
+                            <div class="avatar-circle" id="callerAvatar" aria-hidden="true">?</div>
+                            <div class="caller-name" id="callerName">Choose a scenario</div>
+                            <div class="caller-number" id="callerNumber">(000) 000-0000</div>
+                        </div>
+
+                        <h2 id="simulator-heading" class="message-label">Caller Message</h2>
+                        <div class="messageBox" id="scenarioMessage" tabindex="0">
+                            Select a scenario to begin the simulation.
+                        </div>
+
+                        <div style="margin-top: 12px;">
+                            <button class="actionBtn speakBtn" id="speakBtn" type="button" aria-label="Read Aloud">
+                                Read Aloud
+                            </button>
+                        </div>
+                        <div class="choice-section-label">What would you do?</div>
+                        <div class="choiceGrid" id="choiceGrid" role="group" aria-label="Response choices"></div>
+
+                        <div class="feedbackBox" id="feedbackBox" tabindex="0" aria-live="polite"></div>
+
+                        <div class="controls">
+                            <button class="actionBtn restartBtn" id="restartBtn" aria-label="Restart current scenario">Restart</button>
+                            <button class="actionBtn backBtn" onclick="location.href='{{ url_for('dashboard') }}'" aria-label="Go back to dashboard">Back</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="education-card" aria-labelledby="tips-heading">
+                <h2 id="tips-heading">Safety Reminders</h2>
+                <p>Use these quick reminders while you practice.</p>
+
+                <ul class="tip-list">
+                    <li>Never share one-time codes, passwords, or PINs over the phone.</li>
+                    <li>Hang up and call the organization back using an official number you found yourself.</li>
+                    <li>Urgency and pressure are common warning signs in scam calls.</li>
+                    <li>If a caller claims to be family, verify with another trusted person first.</li>
+                </ul>
+
+                <div class="tip-box">
+                    <strong>Current Tip</strong>
+                    <span id="hintText">Choose a scenario to see a tip related to that scam type.</span>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='phoneRoleplay.js') }}"></script>
+</body>
+</html>
