@@ -6,6 +6,46 @@ let currentType = "";
 let currentDifficulty = "";
 let currentExpectedLabel = "";
 let scenarioLoadTime = null;
+const mobileLabels = globalThis.mobileLabels || {};
+
+function applyMobileTranslations() {
+    const backLabel = mobileLabels.back || "Back";
+    const readAloudLabel = mobileLabels.readAloud || "Read Aloud";
+    const realLabel = mobileLabels.real || "REAL";
+    const fakeLabel = mobileLabels.fake || "FAKE";
+    const speakLabel = mobileLabels.speak || "Speak";
+    const muteLabel = mobileLabels.mute || "Mute";
+    const endLabel = mobileLabels.end || "End";
+    const speakerLabel = mobileLabels.speaker || "Speaker";
+    const reportScamCallLabel = mobileLabels.reportScamCall || fakeLabel;
+    const looksSafeLabel = mobileLabels.looksSafe || realLabel;
+
+    document.querySelectorAll(".back-btn, .back-button").forEach(btn => {
+        btn.textContent = `← ${backLabel}`;
+    });
+
+    const readBtn = document.getElementById("readAloudMobile");
+    if (readBtn) {
+        readBtn.textContent = document.querySelector(".call-app") ? speakerLabel : readAloudLabel;
+    }
+
+    const safeBtn = document.getElementById("markSafe");
+    if (safeBtn) {
+        safeBtn.textContent = document.querySelector(".call-app") ? looksSafeLabel : realLabel;
+    }
+
+    const scamBtn = document.getElementById("markScam");
+    if (scamBtn) {
+        scamBtn.textContent = document.querySelector(".call-app") ? reportScamCallLabel : fakeLabel;
+    }
+
+    const voiceBtn = document.getElementById("voiceAnswerBtn");
+    if (voiceBtn) voiceBtn.textContent = speakLabel;
+
+    const callButtons = document.querySelectorAll(".call-controls .call-btn");
+    if (callButtons[0]) callButtons[0].textContent = muteLabel;
+    if (callButtons[1]) callButtons[1].textContent = endLabel;
+}
 
 function buildWebSpeechText(sc) {
     if (!sc) return "";
@@ -43,6 +83,7 @@ const ScenarioEngine = {
         // Load snippet HTML template
         const htmlResp = await fetch(`/static/snippets/${type}.html`);
         scenarioBody.innerHTML = await htmlResp.text();
+        applyMobileTranslations();
 
         // Pick appropriate endpoint
         const endpoint = this.endpoints[type];
@@ -101,8 +142,9 @@ const ScenarioEngine = {
                 tmp.innerHTML = currentMessage;
                 const plain = (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
                 if (window.preloadTTS) {
+                    const lang = (window.getTTSLang && window.getTTSLang()) || 'en';
                     // fire-and-forget preload (internal dedupe prevents duplicates)
-                    try { window.preloadTTS(plain, { lang: 'en', slow: false }); } catch(e) { /* ignore */ }
+                    try { window.preloadTTS(plain, { lang, slow: false }); } catch(e) { /* ignore */ }
                 }
             } catch (e) { console.warn('Preload TTS failed', e); }
         }
@@ -136,7 +178,10 @@ const ScenarioEngine = {
                         const played = await window.playPreloaded(plain);
                         if (played) return;
                     }
-                    if (window.speak) await window.speak(plain, { lang: 'en', slow: false });
+                    if (window.speak) {
+                        const lang = (window.getTTSLang && window.getTTSLang()) || 'en';
+                        await window.speak(plain, { lang, slow: false });
+                    }
                 } catch (e) { console.warn('Mobile TTS play failed', e); }
             };
         }
@@ -211,12 +256,15 @@ const ScenarioEngine = {
         adSection.classList.add("ads-section");
 
         sc.ads.forEach(ad => {
+            const adTitle = (ad && ad.title) ? ad.title : "Sponsored result";
+            const adUrl = (ad && ad.url) ? ad.url : "";
+            const adSnippet = (ad && ad.snippet) ? ad.snippet : "";
             const adBox = document.createElement("div");
             adBox.classList.add("ad-box");
             adBox.innerHTML = `
-                <div class="ad-title">${ad.title || "Sponsored"}</div>
-                <div class="ad-url">${ad.url}</div>
-                <div class="ad-snippet">${ad.snippet}</div>
+                <div class="ad-title">${adTitle}</div>
+                <div class="ad-url">${adUrl}</div>
+                <div class="ad-snippet">${adSnippet}</div>
                 <div class="ad-label">Sponsored</div>
             `;
             adSection.appendChild(adBox);

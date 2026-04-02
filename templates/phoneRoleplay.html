@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ get_locale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phone Scam Simulator</title>
+    <title>{{ _("Phone Scam Simulator") }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         :root {
@@ -432,34 +432,34 @@
 <body>
     <main class="page">
         <section class="hero-card" aria-labelledby="page-title">
-            <h1 id="page-title">Phone Scam Simulator</h1>
-            <p>Practice identifying suspicious phone calls and choosing the safest next step.</p>
+            <h1 id="page-title">{{ _("Phone Scam Simulator") }}</h1>
+            <p>{{ _("Practice identifying suspicious phone calls and choosing the safest next step.") }}</p>
         </section>
 
         <section class="main-layout">
             <section class="scenario-card" aria-labelledby="scenario-heading">
-                <h2 id="scenario-heading">Choose a Scenario</h2>
-                <p>Select one scam type to begin. Only one scenario is shown at a time to keep the exercise simple and focused.</p>
+                <h2 id="scenario-heading">{{ _("Choose a Scenario") }}</h2>
+                <p>{{ _("Select one scam type to begin. Only one scenario is shown at a time to keep the exercise simple and focused.") }}</p>
 
-                <div class="scenario-list" role="group" aria-label="Scam scenario options">
-                    <button class="scenarioBtn" data-scenario="bank_fraud" aria-label="Bank Fraud Call">
-                        <span class="scenario-title">Bank Fraud Call</span>
-                        <span class="scenario-subtitle">Caller claims suspicious activity on your account</span>
+                <div class="scenario-list" role="group" aria-label="{{ _('Scam scenario options') }}">
+                    <button class="scenarioBtn" data-scenario="bank_fraud" aria-label="{{ _('Bank Fraud Call') }}">
+                        <span class="scenario-title">{{ _("Bank Fraud Call") }}</span>
+                        <span class="scenario-subtitle">{{ _("Caller claims suspicious activity on your account") }}</span>
                     </button>
 
-                    <button class="scenarioBtn" data-scenario="tech_support" aria-label="Tech Support Scam">
-                        <span class="scenario-title">Tech Support Scam</span>
-                        <span class="scenario-subtitle">Caller says your computer has a virus</span>
+                    <button class="scenarioBtn" data-scenario="tech_support" aria-label="{{ _('Tech Support Scam') }}">
+                        <span class="scenario-title">{{ _("Tech Support Scam") }}</span>
+                        <span class="scenario-subtitle">{{ _("Caller says your computer has a virus") }}</span>
                     </button>
 
-                    <button class="scenarioBtn" data-scenario="grandparent" aria-label="Grandparent Scam">
-                        <span class="scenario-title">Grandparent Scam</span>
-                        <span class="scenario-subtitle">Caller pretends to be a family member in trouble</span>
+                    <button class="scenarioBtn" data-scenario="grandparent" aria-label="{{ _('Grandparent Scam') }}">
+                        <span class="scenario-title">{{ _("Grandparent Scam") }}</span>
+                        <span class="scenario-subtitle">{{ _("Caller pretends to be a family member in trouble") }}</span>
                     </button>
 
-                    <button class="scenarioBtn" data-scenario="government" aria-label="Government Impersonation">
-                        <span class="scenario-title">Government Impersonation</span>
-                        <span class="scenario-subtitle">Caller uses threats or legal pressure</span>
+                    <button class="scenarioBtn" data-scenario="government" aria-label="{{ _('Government Impersonation') }}">
+                        <span class="scenario-title">{{ _("Government Impersonation") }}</span>
+                        <span class="scenario-subtitle">{{ _("Caller uses threats or legal pressure") }}</span>
                     </button>
                 </div>
             </section>
@@ -469,58 +469,159 @@
                     <div class="phone-screen">
                         <div class="status-bar" aria-hidden="true">
                             <span>9:41 AM</span>
-                            <span>Call Active</span>
+                            <span>{{ _("Call Active") }}</span>
                         </div>
 
                         <div class="call-header">
-                            <div class="call-type">Incoming Call</div>
+                            <div class="call-type">{{ _("Incoming Call") }}</div>
                             <div class="avatar-circle" id="callerAvatar" aria-hidden="true">?</div>
-                            <div class="caller-name" id="callerName">Choose a scenario</div>
+                            <div class="caller-name" id="callerName">{{ _("Choose a scenario") }}</div>
                             <div class="caller-number" id="callerNumber">(000) 000-0000</div>
                         </div>
 
-                        <h2 id="simulator-heading" class="message-label">Caller Message</h2>
+                        <h2 id="simulator-heading" class="message-label">{{ _("Caller Message") }}</h2>
                         <div class="messageBox" id="scenarioMessage" tabindex="0">
-                            Select a scenario to begin the simulation.
+                            {{ _("Select a scenario to begin the simulation.") }}
                         </div>
 
                         <div style="margin-top: 12px;">
-                            <button class="actionBtn speakBtn" id="speakBtn" type="button" aria-label="Read Aloud">
-                                Read Aloud
+                            <button class="actionBtn speakBtn" id="speakBtn" type="button" aria-label="{{ _('Read Aloud') }}">
+                                {{ _("Read Aloud") }}
                             </button>
                         </div>
-                        <div class="choice-section-label">What would you do?</div>
-                        <div class="choiceGrid" id="choiceGrid" role="group" aria-label="Response choices"></div>
+                        <div class="choice-section-label">{{ _("What would you do?") }}</div>
+                        <div class="choiceGrid" id="choiceGrid" role="group" aria-label="{{ _('Response choices') }}"></div>
 
                         <div class="feedbackBox" id="feedbackBox" tabindex="0" aria-live="polite"></div>
 
                         <div class="controls">
-                            <button class="actionBtn restartBtn" id="restartBtn" aria-label="Restart current scenario">Restart</button>
-                            <button class="actionBtn backBtn" onclick="location.href='{{ url_for('dashboard') }}'" aria-label="Go back to dashboard">Back</button>
+                            <button class="actionBtn restartBtn" id="restartBtn" aria-label="{{ _('Restart current scenario') }}">{{ _("Restart") }}</button>
+                            <button class="actionBtn backBtn" onclick="location.href='{{ url_for('dashboard') }}'" aria-label="{{ _('Go back to dashboard') }}">{{ _("Back") }}</button>
                         </div>
                     </div>
                 </div>
             </section>
 
             <aside class="education-card" aria-labelledby="tips-heading">
-                <h2 id="tips-heading">Safety Reminders</h2>
-                <p>Use these quick reminders while you practice.</p>
+                <h2 id="tips-heading">{{ _("Safety Reminders") }}</h2>
+                <p>{{ _("Use these quick reminders while you practice.") }}</p>
 
                 <ul class="tip-list">
-                    <li>Never share one-time codes, passwords, or PINs over the phone.</li>
-                    <li>Hang up and call the organization back using an official number you found yourself.</li>
-                    <li>Urgency and pressure are common warning signs in scam calls.</li>
-                    <li>If a caller claims to be family, verify with another trusted person first.</li>
+                    <li>{{ _("Never share one-time codes, passwords, or PINs over the phone.") }}</li>
+                    <li>{{ _("Hang up and call the organization back using an official number you found yourself.") }}</li>
+                    <li>{{ _("Urgency and pressure are common warning signs in scam calls.") }}</li>
+                    <li>{{ _("If a caller claims to be family, verify with another trusted person first.") }}</li>
                 </ul>
 
                 <div class="tip-box">
-                    <strong>Current Tip</strong>
-                    <span id="hintText">Choose a scenario to see a tip related to that scam type.</span>
+                    <strong>{{ _("Current Tip") }}</strong>
+                    <span id="hintText">{{ _("Choose a scenario to see a tip related to that scam type.") }}</span>
                 </div>
             </aside>
         </section>
     </main>
 
+    <script>
+    window.roleplayI18n = {
+        /* caller names */
+        "Bank Fraud Dept.": {{ _("Bank Fraud Dept.")|tojson }},
+        "Microsoft Support": {{ _("Microsoft Support")|tojson }},
+        "Unknown Family Member": {{ _("Unknown Family Member")|tojson }},
+        "Government Office": {{ _("Government Office")|tojson }},
+
+        /* hints */
+        "Tip: Real banks do not ask for one-time codes, PINs, or full card details over the phone.": {{ _("Tip: Real banks do not ask for one-time codes, PINs, or full card details over the phone.")|tojson }},
+        "Tip: Real tech companies do not cold-call people to fix viruses or ask for remote access unexpectedly.": {{ _("Tip: Real tech companies do not cold-call people to fix viruses or ask for remote access unexpectedly.")|tojson }},
+        "Tip: If a caller claims to be family and asks for urgent money, slow down and verify with another trusted relative.": {{ _("Tip: If a caller claims to be family and asks for urgent money, slow down and verify with another trusted relative.")|tojson }},
+        "Tip: Government agencies do not demand payment by phone using gift cards, wire transfers, or threats.": {{ _("Tip: Government agencies do not demand payment by phone using gift cards, wire transfers, or threats.")|tojson }},
+
+        /* choice text */
+        "Give them your card number": {{ _("Give them your card number")|tojson }},
+        "Ask them to verify who they are": {{ _("Ask them to verify who they are")|tojson }},
+        "Hang up and call the bank directly": {{ _("Hang up and call the bank directly")|tojson }},
+        "Tell them to call later": {{ _("Tell them to call later")|tojson }},
+        "Give the code": {{ _("Give the code")|tojson }},
+        "Refuse and ask why they need it": {{ _("Refuse and ask why they need it")|tojson }},
+        "Hang up": {{ _("Hang up")|tojson }},
+        "Give account number": {{ _("Give account number")|tojson }},
+        "Ask for their name and department": {{ _("Ask for their name and department")|tojson }},
+        "Stay on the call": {{ _("Stay on the call")|tojson }},
+        "Give the code because it sounds urgent": {{ _("Give the code because it sounds urgent")|tojson }},
+        "Continue the call": {{ _("Continue the call")|tojson }},
+        "Let them help fix it": {{ _("Let them help fix it")|tojson }},
+        "Ask how they got your number": {{ _("Ask how they got your number")|tojson }},
+        "Download it": {{ _("Download it")|tojson }},
+        "Refuse and ask for proof": {{ _("Refuse and ask for proof")|tojson }},
+        "Continue listening": {{ _("Continue listening")|tojson }},
+        "Send money immediately": {{ _("Send money immediately")|tojson }},
+        "Ask who is calling": {{ _("Ask who is calling")|tojson }},
+        "Call another family member first": {{ _("Call another family member first")|tojson }},
+        "Stay on the line and listen": {{ _("Stay on the line and listen")|tojson }},
+        "Send the money": {{ _("Send the money")|tojson }},
+        "Call another relative to verify": {{ _("Call another relative to verify")|tojson }},
+        "Ask what payment they need": {{ _("Ask what payment they need")|tojson }},
+        "Ask for official mail or documentation": {{ _("Ask for official mail or documentation")|tojson }},
+        "Give your Social Security number": {{ _("Give your Social Security number")|tojson }},
+        "Pay now": {{ _("Pay now")|tojson }},
+        "Refuse and hang up": {{ _("Refuse and hang up")|tojson }},
+
+        /* node titles */
+        "Unsafe choice": {{ _("Unsafe choice")|tojson }},
+        "Better recovery choice": {{ _("Better recovery choice")|tojson }},
+        "Risky choice": {{ _("Risky choice")|tojson }},
+        "Best choice": {{ _("Best choice")|tojson }},
+
+        /* node feedback - bank_fraud */
+        "The caller now has enough information to try to access your account. Real banks do not ask for one-time codes or security codes over the phone like this.": {{ _("The caller now has enough information to try to access your account. Real banks do not ask for one-time codes or security codes over the phone like this.")|tojson }},
+        "Hanging up stopped the scam from continuing. Even if you already shared some information, ending the call was safer than continuing.": {{ _("Hanging up stopped the scam from continuing. Even if you already shared some information, ending the call was safer than continuing.")|tojson }},
+        "Scammers often sound professional and use urgency to pressure people into trusting them. A name or title is not proof they are real.": {{ _("Scammers often sound professional and use urgency to pressure people into trusting them. A name or title is not proof they are real.")|tojson }},
+        "Excellent decision. Hanging up and calling the bank directly using the number on your card is the safest response.": {{ _("Excellent decision. Hanging up and calling the bank directly using the number on your card is the safest response.")|tojson }},
+
+        /* node consequences - bank_fraud */
+        "Your account could be compromised or drained.": {{ _("Your account could be compromised or drained.")|tojson }},
+        "You reduced the risk, but some information may already have been exposed.": {{ _("You reduced the risk, but some information may already have been exposed.")|tojson }},
+        "Continuing the call could lead to stolen information.": {{ _("Continuing the call could lead to stolen information.")|tojson }},
+        "You protected your account and avoided the scam.": {{ _("You protected your account and avoided the scam.")|tojson }},
+
+        /* node feedback - tech_support */
+        "Remote access scams can give attackers full control of your computer, files, and passwords.": {{ _("Remote access scams can give attackers full control of your computer, files, and passwords.")|tojson }},
+        "Scammers often invent technical explanations and use urgency to sound believable.": {{ _("Scammers often invent technical explanations and use urgency to sound believable.")|tojson }},
+        "Good job. Unsolicited tech support calls are a major scam tactic. Hanging up is the safest response.": {{ _("Good job. Unsolicited tech support calls are a major scam tactic. Hanging up is the safest response.")|tojson }},
+
+        /* node consequences - tech_support */
+        "Your device and accounts could be compromised.": {{ _("Your device and accounts could be compromised.")|tojson }},
+        "Staying on the call increases the chance of being manipulated.": {{ _("Staying on the call increases the chance of being manipulated.")|tojson }},
+        "You kept control of your device and information.": {{ _("You kept control of your device and information.")|tojson }},
+
+        /* node feedback - grandparent */
+        "The grandparent scam relies on emotion, secrecy, and urgency to pressure victims into sending money.": {{ _("The grandparent scam relies on emotion, secrecy, and urgency to pressure victims into sending money.")|tojson }},
+        "Staying engaged without verifying the caller can make it easier for the scammer to pressure you emotionally.": {{ _("Staying engaged without verifying the caller can make it easier for the scammer to pressure you emotionally.")|tojson }},
+        "Excellent choice. Verifying through another family member is the safest response in an emergency-money call.": {{ _("Excellent choice. Verifying through another family member is the safest response in an emergency-money call.")|tojson }},
+
+        /* node consequences - grandparent */
+        "Money sent to scammers is often impossible to recover.": {{ _("Money sent to scammers is often impossible to recover.")|tojson }},
+        "You may be manipulated into sending money or sharing personal information.": {{ _("You may be manipulated into sending money or sharing personal information.")|tojson }},
+        "You protected yourself from a very common impersonation scam.": {{ _("You protected yourself from a very common impersonation scam.")|tojson }},
+
+        /* node feedback - government */
+        "Government impersonation scams often use fear and legal threats. Real agencies do not demand immediate payment like this by phone.": {{ _("Government impersonation scams often use fear and legal threats. Real agencies do not demand immediate payment like this by phone.")|tojson }},
+        "Threats and urgent legal language are common tools used by impersonation scammers.": {{ _("Threats and urgent legal language are common tools used by impersonation scammers.")|tojson }},
+        "Good decision. Hanging up protects you from threat-based scams. Real government matters are handled through official channels and documented communication.": {{ _("Good decision. Hanging up protects you from threat-based scams. Real government matters are handled through official channels and documented communication.")|tojson }},
+
+        /* node consequences - government */
+        "You could lose money and expose personal identity information.": {{ _("You could lose money and expose personal identity information.")|tojson }},
+        "Remaining engaged increases the chance of pressure and deception.": {{ _("Remaining engaged increases the chance of pressure and deception.")|tojson }},
+        "You avoided a high-pressure impersonation scam.": {{ _("You avoided a high-pressure impersonation scam.")|tojson }},
+
+        /* shared UI strings */
+        "Loading dialogue...": {{ _("Loading dialogue...")|tojson }},
+        "Real-world consequence:": {{ _("Real-world consequence:")|tojson }},
+        "Real world consequence:": {{ _("Real world consequence:")|tojson }},
+
+        /* TTS fallback */
+        "The caller says something suspicious and urgent, trying to pressure you into acting quickly.": {{ _("The caller says something suspicious and urgent, trying to pressure you into acting quickly.")|tojson }}
+    };
+    </script>
     <script src="{{ url_for('static', filename='phoneRoleplay.js') }}"></script>
 </body>
 </html>

@@ -13,6 +13,19 @@ function _normalizeText(raw) {
   return raw.replace(/\s+/g, ' ').trim();
 }
 
+function getTTSLang() {
+  const raw = (document.documentElement.getAttribute('lang') || 'en').toLowerCase();
+  if (raw.startsWith('zh')) return 'zh-CN';
+  return raw.startsWith('es') ? 'es' : 'en';
+}
+
+function getSpeechLocale(langCode) {
+  const normalized = (langCode || 'en').toLowerCase();
+  if (normalized.startsWith('zh')) return 'zh-CN';
+  if (normalized.startsWith('es')) return 'es-ES';
+  return 'en-US';
+}
+
 function stopTTS() {
   try {
     if (window._tts_state.audio) {
@@ -53,10 +66,11 @@ async function preloadTTS(text, options = {}) {
   // Start fetch and store promise to dedupe concurrent calls
   const p = (async () => {
     try {
+      const resolvedLang = options.lang || getTTSLang();
       const resp = await fetch('/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: norm, lang: options.lang || 'en', slow: !!options.slow })
+        body: JSON.stringify({ text: norm, lang: resolvedLang, slow: !!options.slow })
       });
       const data = await resp.json().catch(() => null);
       if (!data || !data.success) return null;
@@ -124,7 +138,8 @@ async function speak(text, options = {}) {
   // Always stop any existing playback before starting a new one
   stopTTS();
 
-  const payload = { text: text, lang: options.lang || 'en', slow: !!options.slow };
+  const resolvedLang = options.lang || getTTSLang();
+  const payload = { text: text, lang: resolvedLang, slow: !!options.slow };
 
   let resp;
   try {
@@ -142,7 +157,7 @@ async function speak(text, options = {}) {
     // fallback to browser
     if (window.speechSynthesis) {
       const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = options.lang || 'en-US';
+      utter.lang = getSpeechLocale(resolvedLang);
       window._tts_state.utter = utter;
       window.speechSynthesis.speak(utter);
       return null;
@@ -157,7 +172,7 @@ async function speak(text, options = {}) {
     if (window.speechSynthesis) {
       try {
         const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = options.lang || 'en-US';
+        utter.lang = getSpeechLocale(resolvedLang);
         window._tts_state.utter = utter;
         window.speechSynthesis.speak(utter);
         return null;
@@ -198,6 +213,7 @@ async function speak(text, options = {}) {
 // Expose globally for easy use in templates
 window.speak = speak;
 window.stopTTS = stopTTS;
+window.getTTSLang = getTTSLang;
 // Expose preload/play helpers
 window.preloadTTS = preloadTTS;
 window.playPreloaded = playPreloaded;

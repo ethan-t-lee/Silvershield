@@ -28,7 +28,17 @@ init_database()
 
 # Babel locale selector
 def select_locale():
-    return session.get('lang', request.accept_languages.best_match(['en', 'es']))
+    return session.get('lang', request.accept_languages.best_match(['en', 'es', 'zh']))
+
+
+def get_llm_output_language():
+    lang = session.get('lang', request.accept_languages.best_match(['en', 'es', 'zh'])) or 'en'
+    lang = str(lang).lower()
+    if lang.startswith('es'):
+        return "Spanish"
+    if lang.startswith('zh'):
+        return "Chinese"
+    return "English"
 
 babel = Babel(app, locale_selector=select_locale)
 
@@ -42,7 +52,8 @@ def inject_template_helpers():
 # Language switch route
 @app.route('/set_language/<lang>')
 def set_language(lang):
-    session['lang'] = lang
+    if lang in ('en', 'es', 'zh'):
+        session['lang'] = lang
     return redirect(request.referrer or url_for('home'))
 
 # Register multimodal blueprint (text-to-speech) if available
@@ -93,7 +104,7 @@ def set_difficulty(category, level):
 @app.route('/')
 def home():
     # Use the same function as Babel
-    current_lang = session.get('lang', request.accept_languages.best_match(['en', 'es']))
+    current_lang = session.get('lang', request.accept_languages.best_match(['en', 'es', 'zh']))
     return render_template('homePage.html', current_lang=current_lang)
 
 
@@ -476,6 +487,8 @@ def generate_roleplay_line():
 
     purpose_text = prompt_purposes.get(prompt_key, "Generate a realistic scammer line.")
 
+    output_language = get_llm_output_language()
+
     prompt = f"""
 You are generating one short line of spoken dialogue for a cybersecurity training role-play.
 
@@ -489,6 +502,7 @@ Rules:
 - Output only the scammer's spoken dialogue.
 - Keep it to 1 to 3 sentences.
 - Make it realistic, clear, and suitable for older adults in a training setting.
+- Write the dialogue in {output_language}.
 - No markdown.
 - No labels.
 - No quotation marks around the whole answer.
@@ -707,6 +721,7 @@ def generate_email():
     platform = (data.get("platform") or "desktop").lower()
     category = "difficulty_email_mobile" if platform == "mobile" else "difficulty_email_desktop"
     difficulty = get_difficulty(category)
+    output_language = get_llm_output_language()
 
     is_scam = _random.random() < 0.5
     expected_label = "scam" if is_scam else "not_scam"
@@ -743,6 +758,7 @@ PHISHING RULES:
 - Domain should look almost real (e.g. https://login.microsoft-review.com).
 - Tone should sound normal, professional, believable.
 - Red flags must be subtle at higher difficulty (3-4).
+- Write all visible email text in {output_language}.
 
 DIFFICULTY LEVEL: {difficulty}
 Generate a NEW realistic PHISHING email now. Do NOT write a real/safe email.
@@ -762,6 +778,7 @@ LEGITIMATE EMAIL RULES:
 - No unusual urgency or threats.
 - No login verification requests.
 - Use a real-looking company domain.
+- Write all visible email text in {output_language}.
 
 DIFFICULTY LEVEL: {difficulty}
 Generate a NEW realistic LEGITIMATE email now. Do NOT write a phishing or scam email.
@@ -802,6 +819,7 @@ Generate a NEW realistic LEGITIMATE email now. Do NOT write a phishing or scam e
 @app.route("/api/analyze", methods=["POST"])
 def analyze_email():
     data = request.get_json() or {}
+    output_language = get_llm_output_language()
 
     # Backward-compatible fallback: mobile clients may still post to /api/analyze.
     if data.get("type"):
@@ -847,6 +865,7 @@ The trainee answered: {user_answer_label} — which is {'CORRECT' if is_correct 
 
 Write a 1-2 sentence explanation of WHY this email is {correct_answer_label}, pointing to specific clues in the content.
 Then list 2-3 short clue strings.
+Write feedback and clues in {output_language}.
 
 Respond ONLY with valid JSON, no markdown:
 {{"correct": {'true' if is_correct else 'false'}, "feedback": "explanation here", "clues": ["clue 1", "clue 2"]}}"""
@@ -872,6 +891,7 @@ Here is the email:
 --- EMAIL END ---
 
 The user selected: {user_choice.upper()}
+Write feedback and clues in {output_language}.
 
 You MUST respond with ONLY a JSON object. Use double quotes. No markdown.
 {{"correct": true or false, "feedback": "One sentence.", "clues": ["clue1"]}}
@@ -945,6 +965,7 @@ def generate_sites():
     data = request.json
     mode = data.get("mode")
     difficulty = get_difficulty("difficulty_internet_desktop")
+    output_language = get_llm_output_language()
 
     headers = {
         "Authorization": f"Bearer {GROQ_KEY}",
@@ -969,8 +990,10 @@ def generate_sites():
     ################################
     if mode == "list":
 
-        legit_prompt = """
+        legit_prompt = f"""
 Generate one SAFE, legitimate website search result.
+
+    Write title and description in {output_language}.
 
 Return ONLY JSON:
 {
@@ -981,13 +1004,14 @@ Return ONLY JSON:
 }
 """
 
-        phishing_prompt = """
+        phishing_prompt = f"""
 Generate one PHISHING website search result.
 
 Rules:
 - URL must look similar to a real brand but be wrong
 - Subtle phishing tone
 - No obvious fake giveaways
+    - Write title and description in {output_language}.
 
 Return ONLY JSON:
 {
@@ -1072,6 +1096,7 @@ Return ONLY JSON:
         - Must output ONLY <div>...</div>
         - All text must be black.
         - No <html>, <body>, <script>, markdown, or comments.
+        - Write all visible website text in {output_language}.
 
         SITE TYPE:
         - legit = a completely normal business website
@@ -1113,6 +1138,7 @@ Return ONLY JSON:
 @app.route("/api/analyze_website", methods=["POST"])
 def analyze_website():
     data = request.get_json()
+    output_language = get_llm_output_language()
 
     user_choice = data.get("user_choice")
     html = data.get("ai_context")
@@ -1146,6 +1172,7 @@ The trainee answered: {user_answer_label} — which is {'CORRECT' if is_correct 
 
 Write a 1-2 sentence explanation of WHY this site is {correct_answer_label}, pointing to specific clues in the content.
 Then list 2-3 short clue strings.
+Write explanation and clues in {output_language}.
 
 Respond ONLY with valid JSON, no markdown:
 {{"correct": {'true' if is_correct else 'false'}, "explanation": "explanation here", "clues": ["clue 1", "clue 2"]}}"""
@@ -1202,6 +1229,7 @@ def generate_sms():
     """
     import random as _random
     difficulty = get_difficulty("difficulty_sms_mobile")
+    output_language = get_llm_output_language()
     is_scam = _random.random() < 0.5
     expected_label = "scam" if is_scam else "not_scam"
 
@@ -1247,6 +1275,7 @@ def generate_sms():
     - Include urgency, threats, refunds, delivery issues, bank locks.
     - Include a suspicious, shortened, or weird URL.
     - NEVER mention SilverShield.
+    - Write the SMS text and clues in {output_language}.
 
     TASK:
     Create **one** SCAM SMS message.
@@ -1283,6 +1312,7 @@ def generate_sms():
     - Include a legitimate-looking URL from the real brand domain.
     - NO urgency or threats. Just a routine update, delivery notification, or account alert.
     - NEVER mention SilverShield.
+    - Write the SMS text in {output_language}.
 
     TASK:
     Create **one** LEGITIMATE SMS message.
@@ -1352,6 +1382,7 @@ def generate_sms():
 def generate_call():
     import random as _random
     difficulty = get_difficulty("difficulty_call_mobile")
+    output_language = get_llm_output_language()
     is_scam = _random.random() < 0.5
     expected_label = "scam" if is_scam else "not_scam"
 
@@ -1392,6 +1423,7 @@ TASK:
 Difficulty={difficulty}
 {scam_difficulty_text}
 Theme={theme}
+Write caller_name, transcript, and clues in {output_language}.
 """
     else:
         prompt = f"""
@@ -1420,6 +1452,7 @@ TASK:
 Difficulty={difficulty}
 {safe_difficulty_text}
 Theme={theme}
+Write caller_name and transcript in {output_language}.
 """
 
     headers = {
@@ -1466,6 +1499,7 @@ Theme={theme}
 def generate_web():
     import random as _random
     difficulty = get_difficulty("difficulty_web_mobile")
+    output_language = get_llm_output_language()
     is_scam = _random.random() < 0.5
     expected_label = "scam" if is_scam else "not_scam"
 
@@ -1495,8 +1529,8 @@ STRICT RULES:
 - Follow this structure:
 
 {{
-  "ads": [...],
-  "results": [...],
+    "ads": [{{"title":"...", "url":"...", "snippet":"..."}}],
+    "results": [{{"title":"...", "url":"...", "snippet":"..."}}],
   "pagination": {{
       "next_page_label": "Next >",
       "page_number": 1
@@ -1504,9 +1538,13 @@ STRICT RULES:
   "clues": ["...", "..."]
 }}
 
+- Return exactly 2 ads and exactly 6 results.
+- Every ad/result item must include non-empty "title", "url", and "snippet" strings.
+
 Difficulty={difficulty}
 {scam_difficulty_text}
 Theme={theme}
+Write all ad/result text and clues in {output_language}.
 """
     else:
         prompt = f"""
@@ -1518,14 +1556,17 @@ STRICT RULES:
 - Follow this structure:
 
 {{
-  "ads": [...],
-  "results": [...],
+    "ads": [{{"title":"...", "url":"...", "snippet":"..."}}],
+    "results": [{{"title":"...", "url":"...", "snippet":"..."}}],
   "pagination": {{
       "next_page_label": "Next >",
       "page_number": 1
   }},
   "clues": []
 }}
+
+- Return exactly 2 ads and exactly 6 results.
+- Every ad/result item must include non-empty "title", "url", and "snippet" strings.
 
 REQUIREMENTS:
 - Use real well-known brand domains (amazon.com, chase.com, usps.com, etc.).
@@ -1536,6 +1577,7 @@ REQUIREMENTS:
 Difficulty={difficulty}
 {safe_difficulty_text}
 Theme={theme}
+Write all ad/result text in {output_language}.
 """
 
     headers = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
@@ -1557,6 +1599,30 @@ Theme={theme}
         web_obj = json.loads(raw)
     except:
         return jsonify({"success": False, "error": "Invalid JSON"}), 500
+
+    # Normalize LLM output so the frontend always gets consistent fields.
+    def normalize_item(item):
+        if not isinstance(item, dict):
+            return None
+
+        title = (item.get("title") or item.get("headline") or item.get("name") or "").strip()
+        url = (item.get("url") or item.get("link") or item.get("domain") or "").strip()
+        snippet = (item.get("snippet") or item.get("description") or item.get("text") or "").strip()
+
+        if not title and not url and not snippet:
+            return None
+
+        return {
+            "title": title,
+            "url": url,
+            "snippet": snippet,
+        }
+
+    ads = [normalize_item(x) for x in (web_obj.get("ads") or [])]
+    results = [normalize_item(x) for x in (web_obj.get("results") or [])]
+
+    web_obj["ads"] = [x for x in ads if x][:2]
+    web_obj["results"] = [x for x in results if x][:6]
 
     return jsonify({
         "success": True,
@@ -1580,6 +1646,7 @@ def analyze_any():
     """
 
     data = request.get_json() or {}
+    output_language = get_llm_output_language()
     msg_type = data.get("type", "").lower()
     time_spent = data.get("time_spent_seconds")
     user_choice = data.get("user_choice")
@@ -1665,6 +1732,7 @@ The trainee answered: {user_answer_label} — which is {'CORRECT' if is_correct_
 
 Write a 1-2 sentence explanation of WHY this content is {correct_answer_label}, pointing to specific clues.
 Then list 2-3 short clue strings.
+Write feedback and clues in {output_language}.
 
 Respond ONLY with valid JSON, no markdown:
 {{"correct": {'true' if is_correct_local else 'false'}, "feedback": "explanation here", "clues": ["clue 1", "clue 2"]}}"""
@@ -1699,6 +1767,7 @@ The trainee selected: {choice.upper()} (SCAM vs NOT SCAM)
 - No markdown.
 - No commentary outside the JSON.
 - Use DOUBLE QUOTES.
+- Write feedback and clues in {output_language}.
 
 ### REQUIRED JSON OUTPUT ###
 {{

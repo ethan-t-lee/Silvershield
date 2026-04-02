@@ -84,6 +84,20 @@
 </div>
 
 </main>
+<script>
+window.mobileLabels = {
+     back: {{ _("Back")|tojson }},
+     readAloud: {{ _("Read Aloud")|tojson }},
+     real: {{ _("REAL")|tojson }},
+     fake: {{ _("FAKE")|tojson }},
+     speak: {{ _("Speak")|tojson }},
+     mute: {{ _("Mute")|tojson }},
+     end: {{ _("End")|tojson }},
+     speaker: {{ _("Speaker")|tojson }},
+     reportScamCall: {{ _("Report Scam Call")|tojson }},
+     looksSafe: {{ _("Looks Safe")|tojson }}
+};
+</script>
 <script src="{{ url_for('static', filename='tts.js') }}"></script>
 <script src="{{ url_for('static', filename='voiceInput.js') }}"></script>
 <script src="{{ url_for('static', filename='script.js') }}"></script>

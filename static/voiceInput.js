@@ -1,7 +1,7 @@
 /*************************
   Voice Answer Helper
   Exposes: window.startVoiceAnswer(buttonEl, onReal, onFake)
-  Recognises "real" / "fake" (and common synonyms) from microphone input.
+    Recognises safe/fake answers based on current page language.
 **************************/
 (function () {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -17,8 +17,31 @@
         return;
     }
 
-    const REAL_WORDS = ['real', 'legitimate', 'legit', 'safe', 'okay', 'ok', 'not fake', 'not scam', 'normal'];
-    const FAKE_WORDS = ['fake', 'scam', 'phishing', 'fraud', 'spam', 'suspicious', 'danger', 'dangerous', 'phish'];
+    const WORDS_BY_LANG = {
+        en: {
+            real: ['real', 'legitimate', 'legit', 'safe', 'okay', 'ok', 'not fake', 'not scam', 'normal'],
+            fake: ['fake', 'scam', 'phishing', 'fraud', 'spam', 'suspicious', 'danger', 'dangerous', 'phish']
+        },
+        es: {
+            real: ['real', 'verdadero', 'legitimo', 'legítimo', 'seguro', 'confiable', 'no es estafa'],
+            fake: ['falso', 'estafa', 'phishing', 'fraude', 'spam', 'sospechoso', 'peligroso']
+        },
+        zh: {
+            real: ['真实', '真的', '安全', '不是诈骗', '没问题'],
+            fake: ['假的', '诈骗', '欺诈', '钓鱼', '可疑', '危险']
+        }
+    };
+
+    function getVoiceLocaleConfig() {
+        const raw = (document.documentElement.getAttribute('lang') || 'en').toLowerCase();
+        if (raw.startsWith('es')) {
+            return { recLang: 'es-ES', words: WORDS_BY_LANG.es };
+        }
+        if (raw.startsWith('zh')) {
+            return { recLang: 'zh-CN', words: WORDS_BY_LANG.zh };
+        }
+        return { recLang: 'en-US', words: WORDS_BY_LANG.en };
+    }
 
     /**
      * Start listening for a "real" or "fake" spoken answer.
@@ -29,8 +52,12 @@
     window.startVoiceAnswer = function (buttonEl, onReal, onFake) {
         if (!buttonEl || buttonEl.dataset.listening === 'true') return;
 
+        const localeConfig = getVoiceLocaleConfig();
+        const realWords = [...WORDS_BY_LANG.en.real, ...localeConfig.words.real];
+        const fakeWords = [...WORDS_BY_LANG.en.fake, ...localeConfig.words.fake];
+
         const rec = new SpeechRecognition();
-        rec.lang = 'en-US';
+        rec.lang = localeConfig.recLang;
         rec.interimResults = false;
         rec.maxAlternatives = 5;
 
@@ -61,12 +88,12 @@
             }
 
             for (const alt of alts) {
-                if (REAL_WORDS.some(w => alt.includes(w))) {
+                if (realWords.some(w => alt.includes(w))) {
                     reset();
                     onReal();
                     return;
                 }
-                if (FAKE_WORDS.some(w => alt.includes(w))) {
+                if (fakeWords.some(w => alt.includes(w))) {
                     reset();
                     onFake();
                     return;

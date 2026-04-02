@@ -76,7 +76,8 @@ async function generateDesktopFakeSites() {
             .join(" ");
 
         if (typeof globalThis.preloadTTS === "function" && currentInternetSpeechText) {
-            globalThis.preloadTTS(currentInternetSpeechText, { lang: "en", slow: false }).catch(() => {});
+            const lang = (globalThis.getTTSLang && globalThis.getTTSLang()) || "en";
+            globalThis.preloadTTS(currentInternetSpeechText, { lang, slow: false }).catch(() => {});
         }
 
     } catch (err) {
@@ -139,7 +140,8 @@ async function openDesktopWebsite(linkElement) {
         internetButtons.style.display = "flex";
 
         if (typeof globalThis.preloadTTS === "function" && currentInternetSpeechText) {
-            globalThis.preloadTTS(currentInternetSpeechText, { lang: "en", slow: false }).catch(() => {});
+            const lang = (globalThis.getTTSLang && globalThis.getTTSLang()) || "en";
+            globalThis.preloadTTS(currentInternetSpeechText, { lang, slow: false }).catch(() => {});
         }
 
     } catch (err) {
@@ -234,7 +236,8 @@ if (internetReadAloudBtn) {
             }
 
             if (typeof globalThis.speak === "function") {
-                await globalThis.speak(currentInternetSpeechText, { lang: "en", slow: false });
+                const lang = (globalThis.getTTSLang && globalThis.getTTSLang()) || "en";
+                await globalThis.speak(currentInternetSpeechText, { lang, slow: false });
             }
         } catch (err) {
             console.error("Internet TTS playback error:", err);

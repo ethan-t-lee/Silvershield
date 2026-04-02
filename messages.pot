@@ -1,8 +1,14 @@
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-03-05 13:07-0800\n"
+"POT-Creation-Date: 2026-04-02 12:02-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11,231 +17,827 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
+#: templates/MobilePage.html:7
 msgid "Mobile Module"
 msgstr ""
 
+#: templates/MobilePage.html:32
 msgid "Select an app:"
 msgstr ""
 
+#: templates/MobilePage.html:39 templates/MobilePage.html:41
+#: templates/accountCreation.html:74 templates/dashboard.html:244
+#: templates/desktopPage.html:42
 msgid "Email"
 msgstr ""
 
+#: templates/MobilePage.html:49 templates/MobilePage.html:51
+#: templates/dashboard.html:248
 msgid "Web"
 msgstr ""
 
+#: templates/MobilePage.html:59
 msgid "Calls"
 msgstr ""
 
+#: templates/MobilePage.html:61 templates/preSurvey.html:65
 msgid "Phone"
 msgstr ""
 
+#: templates/MobilePage.html:69 templates/MobilePage.html:71
 msgid "Messages"
 msgstr ""
 
+#: templates/accountCreation.html:7
 msgid "Account Creation"
 msgstr ""
 
+#: templates/accountCreation.html:24
 msgid "Create Username"
 msgstr ""
 
+#: templates/accountCreation.html:27
 msgid "Username"
 msgstr ""
 
+#: templates/accountCreation.html:30
 msgid "Username may only contain alphanumeric characters"
 msgstr ""
 
+#: templates/accountCreation.html:31
 msgid "Username must be between 5 and 15 characters long"
 msgstr ""
 
+#: templates/accountCreation.html:35 templates/accountCreation.html:62
+#: templates/accountCreation.html:87 templates/accountCreation.html:129
+#: templates/preSurvey.html:80
 msgid "Continue"
 msgstr ""
 
+#: templates/accountCreation.html:43
 msgid "Create Password"
 msgstr ""
 
+#: templates/accountCreation.html:46 templates/loginPage.html:50
 msgid "Password"
 msgstr ""
 
+#: templates/accountCreation.html:49
 msgid "Must be a minimum of 8 characters"
 msgstr ""
 
+#: templates/accountCreation.html:50
 msgid "Must have at least one capital and lowercase letter"
 msgstr ""
 
+#: templates/accountCreation.html:51
 msgid "Must include at least one number"
 msgstr ""
 
+#: templates/accountCreation.html:52
 msgid "Must include one special character"
 msgstr ""
 
+#: templates/accountCreation.html:58 templates/accountCreation.html:83
+#: templates/accountCreation.html:125 templates/accountCreation.html:179
+#: templates/phoneRoleplay.html:499
 msgid "Back"
 msgstr ""
 
+#: templates/accountCreation.html:71
 msgid "Input Email"
 msgstr ""
 
+#: templates/accountCreation.html:77
 msgid "Must use a valid email address"
 msgstr ""
 
+#: templates/accountCreation.html:96
 msgid "Input Phone Number"
 msgstr ""
 
+#: templates/accountCreation.html:99
 msgid "###-###-####"
 msgstr ""
 
+#: templates/accountCreation.html:102
 msgid ""
 "Please input a phone number that receives text messages for login "
 "verification purposes"
 msgstr ""
 
+#: templates/accountCreation.html:106
 msgid "Send OTP"
 msgstr ""
 
+#: templates/accountCreation.html:112
 msgid "Enter OTP"
 msgstr ""
 
+#: templates/accountCreation.html:115 templates/loginPage.html:111
 msgid "Verify OTP"
 msgstr ""
 
+#: templates/accountCreation.html:139
 msgid "Input Address"
 msgstr ""
 
+#: templates/accountCreation.html:142
 msgid "Street Address"
 msgstr ""
 
+#: templates/accountCreation.html:146
 msgid "Street"
 msgstr ""
 
+#: templates/accountCreation.html:151 templates/accountCreation.html:155
 msgid "City"
 msgstr ""
 
+#: templates/accountCreation.html:160
 msgid "State"
 msgstr ""
 
+#: templates/accountCreation.html:164
 msgid "Select a state"
 msgstr ""
 
+#: templates/accountCreation.html:170 templates/accountCreation.html:174
 msgid "Zip Code"
 msgstr ""
 
+#: templates/accountCreation.html:183 templates/postSurvey.html:82
 msgid "Submit"
 msgstr ""
 
+#: templates/dashboard.html:8
 msgid "Silver Shield Dashboard"
 msgstr ""
 
+#: templates/dashboard.html:25 templates/homePage.html:21
 msgid "Language"
 msgstr ""
 
+#: templates/dashboard.html:34
 msgid "Save"
 msgstr ""
 
+#: templates/dashboard.html:40 templates/postSurvey.html:6
+#: templates/postSurvey.html:22
+msgid "Post-Survey"
+msgstr ""
+
+#: templates/dashboard.html:46
 msgid "Logout"
 msgstr ""
 
+#: templates/dashboard.html:68
+msgid "Training overview"
+msgstr ""
+
+#: templates/dashboard.html:70
 msgid "Welcome to Your Learning Dashboard"
 msgstr ""
 
+#: templates/dashboard.html:73
 msgid "Select a module below to begin your interactive learning experience."
 msgstr ""
 
+#: templates/dashboard.html:80
+msgid "Finish the assessment loop"
+msgstr ""
+
+#: templates/dashboard.html:82
+msgid ""
+"Complete the post-survey after training to compare your confidence and "
+"learning outcomes."
+msgstr ""
+
+#: templates/dashboard.html:84
+msgid "Open Post-Survey"
+msgstr ""
+
+#: templates/dashboard.html:96
 msgid "Desktop simulation"
 msgstr ""
 
+#: templates/dashboard.html:100
 msgid "Module 1: Desktop Simulation"
 msgstr ""
 
+#: templates/dashboard.html:103
 msgid ""
 "Learn to identify phishing and scams through a simulated Desktop "
 "experience."
 msgstr ""
 
+#: templates/dashboard.html:114
 msgid "Cellphone simulation"
 msgstr ""
 
+#: templates/dashboard.html:118
 msgid "Module 2: Cellphone Simulation"
 msgstr ""
 
+#: templates/dashboard.html:121
 msgid ""
 "Learn to identify phishing and scams through a simulated Cellphone "
 "experience."
 msgstr ""
 
-msgid "Desktop Module"
+#: templates/dashboard.html:131
+msgid "Phone scam role-play"
 msgstr ""
 
-msgid "Loading..."
+#: templates/dashboard.html:134
+msgid "Module 3: Phone Scam Role-Play"
 msgstr ""
 
-msgid "REAL"
+#: templates/dashboard.html:135
+msgid ""
+"Practice responding to realistic scam phone calls through interactive "
+"role-playing scenarios."
 msgstr ""
 
-msgid "FAKE"
+#: templates/dashboard.html:144
+msgid "Learning Analytics"
 msgstr ""
 
+#: templates/dashboard.html:145
+msgid ""
+"Your scenario performance, progress, and survey results update "
+"automatically."
+msgstr ""
+
+#: templates/dashboard.html:151
+msgid "Total Attempts"
+msgstr ""
+
+#: templates/dashboard.html:156
+msgid "Success Rate"
+msgstr ""
+
+#: templates/dashboard.html:161
+msgid "Time Spent"
+msgstr ""
+
+#: templates/dashboard.html:166
+msgid "Indicators Found"
+msgstr ""
+
+#: templates/dashboard.html:176
+msgid "Performance by Scenario"
+msgstr ""
+
+#: templates/dashboard.html:177
+msgid "Accuracy, attempts, and clue recognition across each scam type."
+msgstr ""
+
+#: templates/dashboard.html:179 templates/dashboard.html:221
+msgid "Loading analytics..."
+msgstr ""
+
+#: templates/dashboard.html:184
+msgid "Scenario Progress"
+msgstr ""
+
+#: templates/dashboard.html:185
+msgid "Track how far you have progressed in each training stream."
+msgstr ""
+
+#: templates/dashboard.html:187
+msgid "Loading progress..."
+msgstr ""
+
+#: templates/dashboard.html:192
+msgid "Recent Attempts"
+msgstr ""
+
+#: templates/dashboard.html:193
+msgid "Review your latest decisions and difficulty levels."
+msgstr ""
+
+#: templates/dashboard.html:195
+msgid "Loading attempt history..."
+msgstr ""
+
+#: templates/dashboard.html:200
+msgid "Survey Comparison"
+msgstr ""
+
+#: templates/dashboard.html:201
+msgid "Measure changes between your pre-survey and post-survey responses."
+msgstr ""
+
+#: templates/dashboard.html:203
+msgid "Loading survey results..."
+msgstr ""
+
+#: templates/dashboard.html:208
+msgid "Current Difficulty Levels"
+msgstr ""
+
+#: templates/dashboard.html:209
+msgid "Your current adaptive difficulty for each training scenario."
+msgstr ""
+
+#: templates/dashboard.html:211
+msgid "Loading difficulty progression..."
+msgstr ""
+
+#: templates/dashboard.html:222
+msgid ""
+"No performance data yet. Complete a few scenarios to populate this "
+"section."
+msgstr ""
+
+#: templates/dashboard.html:223
+msgid "No module progress yet. Start a module to begin tracking progress."
+msgstr ""
+
+#: templates/dashboard.html:224
+msgid "No attempts recorded yet."
+msgstr ""
+
+#: templates/dashboard.html:225
+msgid "Complete both the pre-survey and post-survey to see a comparison here."
+msgstr ""
+
+#: templates/dashboard.html:226
+msgid "Confidence change"
+msgstr ""
+
+#: templates/dashboard.html:227
+msgid "Pre-survey confidence"
+msgstr ""
+
+#: templates/dashboard.html:228
+msgid "Post-survey confidence"
+msgstr ""
+
+#: templates/dashboard.html:229
+msgid "Behavior change"
+msgstr ""
+
+#: templates/dashboard.html:230
+msgid "Recommendation likelihood"
+msgstr ""
+
+#: templates/dashboard.html:231
+msgid "Learning rating"
+msgstr ""
+
+#: templates/dashboard.html:232
+msgid "attempts"
+msgstr ""
+
+#: templates/dashboard.html:233
+msgid "correct"
+msgstr ""
+
+#: templates/dashboard.html:234
+msgid "Avg. time"
+msgstr ""
+
+#: templates/dashboard.html:235
+msgid "completed"
+msgstr ""
+
+#: templates/dashboard.html:236
+msgid "Level"
+msgstr ""
+
+#: templates/dashboard.html:237
+msgid "Difficulty data will appear after you start training."
+msgstr ""
+
+#: templates/dashboard.html:238
+msgid "just now"
+msgstr ""
+
+#: templates/dashboard.html:239
+msgid "minutes"
+msgstr ""
+
+#: templates/dashboard.html:240
+msgid "minute"
+msgstr ""
+
+#: templates/dashboard.html:241
+msgid "seconds"
+msgstr ""
+
+#: templates/dashboard.html:242
+msgid "Desktop"
+msgstr ""
+
+#: templates/dashboard.html:243
+msgid "Mobile"
+msgstr ""
+
+#: templates/dashboard.html:245 templates/desktopPage.html:94
 msgid "Internet"
 msgstr ""
 
+#: templates/dashboard.html:246
+msgid "SMS"
+msgstr ""
+
+#: templates/dashboard.html:247
+msgid "Call"
+msgstr ""
+
+#: templates/desktopPage.html:7
+msgid "Desktop Module"
+msgstr ""
+
+#: templates/desktopPage.html:50 templates/desktopPage.html:110
+msgid "Loading..."
+msgstr ""
+
+#: templates/desktopPage.html:56 templates/desktopPage.html:118
+msgid "REAL"
+msgstr ""
+
+#: templates/desktopPage.html:60 templates/desktopPage.html:122
+msgid "FAKE"
+msgstr ""
+
+#: templates/desktopPage.html:69 templates/desktopPage.html:132
+msgid "Read aloud"
+msgstr ""
+
+#: templates/homePage.html:7
 msgid "Silver Shield Home Page"
 msgstr ""
 
+#: templates/homePage.html:30 templates/loginPage.html:66
 msgid "Log In"
 msgstr ""
 
+#: templates/homePage.html:34
 msgid "Register"
 msgstr ""
 
+#: templates/homePage.html:45
 msgid "Browse with confidence"
 msgstr ""
 
+#: templates/homePage.html:46
 msgid "And Safety"
 msgstr ""
 
+#: templates/homePage.html:50
 msgid "AI-driven lessons"
 msgstr ""
 
+#: templates/homePage.html:51
 msgid "engineered to help you"
 msgstr ""
 
+#: templates/homePage.html:55
 msgid "With a guide powered by"
 msgstr ""
 
+#: templates/homePage.html:58
 msgid "browse simulated spaces and learn how to identify spam and scams in a"
 msgstr ""
 
+#: templates/homePage.html:59
 msgid "safe and practical"
 msgstr ""
 
+#: templates/homePage.html:60
 msgid "way."
 msgstr ""
 
+#: templates/homePage.html:63
 msgid "Register now"
 msgstr ""
 
+#: templates/loginPage.html:7
 msgid "Silvershield Login"
 msgstr ""
 
+#: templates/loginPage.html:31
 msgid "Welcome"
 msgstr ""
 
+#: templates/loginPage.html:33
 msgid "Please log in to continue."
 msgstr ""
 
+#: templates/loginPage.html:36
 msgid "Email or Username"
 msgstr ""
 
+#: templates/loginPage.html:76
 msgid "Forgot password?"
 msgstr ""
 
+#: templates/loginPage.html:82
 msgid "Create account"
 msgstr ""
 
+#: templates/loginPage.html:96
 msgid "Verification"
 msgstr ""
 
+#: templates/loginPage.html:98
 msgid "Enter OTP sent to your phone:"
 msgstr ""
 
+#: templates/loginPage.html:102
 msgid "OTP"
+msgstr ""
+
+#: templates/phoneRoleplay.html:6 templates/phoneRoleplay.html:435
+msgid "Phone Scam Simulator"
+msgstr ""
+
+#: templates/phoneRoleplay.html:436
+msgid ""
+"Practice identifying suspicious phone calls and choosing the safest next "
+"step."
+msgstr ""
+
+#: templates/phoneRoleplay.html:441
+msgid "Choose a Scenario"
+msgstr ""
+
+#: templates/phoneRoleplay.html:442
+msgid ""
+"Select one scam type to begin. Only one scenario is shown at a time to "
+"keep the exercise simple and focused."
+msgstr ""
+
+#: templates/phoneRoleplay.html:444
+msgid "Scam scenario options"
+msgstr ""
+
+#: templates/phoneRoleplay.html:445 templates/phoneRoleplay.html:446
+msgid "Bank Fraud Call"
+msgstr ""
+
+#: templates/phoneRoleplay.html:447
+msgid "Caller claims suspicious activity on your account"
+msgstr ""
+
+#: templates/phoneRoleplay.html:450 templates/phoneRoleplay.html:451
+msgid "Tech Support Scam"
+msgstr ""
+
+#: templates/phoneRoleplay.html:452
+msgid "Caller says your computer has a virus"
+msgstr ""
+
+#: templates/phoneRoleplay.html:455 templates/phoneRoleplay.html:456
+msgid "Grandparent Scam"
+msgstr ""
+
+#: templates/phoneRoleplay.html:457
+msgid "Caller pretends to be a family member in trouble"
+msgstr ""
+
+#: templates/phoneRoleplay.html:460 templates/phoneRoleplay.html:461
+msgid "Government Impersonation"
+msgstr ""
+
+#: templates/phoneRoleplay.html:462
+msgid "Caller uses threats or legal pressure"
+msgstr ""
+
+#: templates/phoneRoleplay.html:472
+msgid "Call Active"
+msgstr ""
+
+#: templates/phoneRoleplay.html:476
+msgid "Incoming Call"
+msgstr ""
+
+#: templates/phoneRoleplay.html:478
+msgid "Choose a scenario"
+msgstr ""
+
+#: templates/phoneRoleplay.html:482
+msgid "Caller Message"
+msgstr ""
+
+#: templates/phoneRoleplay.html:484
+msgid "Select a scenario to begin the simulation."
+msgstr ""
+
+#: templates/phoneRoleplay.html:488 templates/phoneRoleplay.html:489
+msgid "Read Aloud"
+msgstr ""
+
+#: templates/phoneRoleplay.html:492
+msgid "What would you do?"
+msgstr ""
+
+#: templates/phoneRoleplay.html:493
+msgid "Response choices"
+msgstr ""
+
+#: templates/phoneRoleplay.html:498
+msgid "Restart current scenario"
+msgstr ""
+
+#: templates/phoneRoleplay.html:498
+msgid "Restart"
+msgstr ""
+
+#: templates/phoneRoleplay.html:499
+msgid "Go back to dashboard"
+msgstr ""
+
+#: templates/phoneRoleplay.html:506
+msgid "Safety Reminders"
+msgstr ""
+
+#: templates/phoneRoleplay.html:507
+msgid "Use these quick reminders while you practice."
+msgstr ""
+
+#: templates/phoneRoleplay.html:510
+msgid "Never share one-time codes, passwords, or PINs over the phone."
+msgstr ""
+
+#: templates/phoneRoleplay.html:511
+msgid ""
+"Hang up and call the organization back using an official number you found"
+" yourself."
+msgstr ""
+
+#: templates/phoneRoleplay.html:512
+msgid "Urgency and pressure are common warning signs in scam calls."
+msgstr ""
+
+#: templates/phoneRoleplay.html:513
+msgid "If a caller claims to be family, verify with another trusted person first."
+msgstr ""
+
+#: templates/phoneRoleplay.html:517
+msgid "Current Tip"
+msgstr ""
+
+#: templates/phoneRoleplay.html:518
+msgid "Choose a scenario to see a tip related to that scam type."
+msgstr ""
+
+#: templates/postSurvey.html:23
+msgid "You've completed the training! Please answer these final questions."
+msgstr ""
+
+#: templates/postSurvey.html:33
+msgid "How confident do you feel about spotting scams now?"
+msgstr ""
+
+#: templates/postSurvey.html:35 templates/postSurvey.html:45
+#: templates/postSurvey.html:55 templates/postSurvey.html:64
+#: templates/postSurvey.html:74 templates/preSurvey.html:34
+#: templates/preSurvey.html:46 templates/preSurvey.html:55
+#: templates/preSurvey.html:64 templates/preSurvey.html:72
+msgid "Select"
+msgstr ""
+
+#: templates/postSurvey.html:36 templates/preSurvey.html:73
+msgid "1 (Not confident)"
+msgstr ""
+
+#: templates/postSurvey.html:40 templates/preSurvey.html:77
+msgid "5 (Very confident)"
+msgstr ""
+
+#: templates/postSurvey.html:43
+msgid "How useful did you find this training platform?"
+msgstr ""
+
+#: templates/postSurvey.html:46
+msgid "1 (Not useful)"
+msgstr ""
+
+#: templates/postSurvey.html:50
+msgid "5 (Very useful)"
+msgstr ""
+
+#: templates/postSurvey.html:53
+msgid "Do you feel your online safety behavior has changed after this training?"
+msgstr ""
+
+#: templates/postSurvey.html:56
+msgid "No change"
+msgstr ""
+
+#: templates/postSurvey.html:57
+msgid "Slightly changed"
+msgstr ""
+
+#: templates/postSurvey.html:58
+msgid "Moderately changed"
+msgstr ""
+
+#: templates/postSurvey.html:59
+msgid "Significantly changed"
+msgstr ""
+
+#: templates/postSurvey.html:62
+msgid "How likely are you to recommend this training to others?"
+msgstr ""
+
+#: templates/postSurvey.html:65
+msgid "1 (Not likely)"
+msgstr ""
+
+#: templates/postSurvey.html:69
+msgid "5 (Very likely)"
+msgstr ""
+
+#: templates/postSurvey.html:72
+msgid "How much do you feel you learned from this training?"
+msgstr ""
+
+#: templates/postSurvey.html:75
+msgid "1 (Nothing)"
+msgstr ""
+
+#: templates/postSurvey.html:79
+msgid "5 (A lot)"
+msgstr ""
+
+#: templates/preSurvey.html:6
+msgid "Pre-Survey"
+msgstr ""
+
+#: templates/preSurvey.html:22
+msgid "Quick Pre-Survey"
+msgstr ""
+
+#: templates/preSurvey.html:23
+msgid "Please answer these questions before starting."
+msgstr ""
+
+#: templates/preSurvey.html:32
+msgid "Age"
+msgstr ""
+
+#: templates/preSurvey.html:35
+msgid "Under 18"
+msgstr ""
+
+#: templates/preSurvey.html:44
+msgid "Have you ever been scammed (online or by phone)?"
+msgstr ""
+
+#: templates/preSurvey.html:47
+msgid "No"
+msgstr ""
+
+#: templates/preSurvey.html:48
+msgid "Yes (someone tried)"
+msgstr ""
+
+#: templates/preSurvey.html:49
+msgid "Yes (it happened)"
+msgstr ""
+
+#: templates/preSurvey.html:50
+msgid "Not sure"
+msgstr ""
+
+#: templates/preSurvey.html:53
+msgid "How good are you with technology?"
+msgstr ""
+
+#: templates/preSurvey.html:56
+msgid "Beginner"
+msgstr ""
+
+#: templates/preSurvey.html:57
+msgid "Okay"
+msgstr ""
+
+#: templates/preSurvey.html:58
+msgid "Good"
+msgstr ""
+
+#: templates/preSurvey.html:59
+msgid "Very good"
+msgstr ""
+
+#: templates/preSurvey.html:62
+msgid "What device do you use most?"
+msgstr ""
+
+#: templates/preSurvey.html:66
+msgid "Computer/Laptop"
+msgstr ""
+
+#: templates/preSurvey.html:67
+msgid "Both"
+msgstr ""
+
+#: templates/preSurvey.html:70
+msgid "How confident do you feel about spotting scams right now?"
 msgstr ""
 

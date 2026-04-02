@@ -49,7 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     tmp.innerHTML = lastGeneratedEmail;
                     const plain = tmp.textContent || tmp.innerText || '';
                     if (window.preloadTTS) {
-                        window.preloadTTS(plain, { lang: 'en', slow: false }).catch && window.preloadTTS(plain, { lang: 'en', slow: false });
+                        const lang = (window.getTTSLang && window.getTTSLang()) || 'en';
+                        window.preloadTTS(plain, { lang, slow: false }).catch && window.preloadTTS(plain, { lang, slow: false });
                     }
                 } catch (e) { console.warn('Preload TTS failed', e); }
             }
@@ -153,7 +154,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 if (window.speak) {
-                    await window.speak(plain, { lang: 'en', slow: false });
+                    const lang = (window.getTTSLang && window.getTTSLang()) || 'en';
+                    await window.speak(plain, { lang, slow: false });
                 } else {
                     console.warn('TTS helper not available.');
                 }

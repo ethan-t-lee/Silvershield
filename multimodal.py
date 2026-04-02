@@ -36,7 +36,9 @@ def tts():
 
     data = request.get_json() or {}
     text = (data.get('text') or '').strip()
-    lang = data.get('lang', 'en')
+    lang = str(data.get('lang', 'en') or 'en').strip()
+    if lang.lower().startswith('zh'):
+        lang = 'zh-CN'
     slow = bool(data.get('slow', False))
 
     if not text:

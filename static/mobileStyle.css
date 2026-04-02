@@ -102,6 +102,17 @@
     padding: 20px;
 }
 
+/* Active scenario must consume only the available phone space. */
+.scenario {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 20px;
+    margin-top: 12px;
+}
+
 /* Generic app screen wrapper - inside the phone */
 .app-screen {
     height: 100%;
@@ -172,6 +183,7 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
+    overflow: hidden;
 }
 
 .web-toolbar,

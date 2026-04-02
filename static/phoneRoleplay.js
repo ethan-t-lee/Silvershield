@@ -1,3 +1,7 @@
+function t(s) {
+    return (window.roleplayI18n && window.roleplayI18n[s]) || s;
+}
+
 const scenarios = {
     bank_fraud: {
         callerName: "Bank Fraud Dept.",
@@ -345,13 +349,19 @@ async function getRoleplayLine(scenarioType, promptKey, difficulty = 1) {
     });
 
     if (!data.success || !data.line) {
-        return "The caller says something suspicious and urgent, trying to pressure you into acting quickly.";
+        return t("The caller says something suspicious and urgent, trying to pressure you into acting quickly.");
     }
 
     return data.line;
 }
 
-async function speakText(text, lang = "en", slow = false) {
+function getRoleplayTTSLang() {
+    const raw = (document.documentElement.getAttribute("lang") || "en").toLowerCase();
+    if (raw.startsWith("zh")) return "zh-CN";
+    return raw.startsWith("es") ? "es" : "en";
+}
+
+async function speakText(text, lang = getRoleplayTTSLang(), slow = false) {
     if (!text || !text.trim()) return;
 
     try {
@@ -385,10 +395,10 @@ async function loadScenario(key) {
     currentScenario = scenarios[key];
     currentNodeKey = currentScenario.start;
 
-    callerNameEl.textContent = currentScenario.callerName;
+    callerNameEl.textContent = t(currentScenario.callerName);
     callerNumberEl.textContent = currentScenario.callerNumber;
     callerAvatarEl.textContent = currentScenario.avatar;
-    hintTextEl.textContent = currentScenario.hint;
+    hintTextEl.textContent = t(currentScenario.hint);
 
     await startRoleplaySession(key);
     await logRoleplayEvent("scenario_started", key);
@@ -407,16 +417,16 @@ async function renderNode(nodeKey) {
     choiceGrid.innerHTML = "";
 
     if (node.ending) {
-        scenarioMessage.textContent = node.title;
+        scenarioMessage.textContent = t(node.title);
 
         feedbackBox.style.display = "block";
         feedbackBox.innerHTML = `
-            <strong>${node.title}</strong><br><br>
-            ${node.feedback}<br><br>
-            <strong>Real-world consequence:</strong> ${node.consequence}
+            <strong>${t(node.title)}</strong><br><br>
+            ${t(node.feedback)}<br><br>
+            <strong>${t("Real-world consequence:")}</strong> ${t(node.consequence)}
         `;
 
-            speakText(`${node.title}. ${node.feedback} Real world consequence: ${node.consequence}`);
+            speakText(`${t(node.title)}. ${t(node.feedback)} ${t("Real world consequence:")} ${t(node.consequence)}`);
 
 
         await logRoleplayEvent("scenario_completed", node.title);
@@ -424,7 +434,7 @@ async function renderNode(nodeKey) {
         return;
     }
 
-    scenarioMessage.textContent = "Loading dialogue...";
+    scenarioMessage.textContent = t("Loading dialogue...");
 
     const line = await getRoleplayLine(
         currentScenarioKey,
@@ -440,7 +450,7 @@ async function renderNode(nodeKey) {
     node.choices.forEach(choice => {
         const btn = document.createElement("button");
         btn.className = "choiceBtn";
-        btn.textContent = choice.text;
+        btn.textContent = t(choice.text);
         btn.addEventListener("click", async () => {
             attemptCount += 1;
             await logRoleplayEvent("option_selected", choice.text);
@@ -460,7 +470,7 @@ scenarioButtons.forEach(button => {
 if (speakBtn) {
     speakBtn.addEventListener("click", () => {
         const text = scenarioMessage.textContent.trim();
-        if (text && text !== "Loading dialogue...") {
+        if (text && text !== t("Loading dialogue...")) {
             speakText(text);
         }
     });
