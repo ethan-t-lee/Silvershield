@@ -16,8 +16,6 @@ from metrics import (log_scenario_attempt, log_critical_indicators,
 
 load_dotenv()
 
-SUPPORTED_LANGUAGES = ['en', 'es']
-
 # Read GROQ key from environment (.env)
 GROQ_KEY = os.getenv("GROQ_KEY")
 
@@ -30,24 +28,7 @@ init_database()
 
 # Babel locale selector
 def select_locale():
-    return session.get('lang', request.accept_languages.best_match(SUPPORTED_LANGUAGES))
-
-
-def get_active_language():
-    return session.get('lang', request.accept_languages.best_match(SUPPORTED_LANGUAGES)) or 'en'
-
-
-def ai_language_instruction():
-    if get_active_language() == 'es':
-        return (
-            'Write all user-visible natural language text in Spanish. '
-            'Keep JSON keys in English.'
-        )
-
-    return (
-        'Write all user-visible natural language text in English. '
-        'Keep JSON keys in English.'
-    )
+    return session.get('lang', request.accept_languages.best_match(['en', 'es']))
 
 babel = Babel(app, locale_selector=select_locale)
 
@@ -112,7 +93,7 @@ def set_difficulty(category, level):
 @app.route('/')
 def home():
     # Use the same function as Babel
-    current_lang = get_active_language()
+    current_lang = session.get('lang', request.accept_languages.best_match(['en', 'es']))
     return render_template('homePage.html', current_lang=current_lang)
 
 
@@ -129,7 +110,7 @@ def pre_survey():
         if cur.fetchone():
             return redirect('/dashboard')
 
-    # ✅ POST BLOCK IS INSIDE FUNCTION (INDENTED)
+    # POST block is inside function (indented)
     if request.method == 'POST':
         age = request.form.get('age')
         scammed = request.form.get('scammed')
@@ -138,7 +119,7 @@ def pre_survey():
         confidence = request.form.get('confidence')
 
         if not age or not scammed or not tech_level or not device or not confidence:
-            flash(_("Please answer all questions."))
+            flash("Please answer all questions.")
             return render_template("preSurvey.html")
 
         with sqlite3.connect(DB_PATH) as conn:
@@ -158,7 +139,7 @@ def pre_survey():
 
         return redirect('/dashboard')
 
-    # ✅ GET loads the form
+    # GET loads the form
     return render_template("preSurvey.html")
 
 
@@ -206,7 +187,7 @@ def post_survey():
 
         if not all([confidence_rating, perceived_usefulness, behavior_change,
                     recommendation_likelihood, learning_rating]):
-            flash(_("Please answer all questions."))
+            flash("Please answer all questions.")
             return render_template("postSurvey.html")
 
         with sqlite3.connect(DB_PATH) as conn:
@@ -250,7 +231,7 @@ def module2():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash(_('You have been logged out.'), 'info')
+    flash('You have been logged out.', 'info')
     return redirect('/login')
 
 
@@ -264,7 +245,7 @@ def api_user_performance():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": _("Not authenticated")}), 401
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
 
     result = get_user_performance(username)
     if not result['success']:
@@ -279,7 +260,7 @@ def api_module_progress():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": _("Not authenticated")}), 401
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
 
     result = get_module_progress(username)
     if not result['success']:
@@ -294,7 +275,7 @@ def api_attempt_history():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": _("Not authenticated")}), 401
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
 
     scenario_type = request.args.get('type')
     limit = request.args.get('limit', 20, type=int)
@@ -312,7 +293,7 @@ def api_survey_comparison():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": _("Not authenticated")}), 401
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
 
     result = get_survey_comparison(username)
     if not result['success']:
@@ -328,7 +309,7 @@ def api_learning_metrics():
     """
     username = session.get('username')
     if not username:
-        return jsonify({"success": False, "error": _("Not authenticated")}), 401
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
 
     result = get_learning_metrics(username)
     if not result['success']:
@@ -338,7 +319,7 @@ def api_learning_metrics():
 
 @app.route('/save_progress')
 def save_progress():
-    flash(_('Progress saved successfully!'), 'success')
+    flash('Progress saved successfully!', 'success')
     return render_template("dashboard.html")
 
 ################################
@@ -367,7 +348,7 @@ def login_post():
     valid, phone = verifying_login(usernameorEmail, password)
 
     if not valid:
-        return jsonify({"success": False, "message": _("Invalid username or password")})
+        return jsonify({"success": False, "message": "Invalid username or password"})
 
     if not phone.startswith("+"):
         phone = "+1" + phone
@@ -421,7 +402,7 @@ def send_otp_route():
 
     try:
         send_otp(phone)
-        return jsonify({"success": True, "message": _("OTP sent")})
+        return jsonify({"success": True, "message": "OTP sent"})
     except Exception as e:
         print("Error sending OTP", e)
         return jsonify({"success": False, "message": str(e)})
@@ -436,9 +417,9 @@ def verify_otp_route():
 
     try:
         if verify_otp(phone, code):
-            return jsonify({"success": True, "message": _("OTP verified")})
+            return jsonify({"success": True, "message": "OTP verified"})
         else:
-            return jsonify({"success": False, "message": _("OTP not verified")})
+            return jsonify({"success": False, "message": "OTP not verified"})
     except Exception as e:
         print("Error verifying OTP", e)
         return jsonify({"success": False, "message": str(e)})
@@ -448,98 +429,69 @@ def verify_otp_route():
 ################################
 @app.route("/generate-email", methods=["POST"])
 def generate_email():
-    difficulty = get_difficulty("difficulty_email_desktop")
-    language_instruction = ai_language_instruction()
-    from_label = _("From")
-    to_label = _("To")
-    subject_label = _("Subject")
+    import random as _random
+    data = request.get_json(silent=True) or {}
+    platform = (data.get("platform") or "desktop").lower()
+    category = "difficulty_email_mobile" if platform == "mobile" else "difficulty_email_desktop"
+    difficulty = get_difficulty(category)
 
-    # Main generation prompt
-    prompt = f"""
-You are generating an email for a cybersecurity training simulation.
-{language_instruction}
+    is_scam = _random.random() < 0.5
+    expected_label = "scam" if is_scam else "not_scam"
 
-The email must be formatted like a real email using clean HTML:
-
-REQUIRED STRUCTURE (must appear exactly like this):
-<b>{from_label}:</b> sender name &lt;sender@domain.com&gt;<br>
-<b>{to_label}:</b> user@example.com<br>
-<b>{subject_label}:</b> (Generate a natural, realistic subject)<br><br>
+    html_structure = """REQUIRED STRUCTURE (must appear exactly like this):
+<b>From:</b> sender name &lt;sender@domain.com&gt;<br>
+<b>To:</b> user@example.com<br>
+<b>Subject:</b> (Generate a natural, realistic subject)<br><br>
 <hr><br>
 
-Then generate 2–4 paragraphs using:
-<p style="font-family:Arial; font-size:15px; line-height:1.55;"> ... </p>
+Then generate 2-4 paragraphs using:
+<p style="font-family:Arial; font-size:15px; line-height:1.55;"> ... </p>"""
 
-OUTPUT RULES:
+    output_rules = """OUTPUT RULES:
 - Output ONLY HTML (no markdown, no comments).
 - DO NOT wrap in <html> or <body>.
 - DO NOT output code fences (```).
 - DO NOT explain anything.
 - All text color MUST be black.
 - Do NOT use light gray, white, or low-contrast colors.
-- Use readable HTML formatting only.
+- Use readable HTML formatting only."""
 
-=========================================================
-EMAIL TYPE RULES
-=========================================================
+    if is_scam:
+        prompt = f"""You are generating a PHISHING email for a cybersecurity training simulation.
 
-You must generate either a REAL or a FAKE PHISHING email.
+The email must be formatted like a real email using clean HTML:
 
-A REAL email:
-- No malicious links
-- Natural business/personal tone
-- No unusual urgency or threats
-- No login verification requests
+{html_structure}
 
-A PHISHING email:
-- Include ONE subtle malicious link
-- Domain should look almost real (ex: https://login.microsoft-review.com)
-- Tone should sound normal, professional, believable
-- Red flags must be subtle at higher difficulty (3–4)
+{output_rules}
 
-=========================================================
-FEW-SHOT EXAMPLES (for training)
-=========================================================
+PHISHING RULES:
+- Include ONE subtle malicious link.
+- Domain should look almost real (e.g. https://login.microsoft-review.com).
+- Tone should sound normal, professional, believable.
+- Red flags must be subtle at higher difficulty (3-4).
 
-### REAL EMAIL EXAMPLE:
-<b>From:</b> Sarah Matthews &lt;smatthews@northwoodanalytics.com&gt;<br>
-<b>To:</b> user@example.com<br>
-<b>Subject:</b> Quick follow-up before tomorrow’s meeting<br><br>
-<hr><br>
-<p style="font-family:Arial; font-size:15px; line-height:1.55;">
-Just checking in before tomorrow’s review session. Let me know if you'd
-like the updated cost breakdown beforehand.
-</p>
-<p style="font-family:Arial; font-size:15px; line-height:1.55;">
-I’ll also bring the revised slide deck in case we need to adjust the rollout plan.
-</p>
-<p style="font-family:Arial; font-size:15px; line-height:1.55;">
-Thanks,<br>Sarah
-</p>
-
-
-### PHISHING EMAIL EXAMPLE:
-<b>From:</b> Account Security Team &lt;alerts@secure-auth-center.com&gt;<br>
-<b>To:</b> user@example.com<br>
-<b>Subject:</b> Action Required: Verify Account Credentials<br><br>
-<hr><br>
-<p style="font-family:Arial; font-size:15px; line-height:1.55;">
-A recent update requires users to confirm account settings. Access may be limited
-until verification is completed.
-</p>
-<p style="font-family:Arial; font-size:15px; line-height:1.55;">
-Please verify your details here:<br>
-<a href="https://secure-check-auth-review.com/login">
-Security Verification Portal
-</a>
-</p>
-<p style="font-family:Arial; font-size:15px; line-height:1.55;">
-This process typically takes less than two minutes.
-</p>
-
-=========================================================
 DIFFICULTY LEVEL: {difficulty}
-Generate a NEW realistic email now.
+Generate a NEW realistic PHISHING email now. Do NOT write a real/safe email.
+"""
+    else:
+        prompt = f"""You are generating a LEGITIMATE (real, non-phishing) email for a cybersecurity training simulation.
+
+The email must be formatted like a real email using clean HTML:
+
+{html_structure}
+
+{output_rules}
+
+LEGITIMATE EMAIL RULES:
+- No malicious links.
+- Natural business or personal tone.
+- No unusual urgency or threats.
+- No login verification requests.
+- Use a real-looking company domain.
+
+DIFFICULTY LEVEL: {difficulty}
+Generate a NEW realistic LEGITIMATE email now. Do NOT write a phishing or scam email.
 """
 
     headers = {
@@ -552,28 +504,27 @@ Generate a NEW realistic email now.
         "messages": [{"role": "user", "content": prompt}]
     }
 
-    resp = requests.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        headers=headers,
-        json=payload
-    )
+    email_html = None
+    for _attempt in range(2):
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+        groq_data = resp.json()
+        if "choices" not in groq_data:
+            continue
+        candidate = groq_data["choices"][0]["message"]["content"].strip()
+        if candidate.startswith("```"):
+            candidate = candidate.replace("```html", "").replace("```", "").strip()
+        if len(candidate) >= 10:
+            email_html = candidate
+            break
 
-    data = resp.json()
+    if not email_html:
+        return jsonify({"success": False, "error": "Failed to generate email after retries"}), 500
 
-    if "choices" not in data:
-        return jsonify({"success": False, "error": "Groq returned no content"}), 500
-
-    email_html = data["choices"][0]["message"]["content"].strip()
-
-    # --- Remove accidental markdown fences ---
-    if email_html.startswith("```"):
-        email_html = email_html.replace("```html", "").replace("```", "").strip()
-
-    # --- Safety fallback ---
-    if len(email_html) < 10:
-        email_html = "<p style='color:red;'>Error generating email.</p>"
-
-    return jsonify({"success": True, "email": email_html})
+    return jsonify({"success": True, "email": email_html, "expected_label": expected_label})
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze_email():
@@ -585,16 +536,61 @@ def analyze_email():
 
     user_choice = data.get("user_choice")
     message = data.get("message")
+    expected_label = (data.get("expected_label") or "").strip().lower()
+    # Normalize: "fake" -> "scam", "real" -> "not_scam"
+    if expected_label == "fake":
+        expected_label = "scam"
+    elif expected_label == "real":
+        expected_label = "not_scam"
+    if expected_label not in ("scam", "not_scam"):
+        expected_label = ""
 
     if not user_choice or not message:
-        return jsonify({"success": False, "error": _("Missing fields")}), 400
+        return jsonify({"success": False, "error": "Missing fields"}), 400
+
+    # Normalize user_choice to scam/not_scam for comparison
+    normalized_choice = user_choice.strip().lower()
+    if normalized_choice == "fake":
+        normalized_choice = "scam"
+    elif normalized_choice == "real":
+        normalized_choice = "not_scam"
 
     difficulty = get_difficulty("difficulty_email_desktop")
-    language_instruction = ai_language_instruction()
 
-    prompt = f"""
+    if expected_label:
+        # Deterministic correctness — AI explains why
+        is_correct = (normalized_choice == expected_label)
+        correct_answer_label = "PHISHING" if expected_label == "scam" else "LEGITIMATE"
+        user_answer_label = "FAKE (phishing)" if normalized_choice == "scam" else "REAL (legitimate)"
+        explain_prompt = f"""You are a cybersecurity trainer giving feedback on an email classification exercise.
+
+The trainee was shown this email:
+--- EMAIL START ---
+{message}
+--- EMAIL END ---
+
+The correct classification is: {correct_answer_label}
+The trainee answered: {user_answer_label} — which is {'CORRECT' if is_correct else 'INCORRECT'}.
+
+Write a 1-2 sentence explanation of WHY this email is {correct_answer_label}, pointing to specific clues in the content.
+Then list 2-3 short clue strings.
+
+Respond ONLY with valid JSON, no markdown:
+{{"correct": {'true' if is_correct else 'false'}, "feedback": "explanation here", "clues": ["clue 1", "clue 2"]}}"""
+        headers = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
+        payload = {"model": "llama-3.1-8b-instant", "messages": [{"role": "user", "content": explain_prompt}]}
+        try:
+            groq_resp = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
+            raw = groq_resp.json()["choices"][0]["message"]["content"].strip()
+            if raw.startswith("```"):
+                raw = raw.replace("```json", "").replace("```", "").strip()
+            parsed = json.loads(raw)
+            parsed["correct"] = is_correct  # always enforce deterministic result
+        except Exception:
+            parsed = {"correct": is_correct, "feedback": f"This email is {correct_answer_label.lower()}.", "clues": []}
+    else:
+        prompt = f"""
 You are analyzing whether an email is REAL (legitimate) or FAKE (phishing).
-{language_instruction}
 
 Here is the email:
 
@@ -604,78 +600,32 @@ Here is the email:
 
 The user selected: {user_choice.upper()}
 
-======================================================
-FEW-SHOT TRAINING EXAMPLES
-======================================================
-
-### Example: phishing
-Email includes harmful link, odd domain, or suspicious request.
-Correct output:
-{{
-  "correct": true,
-  "feedback": "This is a phishing email. The domain and request are suspicious.",
-  "clues": ["Suspicious link", "Urgency", "Unusual domain"]
-}}
-
-### Example: real
-Email contains normal communication and no malicious links.
-Correct output:
-{{
-  "correct": true,
-  "feedback": "This is a legitimate email with no phishing indicators.",
-  "clues": ["No harmful links", "Routine message"]
-}}
-
-======================================================
-RESPONSE FORMAT RULES
-======================================================
-You MUST respond with ONLY a JSON object.
-Use double quotes.
-No markdown.
-No code blocks.
-No text outside JSON.
+You MUST respond with ONLY a JSON object. Use double quotes. No markdown.
+{{"correct": true or false, "feedback": "One sentence.", "clues": ["clue1"]}}
 """
 
-    headers = {
-        "Authorization": f"Bearer {GROQ_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "model": "llama-3.1-8b-instant",
-        "messages": [{"role": "user", "content": prompt}]
-    }
-
-    groq_resp = requests.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        headers=headers,
-        json=payload
-    )
-
-    data = groq_resp.json()
-
-    if "choices" not in data:
-        return jsonify({"success": False, "error": "Groq API error"}), 500
-
-    raw = data["choices"][0]["message"]["content"].strip()
-
-    # Strip accidental code fences
-    if raw.startswith("```"):
-        raw = raw.replace("```json", "").replace("```", "").strip()
-
-    # Parse JSON
-    try:
-        parsed = json.loads(raw)
-    except Exception:
-        return jsonify({
-            "success": True,
-            "feedback": {
-                "correct": False,
-                "feedback": _("Could not parse AI response."),
-                "clues": []
-            },
-            "difficulty_now": difficulty
-        })
+        headers = {
+            "Authorization": f"Bearer {GROQ_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "llama-3.1-8b-instant",
+            "messages": [{"role": "user", "content": prompt}]
+        }
+        groq_resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers=headers, json=payload
+        )
+        groq_data = groq_resp.json()
+        if "choices" not in groq_data:
+            return jsonify({"success": False, "error": "Groq API error"}), 500
+        raw = groq_data["choices"][0]["message"]["content"].strip()
+        if raw.startswith("```"):
+            raw = raw.replace("```json", "").replace("```", "").strip()
+        try:
+            parsed = json.loads(raw)
+        except Exception:
+            parsed = {"correct": False, "feedback": "Could not parse AI response.", "clues": []}
 
     # Apply difficulty update
     is_correct = parsed.get("correct", False)
@@ -722,7 +672,6 @@ def generate_sites():
     data = request.json
     mode = data.get("mode")
     difficulty = get_difficulty("difficulty_internet_desktop")
-    language_instruction = ai_language_instruction()
 
     headers = {
         "Authorization": f"Bearer {GROQ_KEY}",
@@ -747,22 +696,20 @@ def generate_sites():
     ################################
     if mode == "list":
 
-        legit_prompt = f"""
+        legit_prompt = """
 Generate one SAFE, legitimate website search result.
-{language_instruction}
 
 Return ONLY JSON:
-{{
+{
   "title": "Example Title",
   "url": "https://example.com",
   "description": "Short 1-2 sentence description.",
   "site_type": "legit"
-}}
+}
 """
 
-        phishing_prompt = f"""
+        phishing_prompt = """
 Generate one PHISHING website search result.
-{language_instruction}
 
 Rules:
 - URL must look similar to a real brand but be wrong
@@ -770,12 +717,12 @@ Rules:
 - No obvious fake giveaways
 
 Return ONLY JSON:
-{{
+{
   "title": "Example Scam Title",
   "url": "https://brand-secure-check.com",
   "description": "Short 1-2 sentence phishing lure.",
   "site_type": "phishing"
-}}
+}
 """
 
         results = []
@@ -837,7 +784,6 @@ Return ONLY JSON:
 
         open_prompt = f"""
         You are generating a realistic website.
-        {language_instruction}
 
         DIFFICULTY LEVEL: {difficulty}
 
@@ -900,70 +846,47 @@ def analyze_website():
     site_type = data.get("site_type")
 
     if not user_choice or not html or not site_type:
-        return jsonify({"success": False, "error": _("Missing fields")}), 400
+        return jsonify({"success": False, "error": "Missing fields"}), 400
 
     difficulty = get_difficulty("difficulty_internet_desktop")
-    language_instruction = ai_language_instruction()
 
-    prompt = f"""
-You are a cybersecurity classifier.
-{language_instruction}
+    # Deterministic scoring: site_type is ground truth set at generation time.
+    # "legit" -> user must pick "real"; "phishing" -> user must pick "fake".
+    choice = user_choice.strip().lower()
+    if site_type == "phishing":
+        is_correct = choice in ("fake", "scam")
+        correct_answer_label = "PHISHING"
+    else:
+        is_correct = choice in ("real", "legit", "not_scam")
+        correct_answer_label = "LEGITIMATE"
+    user_answer_label = "FAKE (phishing)" if choice in ("fake", "scam") else "REAL (legitimate)"
 
-Determine if the website shown below is SAFE (legit) or PHISHING.
+    explain_prompt = f"""You are a cybersecurity trainer giving feedback on a website classification exercise.
 
-==============================
-WEBSITE HTML CONTENT:
-{html}
-==============================
+The trainee was shown this website HTML:
+--- SITE START ---
+{html[:2000]}
+--- SITE END ---
 
-True classification: {site_type}
-User selected: {user_choice}
+The correct classification is: {correct_answer_label}
+The trainee answered: {user_answer_label} — which is {'CORRECT' if is_correct else 'INCORRECT'}.
 
-Return ONLY JSON:
-{{
-  "correct": true/false,
-  "explanation": "Short explanation.",
-  "clues": ["...", "..."]
-}}
+Write a 1-2 sentence explanation of WHY this site is {correct_answer_label}, pointing to specific clues in the content.
+Then list 2-3 short clue strings.
 
-NO markdown.
-NO commentary.
-"""
-
-    headers = {
-        "Authorization": f"Bearer {GROQ_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "model": "llama-3.1-8b-instant",
-        "messages": [{"role": "user", "content": prompt}]
-    }
-
-    resp = requests.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        headers=headers, json=payload
-    )
-
-    raw = resp.json()["choices"][0]["message"]["content"].strip()
-
-    if raw.startswith("```"):
-        raw = raw.replace("```json", "").replace("```", "").strip()
-
+Respond ONLY with valid JSON, no markdown:
+{{"correct": {'true' if is_correct else 'false'}, "explanation": "explanation here", "clues": ["clue 1", "clue 2"]}}"""
+    headers_ai = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
+    payload_ai = {"model": "llama-3.1-8b-instant", "messages": [{"role": "user", "content": explain_prompt}]}
     try:
-        parsed = json.loads(raw)
-    except:
-        return jsonify({
-            "success": True,
-            "feedback": {
-                "correct": False,
-                "explanation": _("Could not parse AI response."),
-                "clues": []
-            }
-        })
-
-    # Difficulty adjustment
-    is_correct = parsed.get("correct", False)
+        resp_ai = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers_ai, json=payload_ai)
+        raw_ai = resp_ai.json()["choices"][0]["message"]["content"].strip()
+        if raw_ai.startswith("```"):
+            raw_ai = raw_ai.replace("```json", "").replace("```", "").strip()
+        parsed = json.loads(raw_ai)
+        parsed["correct"] = is_correct  # always enforce deterministic result
+    except Exception:
+        parsed = {"correct": is_correct, "explanation": f"This site is {correct_answer_label.lower()}.", "clues": []}
     if is_correct:
         set_difficulty("difficulty_internet_desktop", difficulty + 1)
     else:
@@ -1001,24 +924,33 @@ NO commentary.
 @app.route("/generate-sms", methods=["POST"])
 def generate_sms():
     """
-    Generates an SMS scam or safe message.
+    Generates an SMS scam or safe message (randomly chosen).
     Returns JSON.
     """
+    import random as _random
     difficulty = get_difficulty("difficulty_sms_mobile")
-    language_instruction = ai_language_instruction()
+    is_scam = _random.random() < 0.5
+    expected_label = "scam" if is_scam else "not_scam"
 
-    difficulty_text = {
+    scam_difficulty_text = {
         1: "Make the scam VERY obvious: bad grammar, weird link, over-the-top urgency.",
         2: "Scam is noticeable but not too obvious. Some strange phrasing or link.",
         3: "Mostly convincing SMS with subtle red flags only.",
         4: "Extremely convincing SMS; only trained users notice the clues.",
     }[difficulty]
 
+    safe_difficulty_text = {
+        1: "A clearly normal message — no urgency, proper grammar, recognizable brand.",
+        2: "A mostly normal message but with a generic tone that could be suspicious.",
+        3: "A realistic legitimate notification that looks almost identical to real brand messages.",
+        4: "A perfectly legitimate message indistinguishable from real bank/brand texts.",
+    }[difficulty]
+
     theme = request.json.get("theme", "bank / package / delivery / login security")
 
-    prompt = f"""
+    if is_scam:
+        prompt = f"""
     You generate a REALISTIC PHISHING TEXT MESSAGE. It must look like real scam texts people receive.
-    {language_instruction}
 
     RULES:
     - Output ONLY valid JSON.
@@ -1044,9 +976,45 @@ def generate_sms():
     - NEVER mention SilverShield.
 
     TASK:
-    Create **one** SMS message.
+    Create **one** SCAM SMS message.
     Difficulty = {difficulty}
-    Style = {difficulty_text}
+    Style = {scam_difficulty_text}
+    Theme = {theme}
+
+    FINAL RULE:
+    Respond with ONLY the JSON object. NOTHING else.
+    """
+    else:
+        prompt = f"""
+    You generate a REALISTIC LEGITIMATE TEXT MESSAGE from a real company or service.
+
+    RULES:
+    - Output ONLY valid JSON.
+    - NO markdown.
+    - NO commentary before or after.
+    - NO explanations.
+    - ONLY the JSON object.
+    - Use double quotes.
+    - MUST follow this structure exactly:
+
+    {{
+      "number": "+1 555 123 4567",
+      "text": "SMS message body...",
+      "time": "10:52 AM",
+      "clues": []
+    }}
+
+    REALISM REQUIREMENTS:
+    - Must look like a real notification from a well-known brand (Amazon, Chase Bank, UPS, etc.).
+    - Use correct brand names and professional tone.
+    - Include a legitimate-looking URL from the real brand domain.
+    - NO urgency or threats. Just a routine update, delivery notification, or account alert.
+    - NEVER mention SilverShield.
+
+    TASK:
+    Create **one** LEGITIMATE SMS message.
+    Difficulty = {difficulty}
+    Style = {safe_difficulty_text}
     Theme = {theme}
 
     FINAL RULE:
@@ -1090,7 +1058,7 @@ def generate_sms():
             "difficulty": difficulty,
             "sms": {
                 "number": "+1 000 000 0000",
-                "text": _("Failed to generate message. Try again."),
+                "text": "Failed to generate message. Try again.",
                 "time": "12:00 PM",
                 "clues": []
             }
@@ -1099,6 +1067,7 @@ def generate_sms():
     return jsonify({
         "success": True,
         "difficulty": difficulty,
+        "expected_label": expected_label,
         "sms": sms_obj
     })
 
@@ -1108,21 +1077,30 @@ def generate_sms():
 ################################
 @app.route("/generate-call", methods=["POST"])
 def generate_call():
+    import random as _random
     difficulty = get_difficulty("difficulty_call_mobile")
-    language_instruction = ai_language_instruction()
+    is_scam = _random.random() < 0.5
+    expected_label = "scam" if is_scam else "not_scam"
 
-    difficulty_text = {
+    scam_difficulty_text = {
         1: "Obvious scam: caller is clearly suspicious.",
         2: "Moderately subtle scam: some clues remain.",
         3: "Convincing scam: only subtle clues.",
         4: "Extremely convincing scam: only experts notice the red flags.",
     }[difficulty]
 
+    safe_difficulty_text = {
+        1: "Clearly legitimate: professional tone, no pressure, easy to identify as real.",
+        2: "Legitimate but with a generic script that could raise mild doubt.",
+        3: "Realistic legitimate call with subtle details that confirm it's real.",
+        4: "Perfect legitimate call — indistinguishable from a real company rep.",
+    }[difficulty]
+
     theme = request.json.get("theme", "government agency or tech support")
 
-    prompt = f"""
+    if is_scam:
+        prompt = f"""
 You are generating a REALISTIC PHONE SCAM CALL TRANSCRIPT.
-{language_instruction}
 
 STRICT RULES:
 - Output ONLY VALID JSON.
@@ -1139,7 +1117,35 @@ STRICT RULES:
 
 TASK:
 Difficulty={difficulty}
-{difficulty_text}
+{scam_difficulty_text}
+Theme={theme}
+"""
+    else:
+        prompt = f"""
+You are generating a REALISTIC LEGITIMATE PHONE CALL TRANSCRIPT from a real company or service.
+
+STRICT RULES:
+- Output ONLY VALID JSON.
+- No markdown.
+- No text outside the JSON.
+- JSON MUST follow:
+
+{{
+  "number": "(800) 123-4567",
+  "caller_name": "string",
+  "transcript": "Full transcript with \\n line breaks.",
+  "clues": []
+}}
+
+REQUIREMENTS:
+- Caller represents a real well-known company (e.g. Chase Bank, UPS, Amazon).
+- Professional tone. No threats, no urgency, no requests for passwords or gift cards.
+- Routine purpose: appointment reminder, delivery update, account notification.
+- NEVER mention SilverShield.
+
+TASK:
+Difficulty={difficulty}
+{safe_difficulty_text}
 Theme={theme}
 """
 
@@ -1175,6 +1181,7 @@ Theme={theme}
     return jsonify({
         "success": True,
         "difficulty": difficulty,
+        "expected_label": expected_label,
         "call": call_obj
     })
 
@@ -1184,21 +1191,30 @@ Theme={theme}
 ################################
 @app.route("/generate-web", methods=["POST"])
 def generate_web():
+    import random as _random
     difficulty = get_difficulty("difficulty_web_mobile")
-    language_instruction = ai_language_instruction()
+    is_scam = _random.random() < 0.5
+    expected_label = "scam" if is_scam else "not_scam"
 
-    difficulty_text = {
-        1: "Obvious scam.",
-        2: "Somewhat suspicious.",
-        3: "Subtle clues only.",
-        4: "Nearly perfect scam site.",
+    scam_difficulty_text = {
+        1: "Obvious scam: typo-squatted URLs, suspicious ads.",
+        2: "Somewhat suspicious: some red-flag links.",
+        3: "Subtle clues only: nearly convincing fake results.",
+        4: "Nearly perfect scam site — only an expert would notice.",
+    }[difficulty]
+
+    safe_difficulty_text = {
+        1: "Clearly legitimate results: real brand domains, no suspicious ads.",
+        2: "Mostly legitimate with generically-worded ads that could raise mild doubt.",
+        3: "Realistic legitimate search page — very close to real Google results.",
+        4: "Perfect search results page indistinguishable from real Google.",
     }[difficulty]
 
     theme = request.json.get("theme", "search / login / refund / alert")
 
-    prompt = f"""
-Generate extremely realistic FAKE GOOGLE SEARCH RESULTS.
-{language_instruction}
+    if is_scam:
+        prompt = f"""
+Generate extremely realistic FAKE GOOGLE SEARCH RESULTS that contain scam content.
 
 STRICT RULES:
 - Output ONLY JSON.
@@ -1216,7 +1232,36 @@ STRICT RULES:
 }}
 
 Difficulty={difficulty}
-{difficulty_text}
+{scam_difficulty_text}
+Theme={theme}
+"""
+    else:
+        prompt = f"""
+Generate extremely realistic LEGITIMATE GOOGLE SEARCH RESULTS from real companies and brands.
+
+STRICT RULES:
+- Output ONLY JSON.
+- NO markdown.
+- Follow this structure:
+
+{{
+  "ads": [...],
+  "results": [...],
+  "pagination": {{
+      "next_page_label": "Next >",
+      "page_number": 1
+  }},
+  "clues": []
+}}
+
+REQUIREMENTS:
+- Use real well-known brand domains (amazon.com, chase.com, usps.com, etc.).
+- Professional ad copy and descriptions.
+- No typo-squatted URLs, no suspicious links.
+- NEVER mention SilverShield.
+
+Difficulty={difficulty}
+{safe_difficulty_text}
 Theme={theme}
 """
 
@@ -1243,6 +1288,7 @@ Theme={theme}
     return jsonify({
         "success": True,
         "difficulty": difficulty,
+        "expected_label": expected_label,
         "web": web_obj
     })
 
@@ -1267,7 +1313,7 @@ def analyze_any():
     message = data.get("message")
 
     if not msg_type or not user_choice or not message:
-        return jsonify({"success": False, "error": _("Missing fields")}), 400
+        return jsonify({"success": False, "error": "Missing fields"}), 400
 
     #Normalize user choice
     choice = user_choice.strip().lower()
@@ -1286,7 +1332,7 @@ def analyze_any():
     }
 
     if msg_type not in difficulty_map:
-        return jsonify({"success": False, "error": _("Unknown message type")}), 400
+        return jsonify({"success": False, "error": "Unknown message type"}), 400
 
     platform_map = {
         "email": "desktop",
@@ -1308,7 +1354,6 @@ def analyze_any():
         category = "difficulty_email_mobile"
 
     difficulty = get_difficulty(category)
-    language_instruction = ai_language_instruction()
 
     #Human-readable label (for prompt)
     type_label = {
@@ -1319,12 +1364,54 @@ def analyze_any():
         "web": "MOBILE WEBPAGE / SEARCH RESULT"
     }.get(msg_type, "MESSAGE")
 
-    # -------------------------------------------
-    # Build AI prompt
-    # -------------------------------------------
-    prompt = f"""
+    expected_label = data.get("expected_label")
+    if isinstance(expected_label, str):
+        expected_label = expected_label.strip().lower()
+        if expected_label == "fake":
+            expected_label = "scam"
+        elif expected_label == "real":
+            expected_label = "not_scam"
+        if expected_label not in ("scam", "not_scam"):
+            expected_label = None
+    else:
+        expected_label = None
+
+    if expected_label:
+        is_correct_local = (choice == expected_label)
+        correct_answer_label = "SCAM" if expected_label == "scam" else "LEGITIMATE"
+        user_answer_label = "SCAM" if choice == "scam" else "LEGITIMATE"
+        explain_prompt = f"""You are a cybersecurity trainer giving feedback on a {type_label} classification exercise.
+
+The trainee was shown this content:
+--- CONTENT START ---
+{message[:2000]}
+--- CONTENT END ---
+
+The correct classification is: {correct_answer_label}
+The trainee answered: {user_answer_label} — which is {'CORRECT' if is_correct_local else 'INCORRECT'}.
+
+Write a 1-2 sentence explanation of WHY this content is {correct_answer_label}, pointing to specific clues.
+Then list 2-3 short clue strings.
+
+Respond ONLY with valid JSON, no markdown:
+{{"correct": {'true' if is_correct_local else 'false'}, "feedback": "explanation here", "clues": ["clue 1", "clue 2"]}}"""
+        headers_ex = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
+        payload_ex = {"model": "llama-3.1-8b-instant", "messages": [{"role": "user", "content": explain_prompt}]}
+        try:
+            r_ex = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers_ex, json=payload_ex)
+            raw_ex = r_ex.json()["choices"][0]["message"]["content"].strip()
+            if raw_ex.startswith("```"):
+                raw_ex = raw_ex.replace("```json", "").replace("```", "").strip()
+            parsed = json.loads(raw_ex)
+            parsed["correct"] = is_correct_local  # enforce deterministic result
+        except Exception:
+            parsed = {"correct": is_correct_local, "feedback": f"This {type_label.lower()} is {correct_answer_label.lower()}.", "clues": []}
+    else:
+        # -------------------------------------------
+        # Build AI prompt
+        # -------------------------------------------
+        prompt = f"""
 You are a cybersecurity training AI.
-{language_instruction}
 
 The trainee reviewed the following {type_label}:
 
@@ -1348,40 +1435,40 @@ The trainee selected: {choice.upper()} (SCAM vs NOT SCAM)
 }}
 """
 
-    headers = {
-        "Authorization": f"Bearer {GROQ_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": "llama-3.1-8b-instant",
-        "messages": [{"role": "user", "content": prompt}]
-    }
-
-    #Call Groq API
-    r = requests.post("https://api.groq.com/openai/v1/chat/completions",
-                      headers=headers, json=payload)
-
-    data = r.json()
-    print("UNIFIED ANALYZER RAW:", data)
-
-    if "choices" not in data:
-        return jsonify({"success": False, "error": "Groq returned no choices"}), 500
-
-    raw = data["choices"][0]["message"]["content"].strip()
-
-    #Clean JSON fences
-    if raw.startswith("```"):
-        raw = raw.replace("```json", "").replace("```", "").strip()
-
-    #Parse JSON safely
-    try:
-        parsed = json.loads(raw)
-    except Exception:
-        parsed = {
-            "correct": False,
-            "feedback": _("AI response could not be parsed."),
-            "clues": []
+        headers = {
+            "Authorization": f"Bearer {GROQ_KEY}",
+            "Content-Type": "application/json"
         }
+        payload = {
+            "model": "llama-3.1-8b-instant",
+            "messages": [{"role": "user", "content": prompt}]
+        }
+
+        #Call Groq API
+        r = requests.post("https://api.groq.com/openai/v1/chat/completions",
+                          headers=headers, json=payload)
+
+        data = r.json()
+        print("UNIFIED ANALYZER RAW:", data)
+
+        if "choices" not in data:
+            return jsonify({"success": False, "error": "Groq returned no choices"}), 500
+
+        raw = data["choices"][0]["message"]["content"].strip()
+
+        #Clean JSON fences
+        if raw.startswith("```"):
+            raw = raw.replace("```json", "").replace("```", "").strip()
+
+        #Parse JSON safely
+        try:
+            parsed = json.loads(raw)
+        except Exception:
+            parsed = {
+                "correct": False,
+                "feedback": "AI response could not be parsed.",
+                "clues": []
+            }
 
     #####################
     # Updating difficulty

@@ -1,21 +1,30 @@
 /*************************
     Internet Functions
 **************************/
-const desktopTranslations = globalThis.desktopTranslations || {};
-
-function desktopLabel(key, fallback = key) {
-    return desktopTranslations[key] || fallback;
-}
 
 let currentWebsiteHTML = "";
 let currentWebsiteType = "";
 let currentInternetDifficulty = "";
 let websiteLoadTime = null;
+let currentInternetSpeechText = "";
 
 const internetContent = document.getElementById("internetContent");
 const internetButtons = document.getElementById("internetButtons");
 const internetRealBtn = document.getElementById("internetRealBtn");
 const internetFakeBtn = document.getElementById("internetFakeBtn");
+const internetReadAloudBtn = document.getElementById("internetReadAloudBtn");
+
+function stopCurrentTTS() {
+    if (typeof globalThis.stopTTS === "function") {
+        globalThis.stopTTS();
+    }
+}
+
+function htmlToPlainText(html) {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html || "";
+    return (tmp.textContent || tmp.innerText || "").replaceAll(/\s+/g, " ").trim();
+}
 
 
 /* ========================================
@@ -24,7 +33,9 @@ const internetFakeBtn = document.getElementById("internetFakeBtn");
 async function generateDesktopFakeSites() {
     if (!internetContent) return;
 
-    internetContent.innerHTML = `<p>${desktopLabel("loadingSearchResults", "Loading search results...")}</p>`;
+    stopCurrentTTS();
+
+    internetContent.innerHTML = "<p>Loading search results...</p>";
     internetButtons.style.display = "none";   // hide buttons here
 
     try {
@@ -37,7 +48,7 @@ async function generateDesktopFakeSites() {
         const data = await response.json();
 
         if (!data.success || !data.results) {
-            internetContent.innerHTML = `<p>${desktopLabel("errorLoadingSearchResults", "Error loading search results.")}</p>`;
+            internetContent.innerHTML = "<p>Error loading search results.</p>";
             return;
         }
 
@@ -60,9 +71,17 @@ async function generateDesktopFakeSites() {
             link.addEventListener("click", () => openDesktopWebsite(link));
         });
 
+        currentInternetSpeechText = data.results
+            .map(site => `${site.title}. ${site.description}.`) 
+            .join(" ");
+
+        if (typeof globalThis.preloadTTS === "function" && currentInternetSpeechText) {
+            globalThis.preloadTTS(currentInternetSpeechText, { lang: "en", slow: false }).catch(() => {});
+        }
+
     } catch (err) {
         console.error(err);
-        internetContent.innerHTML = `<p>${desktopLabel("errorLoadingSearchResults", "Error loading search results.")}</p>`;
+        internetContent.innerHTML = "<p>Error loading search results.</p>";
     }
 }
 
@@ -75,7 +94,8 @@ async function openDesktopWebsite(linkElement) {
     const url = linkElement.dataset.url;
     const type = linkElement.dataset.type;
 
-    internetContent.innerHTML = `<p>${desktopLabel("loadingWebsite", "Loading website...")}</p>`;
+    internetContent.innerHTML = "<p>Loading website...</p>";
+    stopCurrentTTS();
 
     try {
         const response = await fetch("/api/generate_sites", {
@@ -92,7 +112,7 @@ async function openDesktopWebsite(linkElement) {
         const data = await response.json();
 
         if (!data.success) {
-            internetContent.innerHTML = `<p>${desktopLabel("errorLoadingWebsite", "Error loading website.")}</p>`;
+            internetContent.innerHTML = "<p>Error loading website.</p>";
             return;
         }
 
@@ -100,6 +120,7 @@ async function openDesktopWebsite(linkElement) {
         currentWebsiteHTML = data.html;
         currentWebsiteType = type;
         currentInternetDifficulty = data.difficulty;
+        currentInternetSpeechText = `${title}. ${url}. ${htmlToPlainText(data.html)}`;
 
         // Render website
         internetContent.innerHTML = `
@@ -117,9 +138,13 @@ async function openDesktopWebsite(linkElement) {
         // Show the REAL/FAKE buttons
         internetButtons.style.display = "flex";
 
+        if (typeof globalThis.preloadTTS === "function" && currentInternetSpeechText) {
+            globalThis.preloadTTS(currentInternetSpeechText, { lang: "en", slow: false }).catch(() => {});
+        }
+
     } catch (err) {
         console.error(err);
-        internetContent.innerHTML = `<p>${desktopLabel("errorLoadingWebsite", "Error loading website.")}</p>`;
+        internetContent.innerHTML = "<p>Error loading website.</p>";
     }
 }
 
@@ -128,8 +153,10 @@ async function openDesktopWebsite(linkElement) {
    Analyze Website Response
 ======================================== */
 async function analyzeDesktopWebsite(choice) {
+    stopCurrentTTS();
+
     if (!currentWebsiteHTML || !currentWebsiteType) {
-        showNotification(false, desktopLabel("websiteNotLoadedProperly", "Website not loaded properly."), "internet");
+        showNotification(false, "Website not loaded properly.", "internet");
         return;
     }
 
@@ -151,18 +178,18 @@ async function analyzeDesktopWebsite(choice) {
         const data = await response.json();
 
         if (!data.success) {
-            showNotification(false, desktopLabel("errorAnalyzingWebsite", "Error analyzing website."), "internet");
+            showNotification(false, "Error analyzing website.", "internet");
             return;
         }
 
         const fb = data.feedback;
-        const message = `${fb.explanation} (${desktopLabel("difficulty", "Difficulty")}: ${data.difficulty_now})`;
+        const message = `${fb.explanation} (Difficulty: ${data.difficulty_now})`;
 
         showNotification(fb.correct, message, "internet");
 
     } catch (err) {
         console.error(err);
-        showNotification(false, desktopLabel("serverErrorAnalyzingWebsite", "Server error analyzing website."), "internet");
+        showNotification(false, "Server error analyzing website.", "internet");
     }
 }
 
@@ -180,6 +207,39 @@ if (internetFakeBtn) {
     internetFakeBtn.addEventListener("click", () =>
         analyzeDesktopWebsite("fake")
     );
+}
+
+const internetVoiceBtn = document.getElementById("internetVoiceBtn");
+if (internetVoiceBtn && window.startVoiceAnswer) {
+    internetVoiceBtn.addEventListener("click", () => {
+        stopCurrentTTS();
+        window.startVoiceAnswer(
+            internetVoiceBtn,
+            () => analyzeDesktopWebsite("real"),
+            () => analyzeDesktopWebsite("fake")
+        );
+    });
+}
+
+if (internetReadAloudBtn) {
+    internetReadAloudBtn.addEventListener("click", async () => {
+        if (!currentInternetSpeechText) {
+            return;
+        }
+
+        try {
+            if (typeof globalThis.playPreloaded === "function") {
+                const played = await globalThis.playPreloaded(currentInternetSpeechText);
+                if (played) return;
+            }
+
+            if (typeof globalThis.speak === "function") {
+                await globalThis.speak(currentInternetSpeechText, { lang: "en", slow: false });
+            }
+        } catch (err) {
+            console.error("Internet TTS playback error:", err);
+        }
+    });
 }
 
 

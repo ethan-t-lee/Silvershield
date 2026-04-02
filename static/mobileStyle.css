@@ -167,8 +167,33 @@
     font-size: 0.9rem;
 }
 
+.web-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.web-toolbar,
+.search-bar,
+#pagination,
+.fake-footer {
+    flex-shrink: 0;
+}
+
+.search-bar {
+    padding: 8px 0;
+}
+
+.web-results-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
 .web-content{
     flex: 1;
+    min-height: 0;
     background: #ffffff;
     padding: 16px;
     border-radius: 10px;
@@ -258,6 +283,13 @@
     border-bottom: 2px solid black;
 }
 
+.sms-app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
 .flip-back-btn {
     background: none;
     border: none;
@@ -270,7 +302,8 @@
     margin-top: 4px;
     padding: 8px;
     border: 2px solid black;
-    height: 55vh;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -307,6 +340,13 @@
     color: #000 !important;
 }
 
+/* Email view fills the phone screen as a flex column */
+.email-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
 
 .email-screen {
     padding: 12px;
@@ -364,8 +404,12 @@
 }
 
 .email-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     margin-top: 16px;
     line-height: 1.5;
+    padding-bottom: 8px;
 }
 
 .email-action-buttons {
@@ -374,8 +418,22 @@
     margin-top: 20px;
 }
 
+/* 2x2 grid action bar for email */
+.email-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 8px 0 4px;
+    flex-shrink: 0;
+}
+
+.email-actions button {
+    width: 100%;
+    margin: 0;
+}
+
 .scam-btn, .safe-btn {
-    width: 48%;
+    width: 100%;
     padding: 12px;
     border-radius: 8px;
     border: none;
@@ -384,11 +442,11 @@
 }
 
 .scam-btn {
-    background-color: #0077ff;
+    background-color: #c13b32;
 }
 
 .safe-btn {
-    background-color: #4CAF50;
+    background-color: #3f8f4e;
 }
 
 /* Phone App */
@@ -396,6 +454,10 @@
     background: #f7f7f7;
     padding: 20px;
     font-family: Arial, sans-serif;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .call-header {
@@ -444,10 +506,66 @@
     padding: 12px;
     background: white;
     border-radius: 8px;
-    height: 45vh;
+    flex: 1;
+    min-height: 180px;
     overflow-y: auto;
     line-height: 1.5;
     border: 1px solid #ccc;
+}
+
+.call-app .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.call-app .actions .btn {
+    flex: 1;
+    width: auto;
+    margin-top: 0;
+    font-weight: 700;
+}
+
+.call-app .actions .btn.danger {
+    background: #b3261e;
+}
+
+.call-app .actions .btn.safe {
+    background: #2e7d32;
+}
+
+.call-app .actions .btn:hover {
+    filter: brightness(1.06);
+}
+
+.sms-app .actions,
+.web-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+    flex-shrink: 0;
+}
+
+.sms-app .actions .scam-btn,
+.sms-app .actions .safe-btn,
+.sms-app .actions .tts-btn,
+.web-actions .scam-btn,
+.web-actions .safe-btn,
+.web-actions .tts-btn {
+    width: 100%;
+    margin: 0;
+}
+
+.tts-btn {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    color: white;
+    background: #486a8a;
+    font-weight: 700;
+    cursor: pointer;
 }
 
 /* back button for apps */

@@ -1,12 +1,6 @@
 /*************************
    Notification System
 **************************/
-const desktopTranslations = globalThis.desktopTranslations || {};
-
-function desktopLabel(key, fallback = key) {
-    return desktopTranslations[key] || fallback;
-}
-
 function showNotification(isCorrect, message, target = "email") {
 
     let notification, title, text;
@@ -27,11 +21,11 @@ function showNotification(isCorrect, message, target = "email") {
     // Apply correct/wrong styles
     if (isCorrect) {
         notification.classList.add("correct");
-        title.innerText = desktopLabel("correctTitle", "Correct!");
+        title.innerText = "Correct!";
         text.innerText = message;
     } else {
         notification.classList.add("wrong");
-        title.innerText = desktopLabel("incorrectTitle", "Incorrect");
+        title.innerText = "Incorrect";
         text.innerText = message;
     }
 

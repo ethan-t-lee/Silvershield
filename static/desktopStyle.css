@@ -218,15 +218,18 @@ body {
     cursor: pointer;
     border-radius: 6px;
     font-weight: bold;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    background: #486a8a;
+    color: white;
 }
 
 .rf-btn.real {
-    background: #0078d7;
+    background: #3f8f4e;
     color: white;
 }
 
 .rf-btn.fake {
-    background: #d70000;
+    background: #c13b32;
     color: white;
 }
 

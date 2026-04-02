@@ -1,80 +1,25 @@
 /*************************
       Mobile Scenario Engine - Email, Web, SMS, Call apps
 **************************/
-const mobileTranslations = globalThis.mobileTranslations || {};
-
-function mobileLabel(key, fallback = key) {
-    return mobileTranslations[key] || fallback;
-}
-
-const mobileTtsLang = mobileTranslations.ttsLang || 'en';
-
-function applySnippetTranslations(type) {
-    if (type === "email") {
-        const backButton = document.getElementById("emailBackBtn");
-        const emailBody = document.getElementById("emailBody");
-        const readAloudButton = document.getElementById("readAloudMobile");
-        const scamButton = document.getElementById("markScam");
-        const safeButton = document.getElementById("markSafe");
-
-        if (backButton) backButton.textContent = `← ${mobileLabel("back", "Back")}`;
-        if (emailBody) emailBody.textContent = mobileLabel("loadingEmail", "Loading email...");
-        if (readAloudButton) readAloudButton.textContent = mobileLabel("readAloud", "Read aloud");
-        if (scamButton) scamButton.textContent = mobileLabel("fake", "Fake");
-        if (safeButton) safeButton.textContent = mobileLabel("real", "Real");
-    }
-
-    if (type === "sms") {
-        const backButton = document.querySelector(".back-button");
-        const smsBody = document.getElementById("smsBody");
-        const scamButton = document.getElementById("markScam");
-        const safeButton = document.getElementById("markSafe");
-
-        if (backButton) backButton.textContent = `← ${mobileLabel("back", "Back")}`;
-        if (smsBody) smsBody.textContent = mobileLabel("smsPlaceholder", "SMS content goes here...");
-        if (scamButton) scamButton.textContent = mobileLabel("fake", "Fake");
-        if (safeButton) safeButton.textContent = mobileLabel("real", "Real");
-    }
-
-    if (type === "call") {
-        const callType = document.querySelector(".call-type");
-        const caller = document.getElementById("call-caller");
-        const controls = document.querySelectorAll(".call-controls .call-btn");
-        const transcript = document.getElementById("call-transcript");
-        const scamButton = document.getElementById("markScam");
-        const safeButton = document.getElementById("markSafe");
-
-        if (callType) callType.textContent = mobileLabel("audioCall", "Audio Call");
-        if (caller) caller.textContent = mobileLabel("unknownCaller", "Unknown Caller");
-        if (controls[0]) controls[0].textContent = mobileLabel("mute", "Mute");
-        if (controls[1]) controls[1].textContent = mobileLabel("end", "End");
-        if (controls[2]) controls[2].textContent = mobileLabel("speaker", "Speaker");
-        if (transcript) transcript.textContent = mobileLabel("callTranscriptPlaceholder", "Call transcript will appear here...");
-        if (scamButton) scamButton.textContent = mobileLabel("reportScamCall", "Report Scam Call");
-        if (safeButton) safeButton.textContent = mobileLabel("looksSafe", "Looks Safe");
-    }
-
-    if (type === "web") {
-        const backButton = document.querySelector(".web-toolbar .back-btn");
-        const browserTitle = document.querySelector(".web-browser-title");
-        const scamButton = document.getElementById("markScam");
-        const safeButton = document.getElementById("markSafe");
-        const footer = document.querySelector(".fake-footer");
-        const searchInput = document.getElementById("fakeSearchInput");
-
-        if (backButton) backButton.textContent = `← ${mobileLabel("back", "Back")}`;
-        if (browserTitle) browserTitle.textContent = mobileLabel("chrome", "Chrome");
-        if (scamButton) scamButton.textContent = mobileLabel("fake", "Fake");
-        if (safeButton) safeButton.textContent = mobileLabel("real", "Real");
-        if (searchInput) searchInput.value = mobileLabel("fakeSearchValue", "how to make money fast");
-        if (footer) footer.textContent = mobileLabel("googleFooter", "Google © 2025");
-    }
-}
-
 let currentMessage = "";
 let currentType = "";
 let currentDifficulty = "";
+let currentExpectedLabel = "";
 let scenarioLoadTime = null;
+
+function buildWebSpeechText(sc) {
+    if (!sc) return "";
+
+    const adText = (sc.ads || [])
+        .map(ad => `${ad.title || "Sponsored result"}. ${ad.snippet || ""}`)
+        .join(" ");
+
+    const resultText = (sc.results || [])
+        .map(result => `${result.title || "Result"}. ${result.snippet || ""}`)
+        .join(" ");
+
+    return `${adText} ${resultText}`.replace(/\s+/g, " ").trim();
+}
 
 const ScenarioEngine = {
     endpoints: {
@@ -86,18 +31,18 @@ const ScenarioEngine = {
 
     async load(type) {
         currentType = type;
+        currentExpectedLabel = "";
 
         const scenarioBody = document.getElementById("scenarioBody");
         const appsGrid = document.querySelector(".apps");
         if (!scenarioBody || !appsGrid) return;
 
-        scenarioBody.innerHTML = `<p class='loading'>${mobileLabel("loadingScenario", "Loading scenario...")}</p>`;
+        scenarioBody.innerHTML = "<p class='loading'>Loading scenario...</p>";
         appsGrid.style.display = "none";
 
         // Load snippet HTML template
         const htmlResp = await fetch(`/static/snippets/${type}.html`);
         scenarioBody.innerHTML = await htmlResp.text();
-        applySnippetTranslations(type);
 
         // Pick appropriate endpoint
         const endpoint = this.endpoints[type];
@@ -107,12 +52,15 @@ const ScenarioEngine = {
         const res = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ theme: "SilverShield training" })
+            body: JSON.stringify({
+                theme: "SilverShield training",
+                platform: type === "email" ? "mobile" : undefined
+            })
         });
 
         const data = await res.json();
         if (!data.success) {
-            scenarioBody.innerHTML = `<p>${mobileLabel("errorLoadingScenario", "Error loading scenario.")}</p>`;
+            scenarioBody.innerHTML = "<p>Error loading scenario.</p>";
             console.error("Scenario error:", data.error);
             return;
         }
@@ -120,7 +68,7 @@ const ScenarioEngine = {
         currentDifficulty = data.difficulty;
 
         const diffLabel = document.getElementById("difficultyLabel");
-        if (diffLabel) diffLabel.innerText = `${mobileLabel("level", "Level")}: ${currentDifficulty}`;
+        if (diffLabel) diffLabel.innerText = "Level: " + currentDifficulty;
 
         // Record time scenario was displayed
         scenarioLoadTime = Date.now();
@@ -132,17 +80,29 @@ const ScenarioEngine = {
         else if (type === "call") sc = data.call;
         else if (type === "web") sc = data.web;
 
+        // Capture server-provided ground truth label for grading.
+        if (type === "email" || type === "sms" || type === "call" || type === "web") {
+            const raw = (data.expected_label || sc?.expected_label || sc?.label || "").toLowerCase();
+            if (raw === "scam" || raw === "fake") {
+                currentExpectedLabel = "scam";
+            } else if (raw === "not_scam" || raw === "real") {
+                currentExpectedLabel = "not_scam";
+            } else {
+                currentExpectedLabel = "";
+            }
+        }
+
         this.fill(type, sc);
 
         // After filling UI, if email was loaded, attempt to preload TTS
-        if (type === 'email' && currentMessage) {
+        if (currentMessage && (type === 'email' || type === 'sms' || type === 'call' || type === 'web')) {
             try {
                 const tmp = document.createElement('div');
                 tmp.innerHTML = currentMessage;
                 const plain = (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
                 if (window.preloadTTS) {
                     // fire-and-forget preload (internal dedupe prevents duplicates)
-                    try { window.preloadTTS(plain, { lang: mobileTtsLang, slow: false }); } catch(e) { /* ignore */ }
+                    try { window.preloadTTS(plain, { lang: 'en', slow: false }); } catch(e) { /* ignore */ }
                 }
             } catch (e) { console.warn('Preload TTS failed', e); }
         }
@@ -155,6 +115,18 @@ const ScenarioEngine = {
         if (scamBtn) scamBtn.onclick = () => { if (window.stopTTS) try { window.stopTTS(); } catch(e){}; analyzeChoice("scam"); };
         if (safeBtn) safeBtn.onclick = () => { if (window.stopTTS) try { window.stopTTS(); } catch(e){}; analyzeChoice("not_scam"); };
 
+        const voiceBtn = document.getElementById("voiceAnswerBtn");
+        if (voiceBtn && window.startVoiceAnswer) {
+            voiceBtn.onclick = () => {
+                if (window.stopTTS) try { window.stopTTS(); } catch(e) {}
+                window.startVoiceAnswer(
+                    voiceBtn,
+                    () => analyzeChoice("not_scam"),
+                    () => analyzeChoice("scam")
+                );
+            };
+        }
+
         if (readAloudMobile) {
             readAloudMobile.onclick = async () => {
                 try {
@@ -164,7 +136,7 @@ const ScenarioEngine = {
                         const played = await window.playPreloaded(plain);
                         if (played) return;
                     }
-                    if (window.speak) await window.speak(plain, { lang: mobileTtsLang, slow: false });
+                    if (window.speak) await window.speak(plain, { lang: 'en', slow: false });
                 } catch (e) { console.warn('Mobile TTS play failed', e); }
             };
         }
@@ -217,7 +189,7 @@ const ScenarioEngine = {
         // CALL
         if (type === "call") {
             document.getElementById("call-number").innerText = sc.number;
-            document.getElementById("call-caller").innerText = sc.caller_name || mobileLabel("unknownCaller", "Unknown Caller");
+            document.getElementById("call-caller").innerText = sc.caller_name || "Unknown Caller";
             document.getElementById("call-transcript").innerText = sc.transcript;
             currentMessage = sc.transcript;
             return;
@@ -242,10 +214,10 @@ const ScenarioEngine = {
             const adBox = document.createElement("div");
             adBox.classList.add("ad-box");
             adBox.innerHTML = `
-                <div class="ad-title">${ad.title || mobileLabel("sponsored", "Sponsored")}</div>
+                <div class="ad-title">${ad.title || "Sponsored"}</div>
                 <div class="ad-url">${ad.url}</div>
                 <div class="ad-snippet">${ad.snippet}</div>
-                <div class="ad-label">${mobileLabel("sponsored", "Sponsored")}</div>
+                <div class="ad-label">Sponsored</div>
             `;
             adSection.appendChild(adBox);
         });
@@ -261,7 +233,7 @@ if (sc.results && sc.results.length > 0) {
     // Render top title INSIDE container (like Google does)
     const heading = document.createElement("div");
     heading.classList.add("search-main-title");
-    heading.innerText = sc.results[0].title || mobileLabel("searchResults", "Search Results");
+    heading.innerText = sc.results[0].title || "Search Results";
     container.appendChild(heading);
 
     sc.results.forEach(result => {
@@ -279,7 +251,7 @@ if (sc.results && sc.results.length > 0) {
 } else {
     const heading = document.createElement("div");
     heading.classList.add("search-main-title");
-    heading.innerText = mobileLabel("searchResults", "Search Results");
+    heading.innerText = "Search Results";
     container.appendChild(heading);
 }
 
@@ -291,7 +263,7 @@ if (sc.pagination) {
     nav.classList.add("pagination-nav");
 
     nav.innerHTML = `
-        <button id="nextPageBtn">${sc.pagination.next_page_label || mobileLabel("nextPage", "Next >")}</button>
+        <button id="nextPageBtn">${sc.pagination.next_page_label || "Next >"}</button>
     `;
 
     container.appendChild(nav);
@@ -301,7 +273,7 @@ if (sc.pagination) {
     };
 }
 
-currentMessage = JSON.stringify(sc);
+currentMessage = buildWebSpeechText(sc);
 return;
         }
     }
@@ -343,6 +315,7 @@ async function analyzeChoice(choice) {
                 type: currentType,
                 platform: "mobile",
                 user_choice: choice,
+                expected_label: currentExpectedLabel || undefined,
                 message: currentMessage,
                 time_spent_seconds: timeSpent
             })
@@ -351,13 +324,13 @@ async function analyzeChoice(choice) {
         const data = await response.json();
 
         if (!data.success) {
-            alert(mobileLabel("errorAnalyzingResponse", "Error analyzing response."));
+            alert("Error analyzing response.");
             return;
         }
 
         alert(
             data.feedback.feedback +
-            `\n\n(${mobileLabel("currentDifficulty", "Current difficulty")}: ${data.difficulty_now})`
+            `\n\n(Current difficulty: ${data.difficulty_now})`
         );
 
         // Reload next scenario automatically
@@ -365,7 +338,7 @@ async function analyzeChoice(choice) {
 
     } catch (err) {
         console.error("analyzeChoice() error:", err);
-        alert(mobileLabel("serverErrorAnalyzingChoice", "Server error analyzing choice."));
+        alert("Server error analyzing choice.");
     }
 }
 

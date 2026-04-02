@@ -162,26 +162,6 @@
     gap: 0.9rem;
 }
 
-.attemptHistoryScroll {
-    max-height: 31rem;
-    overflow-y: auto;
-    padding-right: 0.35rem;
-}
-
-.attemptHistoryScroll::-webkit-scrollbar {
-    width: 8px;
-}
-
-.attemptHistoryScroll::-webkit-scrollbar-thumb {
-    background: rgba(36, 74, 136, 0.35);
-    border-radius: 999px;
-}
-
-.attemptHistoryScroll::-webkit-scrollbar-track {
-    background: rgba(219, 228, 240, 0.6);
-    border-radius: 999px;
-}
-
 .loadingState,
 .emptyState {
     color: #53627d;

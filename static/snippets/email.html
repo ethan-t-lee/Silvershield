@@ -5,8 +5,8 @@
         <button class="back-btn" id="emailBackBtn" onclick="backToApps()">← Back</button>
 
         <div class="toolbar-icons">
-            <span class="icon-btn">✉️</span>
-            <span class="icon-btn">🗑️</span>
+            <span class="icon-btn">Mail</span>
+            <span class="icon-btn">Trash</span>
             <span class="icon-btn">⋮</span>
         </div>
     </div>
@@ -17,15 +17,12 @@
     </div>
 
     <!-- Read aloud above the choice buttons, using same style as choice buttons -->
+    <!-- Read aloud + choice buttons -->
     <div class="email-actions">
-        <div style="text-align:center;margin-bottom:10px;">
-            <button id="readAloudMobile" class="safe-btn">Read aloud</button>
-        </div>
-
-        <div class="choice-actions">
-            <button id="markScam" class="scam-btn">Fake</button>
-            <button id="markSafe" class="safe-btn">Real</button>
-        </div>
+        <button id="readAloudMobile" class="safe-btn">Read Aloud</button>
+        <button id="voiceAnswerBtn" class="safe-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">Speak</button>
+        <button id="markSafe" class="safe-btn">Real</button>
+        <button id="markScam" class="scam-btn">Fake</button>
     </div>
 
 </div>

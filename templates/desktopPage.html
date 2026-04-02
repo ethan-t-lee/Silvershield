@@ -59,6 +59,10 @@
             <button id="fakeBtn" class="rf-btn fake">
                 {{ _("FAKE") }}
             </button>
+
+            <button id="emailVoiceBtn" class="rf-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">
+                Speak
+            </button>
         </div>
 
         <div class="email-controls" style="display:flex;gap:8px;align-items:center;margin-top:12px;">
@@ -118,6 +122,14 @@
                 {{ _("FAKE") }}
             </button>
 
+            <button id="internetVoiceBtn" class="rf-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">
+                Speak
+            </button>
+
+        </div>
+
+        <div class="internet-controls" style="display:flex;gap:8px;align-items:center;margin-top:12px;">
+            <button id="internetReadAloudBtn" class="rf-btn">{{ _("Read aloud") }}</button>
         </div>
 
         <!-- Feedback -->
@@ -136,29 +148,8 @@
 
 
 <!-- Script Files -->
-<script>
-globalThis.desktopTranslations = {
-    ttsLang: {{ get_locale()|string|tojson }},
-    generatingEmail: {{ _("Generating email...")|tojson }},
-    errorGeneratingEmail: {{ _("Error generating email.")|tojson }},
-    serverError: {{ _("Server error.")|tojson }},
-    noEmailLoadedAnalyze: {{ _("No email loaded to analyze.")|tojson }},
-    errorAnalyzingResponse: {{ _("Error analyzing response.")|tojson }},
-    serverErrorAnalyzingResponse: {{ _("Server error analyzing response.")|tojson }},
-    noEmailLoadedRead: {{ _("No email loaded to read.")|tojson }},
-    difficulty: {{ _("Difficulty")|tojson }},
-    loadingSearchResults: {{ _("Loading search results...")|tojson }},
-    errorLoadingSearchResults: {{ _("Error loading search results.")|tojson }},
-    loadingWebsite: {{ _("Loading website...")|tojson }},
-    errorLoadingWebsite: {{ _("Error loading website.")|tojson }},
-    websiteNotLoadedProperly: {{ _("Website not loaded properly.")|tojson }},
-    errorAnalyzingWebsite: {{ _("Error analyzing website.")|tojson }},
-    serverErrorAnalyzingWebsite: {{ _("Server error analyzing website.")|tojson }},
-    correctTitle: {{ _("Correct!")|tojson }},
-    incorrectTitle: {{ _("Incorrect")|tojson }}
-};
-</script>
 <script src="{{ url_for('static', filename='tts.js') }}"></script>
+<script src="{{ url_for('static', filename='voiceInput.js') }}"></script>
 <script src="{{ url_for('static', filename='desktopEmail.js') }}"></script>
 <script src="{{ url_for('static', filename='desktopInternet.js') }}"></script>
 <script src="{{ url_for('static', filename='notification.js') }}"></script>

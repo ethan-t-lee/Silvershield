@@ -120,10 +120,12 @@ function renderAttempts(attempts) {
     if (!attempts?.length) {
         container.className = 'stackList emptyState';
         container.textContent = dashboardLabels.noAttempts || 'No attempts recorded yet.';
+        container.style.maxHeight = '';
+        container.style.overflowY = '';
         return;
     }
 
-    container.className = 'stackList attemptHistoryScroll';
+    container.className = 'stackList';
     container.innerHTML = attempts.map(attempt => `
         <article class="attemptItem">
             <div class="attemptTop">
@@ -131,12 +133,26 @@ function renderAttempts(attempts) {
                 <span class="pillTag">${escapeHtml(dashboardLabels.difficultyLevel || 'Level')} ${escapeHtml(attempt.difficulty)}</span>
             </div>
             <div class="attemptMeta">
-                <span>${attempt.correct ? escapeHtml(dashboardLabels.correctStatus || 'Correct') : escapeHtml(dashboardLabels.incorrectStatus || 'Incorrect')}</span>
+                <span>${attempt.correct ? 'Correct' : 'Incorrect'}</span>
                 <span>${escapeHtml(formatSeconds(attempt.duration_seconds))}</span>
                 <span>${escapeHtml(attempt.timestamp || dashboardLabels.justNow || 'just now')}</span>
             </div>
         </article>
     `).join('');
+
+    const attemptCards = Array.from(container.querySelectorAll('.attemptItem'));
+    if (attemptCards.length > 5) {
+        const styles = getComputedStyle(container);
+        const gap = Number.parseFloat(styles.rowGap || styles.gap || '0') || 0;
+        const visibleCards = attemptCards.slice(0, 5);
+        const visibleHeight = visibleCards.reduce((sum, card) => sum + card.offsetHeight, 0) + gap * 4;
+
+        container.style.maxHeight = `${Math.ceil(visibleHeight)}px`;
+        container.style.overflowY = 'auto';
+    } else {
+        container.style.maxHeight = '';
+        container.style.overflowY = '';
+    }
 }
 
 function renderSurvey(data) {
@@ -187,7 +203,7 @@ async function loadDashboardAnalytics() {
         const [performance, progress, attempts, survey, learning] = await Promise.all([
             fetchJson('/api/user_performance'),
             fetchJson('/api/module_progress'),
-            fetchJson('/api/attempt_history?limit=20'),
+            fetchJson('/api/attempt_history?limit=50'),
             fetchJson('/api/survey_comparison'),
             fetchJson('/api/learning_metrics')
         ]);

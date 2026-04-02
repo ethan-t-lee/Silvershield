@@ -7,9 +7,9 @@
 
       <!-- Flip phone top bar -->
     <div class="flip-status-bar">
-        <span class="signal">📶</span>
+                <span class="signal">SIG</span>
         <span class="carrier">Cingular</span>
-        <span class="battery">🔋</span>
+                <span class="battery">BAT</span>
     </div>
 
        <!-- SMS thread -->
@@ -24,8 +24,10 @@
 
 
     <div class="actions">
-        <button class="scam-btn" onclick="analyzeChoice('scam')">Fake</button>
-        <button class="safe-btn" onclick="analyzeChoice('not_scam')">Real</button>
+        <button id="readAloudMobile" class="tts-btn">Read Aloud</button>
+        <button id="voiceAnswerBtn" class="tts-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">Speak</button>
+        <button id="markSafe" class="safe-btn">Real</button>
+        <button id="markScam" class="scam-btn">Fake</button>
     </div>
 
     <div id="feedback" class="feedback"></div>
