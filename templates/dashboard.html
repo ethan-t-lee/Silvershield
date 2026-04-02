@@ -1,97 +1,68 @@
 <!DOCTYPE html>
 <html lang="{{ get_locale() }}">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>{{ _("Silver Shield Dashboard") }}</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='landingStyle.css') }}">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _("Silver Shield Dashboard") }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='landingStyle.css') }}">
 </head>
-
 <body>
 
 <div class="loginBanner">
 
-<h1>SilverShield</h1>
+    <h1>SilverShield</h1>
 
-<div class="loginRegisterButtons">
+    <div class="loginRegisterButtons">
 
-<div class="languageDropdown">
-    <button class="dropbtn">{{ _("Language") }}</button>
-    <div class="dropdownContent">
-        <a href="{{ url_for('set_language', lang='en') }}">English</a>
-        <a href="{{ url_for('set_language', lang='es') }}">Español</a>
-        <!-- Add more languages here if needed -->
+        <!-- Language Dropdown -->
+        <div class="languageDropdown">
+            <button class="dropbtn">{{ _("Language") }}</button>
+            <div class="dropdownContent">
+                <a href="{{ url_for('set_language', lang='en') }}">English</a>
+                <a href="{{ url_for('set_language', lang='es') }}">Español</a>
+                <!-- Add more languages here -->
+            </div>
+        </div>
+
+        <!-- Save and Logout buttons as proper links -->
+        <a class="btn" href="{{ url_for('save_progress') }}">{{ _("Save") }}</a>
+        <a class="loginButton" href="{{ url_for('logout') }}">{{ _("Logout") }}</a>
+
     </div>
 </div>
 
-<button class="btn">
-<a href="{{ url_for('save_progress') }}">
-{{ _("Save") }}
-</a>
-</button>
-
-<button class="loginButton">
-<a href="{{ url_for('logout') }}">
-{{ _("Logout") }}
-</a>
-</button>
-
-</div>
-
-</div>
-
-
 <div class="dashboardContainer">
 
-<h1>{{ _("Welcome to Your Learning Dashboard") }}</h1>
+    <h1>{{ _("Welcome to Your Learning Dashboard") }}</h1>
 
-<p>
-{{ _("Select a module below to begin your interactive learning experience.") }}
-</p>
+    <p>{{ _("Select a module below to begin your interactive learning experience.") }}</p>
 
-<div class="modulesGrid">
+    <div class="modulesGrid">
 
-<div class="moduleCard" onclick="location.href='{{ url_for('module1') }}'">
+        <!-- Module 1 -->
+        <div class="moduleCard" onclick="location.href='{{ url_for('module1') }}'">
+            <img class="moduleImage"
+                 src="{{ url_for('static', filename='images/module1Image.jpg') }}"
+                 alt="{{ _('Desktop simulation') }}">
+            <div class="moduleContent">
+                <h2>{{ _("Module 1: Desktop Simulation") }}</h2>
+                <p>{{ _("Learn to identify phishing and scams through a simulated Desktop experience.") }}</p>
+            </div>
+        </div>
 
-<img class="moduleImage"
-src="{{ url_for('static',filename='images/module1Image.jpg')}}"
-alt="{{ _('Desktop simulation') }}">
+        <!-- Module 2 -->
+        <div class="moduleCard" onclick="location.href='{{ url_for('module2') }}'">
+            <img class="moduleImage"
+                 src="{{ url_for('static', filename='images/module2Image.jpg') }}"
+                 alt="{{ _('Cellphone simulation') }}">
+            <div class="moduleContent">
+                <h2>{{ _("Module 2: Cellphone Simulation") }}</h2>
+                <p>{{ _("Learn to identify phishing and scams through a simulated Cellphone experience.") }}</p>
+            </div>
+        </div>
 
-<div class="moduleContent">
-
-<h2>{{ _("Module 1: Desktop Simulation") }}</h2>
-
-<p>
-{{ _("Learn to identify phishing and scams through a simulated Desktop experience.") }}
-</p>
-
-</div>
-</div>
-
-
-<div class="moduleCard" onclick="location.href='{{ url_for('module2') }}'">
-
-<img class="moduleImage"
-src="{{ url_for('static', filename='images/module2Image.jpg')}}"
-alt="{{ _('Cellphone simulation') }}">
-
-<div class="moduleContent">
-
-<h2>{{ _("Module 2: Cellphone Simulation") }}</h2>
-
-<p>
-{{ _("Learn to identify phishing and scams through a simulated Cellphone experience.") }}
-</p>
-
-</div>
-</div>
-
-</div>
+    </div>
 </div>
 
 </body>

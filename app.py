@@ -30,7 +30,9 @@ babel = Babel(app, locale_selector=select_locale)
 def set_language(lang):
     session['lang'] = lang
     return redirect(request.referrer or url_for('home'))
-
+@app.context_processor
+def inject_locale():
+    return dict(get_locale=lambda :str(get_locale()))
 ################################
 # Loading difficulty from
 #       the database
