@@ -38,4 +38,17 @@ pip install -r requirements.txt   # or manually install Flask, requests, etc.
 4. Run the server
 python app.py
 
+## Automated Testing
+
+Run the test suite locally with:
+
+```bash
+pytest
+```
+
+What is included:
+- `pytest`-based automated unit and route tests under `tests/`
+- `pytest.ini` for test discovery and configuration
+- GitHub Actions workflow at `.github/workflows/python-tests.yml` to run tests on pushes and pull requests
+
 NOTE: You will need to create a GROQ and Twilio account to generate the neccessary keys for this project to work.
