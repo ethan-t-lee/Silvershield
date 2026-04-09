@@ -16,14 +16,15 @@ from metrics import (log_scenario_attempt, log_critical_indicators,
 
 load_dotenv()
 
-# Read GROQ key from environment (.env)
+# Read runtime secrets from environment (.env locally, Render env vars in deployment)
 GROQ_KEY = os.getenv("GROQ_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-me")
 
-# Database path
-DB_PATH = "silvershieldDatabase.db"
+# Database path (can be overridden in deployment)
+DB_PATH = os.getenv("DB_PATH", "silvershieldDatabase.db")
 
 app = Flask(__name__)
-app.secret_key = "SECRET KEY"
+app.secret_key = SECRET_KEY
 init_database()
 
 # Babel locale selector
@@ -1847,6 +1848,7 @@ The trainee selected: {choice.upper()} (SCAM vs NOT SCAM)
         "difficulty_now": get_difficulty(category)
     })
 
-#Main
+# Main
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

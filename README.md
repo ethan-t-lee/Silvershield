@@ -38,6 +38,24 @@ pip install -r requirements.txt   # or manually install Flask, requests, etc.
 4. Run the server
 python app.py
 
+## Deploying to Render
+
+1. Push this repository to GitHub.
+2. In Render, create a new **Web Service** and connect the repo.
+3. Render will use the included `render.yaml` blueprint automatically.
+4. Set the required environment variables in Render:
+   - `SECRET_KEY`
+   - `GROQ_KEY`
+   - `TWILIO_ACCOUNT_SID`
+   - `TWILIO_AUTH_TOKEN`
+   - `TWILIO_VERIFY_SID`
+5. The service will start with:
+   ```bash
+   gunicorn app:app
+   ```
+
+Note: this project currently uses SQLite, so database contents may reset on free hosting after redeploys or restarts.
+
 ## Automated Testing
 
 Run the test suite locally with:
