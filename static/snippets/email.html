@@ -1,26 +1,35 @@
-<div class="email-view">
+<div class="email-view gmail-mobile-view">
 
-    <!-- Top Toolbar -->
-    <div class="email-toolbar">
+    <div class="gmail-mobile-header">
         <button class="back-btn" id="emailBackBtn" onclick="backToApps()">← Back</button>
 
-        <div class="toolbar-icons">
-            <span class="icon-btn">Mail</span>
-            <span class="icon-btn">Trash</span>
-            <span class="icon-btn">⋮</span>
+        <div class="gmail-mobile-brand">
+            <span class="gmail-mobile-logo">M</span>
+            <span class="gmail-mobile-wordmark">Gmail</span>
+        </div>
+
+        <div class="gmail-mobile-icons" aria-hidden="true">
+            <span>🔍</span>
+            <span>⋮</span>
         </div>
     </div>
 
-    <!-- AI-generated email goes here -->
-    <div id="emailBody" class="email-body">
-        Loading email...
+    <div class="gmail-mobile-search-pill" aria-hidden="true">Search in mail</div>
+
+    <div class="gmail-mobile-card">
+        <div class="gmail-mobile-card-header" aria-hidden="true">
+            <span class="gmail-mobile-mailbox">Primary Inbox</span>
+            <span class="gmail-mobile-unread">1 new</span>
+        </div>
+
+        <div id="emailBody" class="email-body gmail-mobile-body">
+            Loading email...
+        </div>
     </div>
 
-    <!-- Read aloud above the choice buttons, using same style as choice buttons -->
-    <!-- Read aloud + choice buttons -->
     <div class="email-actions">
-        <button id="readAloudMobile" class="safe-btn">Read Aloud</button>
-        <button id="voiceAnswerBtn" class="safe-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">Speak</button>
+        <button id="readAloudMobile" class="tts-btn">Read Aloud</button>
+        <button id="voiceAnswerBtn" class="tts-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">Speak</button>
         <button id="markSafe" class="safe-btn">Real</button>
         <button id="markScam" class="scam-btn">Fake</button>
     </div>

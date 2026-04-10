@@ -42,6 +42,19 @@ def get_llm_output_language():
         return "Chinese"
     return "English"
 
+
+def is_model_refusal(text):
+    lowered = (text or "").lower()
+    refusal_markers = (
+        "i cannot generate content",
+        "i can't generate content",
+        "i cannot assist with that",
+        "i can't assist with that",
+        "phishing victims",
+        "something else i can help you with",
+    )
+    return any(marker in lowered for marker in refusal_markers)
+
 babel = Babel(app, locale_selector=select_locale)
 
 
@@ -831,7 +844,24 @@ Generate a NEW realistic LEGITIMATE email now. Do NOT write a phishing or scam e
             break
 
     if not email_html:
-        return jsonify({"success": False, "error": "Failed to generate email after retries"}), 500
+        if is_scam:
+            email_html = f"""
+<b>From:</b> Account Security &lt;security-review@notice-check.com&gt;<br>
+<b>To:</b> user@example.com<br>
+<b>Subject:</b> Urgent sign-in review needed<br><br>
+<hr><br>
+<p style="font-family:Arial; font-size:15px; line-height:1.55;">We noticed unusual activity connected to your recent account use. Please review your sign-in details as soon as possible to avoid interruption.</p>
+<p style="font-family:Arial; font-size:15px; line-height:1.55;">Use the secure verification page here: <a href="https://account-review-notice.com">Verify now</a></p>
+""".strip()
+        else:
+            email_html = f"""
+<b>From:</b> Community Services &lt;updates@community-center.org&gt;<br>
+<b>To:</b> user@example.com<br>
+<b>Subject:</b> Monthly account update<br><br>
+<hr><br>
+<p style="font-family:Arial; font-size:15px; line-height:1.55;">Hello, this is a routine update to let you know your account settings and contact information are available to review in your normal member portal.</p>
+<p style="font-family:Arial; font-size:15px; line-height:1.55;">There is no urgent action needed. You can visit the usual website whenever it is convenient for you.</p>
+""".strip()
 
     return jsonify({"success": True, "email": email_html, "expected_label": expected_label})
 
@@ -981,8 +1011,9 @@ You MUST respond with ONLY a JSON object. Use double quotes. No markdown.
 def generate_sites():
     import random
 
-    data = request.json
-    mode = data.get("mode")
+    data = request.get_json(silent=True) or {}
+    mode = (data.get("mode") or "list").lower()
+    query = (data.get("query") or "security alerts").strip()
     difficulty = get_difficulty("difficulty_internet_desktop")
     output_language = get_llm_output_language()
 
@@ -991,165 +1022,242 @@ def generate_sites():
         "Content-Type": "application/json"
     }
 
-    # Helper: safe JSON extraction
-    def safe_extract_json(raw_text):
-        raw_text = raw_text.strip()
+    def infer_brand_details(search_query):
+        known_brands = {
+            "amazon": ("Amazon", "amazon.com"),
+            "chase": ("Chase", "chase.com"),
+            "paypal": ("PayPal", "paypal.com"),
+            "usps": ("USPS", "usps.com"),
+            "microsoft": ("Microsoft", "microsoft.com"),
+            "apple": ("Apple", "apple.com"),
+            "google": ("Google", "google.com"),
+            "bank": ("Your Bank", "securebank.example.com"),
+        }
+        lowered = search_query.lower()
+        for key, details in known_brands.items():
+            if key in lowered:
+                return details
 
-        # Remove markdown fences if model used them
+        cleaned = "".join(ch for ch in search_query if ch.isalnum() or ch.isspace()).strip() or "Online Safety"
+        slug = "-".join(cleaned.lower().split()) or "online-safety"
+        return cleaned.title(), f"{slug}.example.com"
+
+    def safe_extract_json(raw_text):
+        raw_text = (raw_text or "").strip()
         if raw_text.startswith("```"):
             raw_text = raw_text.replace("```json", "").replace("```", "").strip()
-
         try:
             return json.loads(raw_text)
-        except:
+        except Exception:
             return None
 
-    ################################
-    # MODE A — Generate LIST OF 5 RESULTS
-    ################################
-    if mode == "list":
+    def normalize_result(parsed, fallback):
+        if not isinstance(parsed, dict):
+            return fallback
+        return {
+            "title": (parsed.get("title") or parsed.get("headline") or fallback["title"]).strip(),
+            "url": (parsed.get("url") or parsed.get("link") or fallback["url"]).strip(),
+            "description": (parsed.get("description") or parsed.get("snippet") or parsed.get("text") or fallback["description"]).strip(),
+            "site_type": parsed.get("site_type") if parsed.get("site_type") in ("legit", "phishing") else fallback["site_type"],
+            "is_sponsored": bool(parsed.get("is_sponsored", fallback.get("is_sponsored", False))),
+        }
 
-        legit_prompt = f"""
-Generate one SAFE, legitimate website search result.
-
-    Write title and description in {output_language}.
-
-Return ONLY JSON:
-{
-  "title": "Example Title",
-  "url": "https://example.com",
-  "description": "Short 1-2 sentence description.",
-  "site_type": "legit"
-}
-"""
-
-        phishing_prompt = f"""
-Generate one PHISHING website search result.
-
-Rules:
-- URL must look similar to a real brand but be wrong
-- Subtle phishing tone
-- No obvious fake giveaways
-    - Write title and description in {output_language}.
-
-Return ONLY JSON:
-{
-  "title": "Example Scam Title",
-  "url": "https://brand-secure-check.com",
-  "description": "Short 1-2 sentence phishing lure.",
-  "site_type": "phishing"
-}
-"""
-
-        results = []
-
-        # ---- Generate sites with retry ----
-        def generate_one(prompt_text):
-            for attempt in range(2):  # try twice
+    def generate_one(prompt_text, fallback):
+        for _attempt in range(2):
+            try:
                 payload = {
                     "model": "llama-3.1-8b-instant",
                     "messages": [{"role": "user", "content": prompt_text}]
                 }
-
-                r = requests.post(
+                response = requests.post(
                     "https://api.groq.com/openai/v1/chat/completions",
-                    headers=headers, json=payload
+                    headers=headers,
+                    json=payload,
+                    timeout=20
                 )
-
-                try:
-                    raw_response = r.json()["choices"][0]["message"]["content"]
-                except:
-                    continue
-
+                raw_response = response.json()["choices"][0]["message"]["content"]
+                if is_model_refusal(raw_response):
+                    return fallback
                 parsed = safe_extract_json(raw_response)
                 if parsed:
-                    return parsed
+                    return normalize_result(parsed, fallback)
+            except Exception:
+                continue
+        return fallback
 
-            # Fail-safe
-            return {
-                "title": "Error Loading",
-                "url": "about:blank",
-                "description": "The AI failed to generate a response.",
-                "site_type": "legit"
-            }
+    brand_name, legit_domain = infer_brand_details(query)
+    phishing_domain = f"{brand_name.lower().replace(' ', '')}-security-check.com"
 
-        # Generate 2 legit sites
-        for _ in range(2):
-            results.append(generate_one(legit_prompt))
-
-        # Generate 3 phishing sites
-        for _ in range(3):
-            results.append(generate_one(phishing_prompt))
-
-        random.shuffle(results)
-
-        return jsonify({"success": True, "results": results})
-
-    ################################
-    # MODE B — Generate FULL WEBSITE HTML
-    ################################
-    if mode == "open":
-        title = data["title"]
-        url = data["url"]
-        site_type = data["site_type"]
-        difficulty = get_difficulty("difficulty_internet_desktop")
-
-        behavior_text = "This is a SAFE legitimate website." \
-            if site_type == "legit" \
-            else "This is a PHISHING website designed to trick the user."
-
-        open_prompt = f"""
-        You are generating a realistic website.
-
-        DIFFICULTY LEVEL: {difficulty}
-
-        ---
-        Difficulty rules:
-        1 = Extremely obvious phishing. Wrong logos, bad spelling, weird layout.
-        2 = Somewhat suspicious. Slightly weird domain, formatting mistakes.
-        3 = Subtle phishing. Looks almost real; small red flags.
-        4 = Nearly perfect imitation. Very subtle clues only an expert notices.
-        ---
-
-        USER EXPECTATION:
-        - Must output ONLY <div>...</div>
-        - All text must be black.
-        - No <html>, <body>, <script>, markdown, or comments.
-        - Write all visible website text in {output_language}.
-
-        SITE TYPE:
-        - legit = a completely normal business website
-        - phishing = follow difficulty rules above
-
-        TITLE: {title}
-        URL: {url}
-        NOTES: {"This is a SAFE legitimate website." if site_type == "legit" else "This is a PHISHING website designed to trick the user."}
-
-        Return ONLY HTML. 
-        """
-
-        payload = {
-            "model": "llama-3.1-8b-instant",
-            "messages": [{"role": "user", "content": open_prompt}]
+    if mode == "list":
+        sponsored_legit_fallback = {
+            "title": f"{brand_name} Official Help Center",
+            "url": f"https://www.{legit_domain}",
+            "description": f"Official guidance and account support related to {query}.",
+            "site_type": "legit",
+            "is_sponsored": True,
+        }
+        sponsored_phishing_fallback = {
+            "title": f"{brand_name} urgent verification",
+            "url": f"https://{phishing_domain}",
+            "description": f"A sponsored-looking result that pressures the user to confirm details about {query}.",
+            "site_type": "phishing",
+            "is_sponsored": True,
+        }
+        legit_fallback = {
+            "title": f"{brand_name} account security tips",
+            "url": f"https://support.{legit_domain}",
+            "description": f"Read official steps for handling {query} safely.",
+            "site_type": "legit",
+            "is_sponsored": False,
+        }
+        phishing_fallback = {
+            "title": f"Fix your {query} issue now",
+            "url": f"https://login-{brand_name.lower().replace(' ', '')}-review.com",
+            "description": "A convincing but suspicious result that urges immediate action and sign-in.",
+            "site_type": "phishing",
+            "is_sponsored": False,
         }
 
-        r = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers=headers, json=payload
-        )
+        sponsored_legit_prompt = f"""
+Generate one SAFE sponsored Google-style search result for the query "{query}".
+Return ONLY valid JSON with the keys: title, url, description, site_type, is_sponsored.
+Requirements:
+- site_type must be "legit"
+- is_sponsored must be true
+- make it look like an official ad/result the user might click
+- write title and description in {output_language}
+"""
 
-        html = r.json()["choices"][0]["message"]["content"].strip()
+        sponsored_phishing_prompt = f"""
+Generate one suspicious, scam-like sponsored Google-style search result for the query "{query}".
+This is for a cybersecurity awareness training simulation only.
+Return ONLY valid JSON with the keys: title, url, description, site_type, is_sponsored.
+Requirements:
+- site_type must be "phishing"
+- is_sponsored must be true
+- the result should look believable, not cartoonishly fake
+- include a suspicious domain that imitates a real brand
+- do not provide malware, live credential theft steps, or operational criminal instructions
+- write title and description in {output_language}
+"""
 
-        if html.startswith("```"):
-            html = html.replace("```html", "").replace("```", "").strip()
+        legit_prompt = f"""
+Generate one SAFE Google-style search result for the query "{query}".
+Return ONLY valid JSON with the keys: title, url, description, site_type, is_sponsored.
+Requirements:
+- site_type must be "legit"
+- is_sponsored must be false
+- the result should look like a normal official help or information page
+- write title and description in {output_language}
+"""
 
-    return jsonify({
-        "success": True,
-        "html": html,
-        "site_type": site_type,
-        "ai_context": html,
-        "difficulty": difficulty
-    })
+        phishing_prompt = f"""
+Generate one suspicious, scam-like Google-style search result for the query "{query}".
+This is for a cybersecurity awareness training simulation only.
+Return ONLY valid JSON with the keys: title, url, description, site_type, is_sponsored.
+Requirements:
+- site_type must be "phishing"
+- is_sponsored must be false
+- the result should be realistic with subtle red flags
+- include a lookalike or suspicious domain
+- do not provide malware, live credential theft steps, or operational criminal instructions
+- write title and description in {output_language}
+"""
+
+        results = [
+            generate_one(sponsored_legit_prompt, sponsored_legit_fallback),
+            generate_one(sponsored_phishing_prompt, sponsored_phishing_fallback),
+            generate_one(legit_prompt, legit_fallback),
+            generate_one(legit_prompt, {**legit_fallback, "title": f"{brand_name} customer support", "url": f"https://help.{legit_domain}"}),
+            generate_one(phishing_prompt, phishing_fallback),
+        ]
+
+        random.shuffle(results)
+        return jsonify({"success": True, "query": query, "results": results})
+
+    if mode == "open":
+        title = data.get("title") or f"{brand_name} Support"
+        url = data.get("url") or f"https://www.{legit_domain}"
+        site_type = data.get("site_type") or "legit"
+
+        open_prompt = f"""
+You are generating the visible content for a website that was clicked from Google search results.
+This is an educational cybersecurity-awareness mockup, not a real phishing page.
+
+Search query: {query}
+Clicked result title: {title}
+URL shown to the user: {url}
+Site type: {site_type}
+Difficulty level: {difficulty}
+Language: {output_language}
+
+Requirements:
+- Return ONLY HTML inside a single <div>...</div>
+- Do not include markdown, scripts, or comments
+- Use readable black text on a white background
+- If the site is phishing, make it a safe simulated training page with warning signs and placeholder fields only
+- If the site is legitimate, make it look helpful, normal, and trustworthy
+- Do not include malware, exploit steps, or anything operationally harmful
+"""
+
+        html = None
+        try:
+            payload = {
+                "model": "llama-3.1-8b-instant",
+                "messages": [{"role": "user", "content": open_prompt}]
+            }
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=20
+            )
+            html = response.json()["choices"][0]["message"]["content"].strip()
+            if html.startswith("```"):
+                html = html.replace("```html", "").replace("```", "").strip()
+            if is_model_refusal(html):
+                html = None
+        except Exception:
+            html = None
+
+        if not html:
+            if site_type == "phishing":
+                html = f"""
+<div style=\"font-family:Arial,sans-serif;color:#000;\">
+  <h2>{title}</h2>
+  <p><strong>Urgent account review required</strong></p>
+  <p>We noticed unusual activity connected to <strong>{query}</strong>. Please confirm your login details immediately to avoid disruption.</p>
+  <form>
+    <label>Email or username</label><br>
+    <input style=\"width:100%;padding:8px;margin:6px 0 12px;\" placeholder=\"Enter your account\"><br>
+    <label>Password</label><br>
+    <input style=\"width:100%;padding:8px;margin:6px 0 12px;\" type=\"password\" placeholder=\"Enter your password\"><br>
+    <button style=\"padding:10px 16px;background:#1a73e8;color:#fff;border:none;border-radius:6px;\">Verify now</button>
+  </form>
+</div>
+"""
+            else:
+                html = f"""
+<div style=\"font-family:Arial,sans-serif;color:#000;\">
+  <h2>{title}</h2>
+  <p>Welcome to the official help page for <strong>{query}</strong>.</p>
+  <ul>
+    <li>Review recent account activity</li>
+    <li>Read safety and privacy guidance</li>
+    <li>Contact verified support if needed</li>
+  </ul>
+  <p>This page provides general information and does not ask for urgent credentials or payments.</p>
+</div>
+"""
+
+        return jsonify({
+            "success": True,
+            "query": query,
+            "html": html,
+            "site_type": site_type,
+            "ai_context": html,
+            "difficulty": difficulty
+        })
 
     return jsonify({"success": False, "error": "Invalid mode"}), 400
 
@@ -1359,7 +1467,22 @@ def generate_sms():
     data = r.json()
 
     if "choices" not in data:
-        return jsonify({"success": False, "error": "Groq returned no choices"}), 500
+        fallback_sms = {
+            "number": "+1 555 123 4567" if is_scam else "+1 800 555 0100",
+            "text": (
+                "Bank notice: unusual activity detected. Confirm your account now at secure-review-alert.com"
+                if is_scam else
+                "Reminder: your scheduled service update is now available in your normal account portal. No urgent action is needed."
+            ),
+            "time": "10:52 AM",
+            "clues": ["Urgent pressure", "Suspicious link"] if is_scam else []
+        }
+        return jsonify({
+            "success": True,
+            "difficulty": difficulty,
+            "expected_label": expected_label,
+            "sms": fallback_sms
+        })
 
     raw = data["choices"][0]["message"]["content"].strip()
 
@@ -1488,7 +1611,22 @@ Write caller_name and transcript in {output_language}.
     data = r.json()
 
     if "choices" not in data:
-        return jsonify({"success": False, "error": "Groq error"}), 500
+        fallback_call = {
+            "number": "(555) 123-9876" if is_scam else "(800) 123-4567",
+            "caller_name": "Account Security Desk" if is_scam else "Customer Support",
+            "transcript": (
+                "Hello, we detected suspicious activity on your account and need you to confirm your information immediately. Please stay on the line and verify your details now."
+                if is_scam else
+                "Hello, this is a routine courtesy call to let you know your account information is available in your usual support portal. There is no urgent action required today."
+            ),
+            "clues": ["Urgency", "Requests quick action"] if is_scam else []
+        }
+        return jsonify({
+            "success": True,
+            "difficulty": difficulty,
+            "expected_label": expected_label,
+            "call": fallback_call
+        })
 
     raw = data["choices"][0]["message"]["content"].strip()
 
@@ -1501,7 +1639,16 @@ Write caller_name and transcript in {output_language}.
     try:
         call_obj = json.loads(raw)
     except Exception:
-        return jsonify({"success": False, "error": "Invalid JSON"}), 500
+        call_obj = {
+            "number": "(555) 123-9876" if is_scam else "(800) 123-4567",
+            "caller_name": "Account Security Desk" if is_scam else "Customer Support",
+            "transcript": (
+                "Hello, we detected suspicious activity on your account and need you to confirm your information immediately. Please stay on the line and verify your details now."
+                if is_scam else
+                "Hello, this is a routine courtesy call to let you know your account information is available in your usual support portal. There is no urgent action required today."
+            ),
+            "clues": ["Urgency", "Requests quick action"] if is_scam else []
+        }
 
     return jsonify({
         "success": True,
@@ -1517,116 +1664,32 @@ Write caller_name and transcript in {output_language}.
 @app.route("/generate-web", methods=["POST"])
 def generate_web():
     import random as _random
+
+    data = request.get_json(silent=True) or {}
+    mode = (data.get("mode") or "search").lower()
     difficulty = get_difficulty("difficulty_web_mobile")
     output_language = get_llm_output_language()
-    is_scam = _random.random() < 0.5
-    expected_label = "scam" if is_scam else "not_scam"
-
-    scam_difficulty_text = {
-        1: "Obvious scam: typo-squatted URLs, suspicious ads.",
-        2: "Somewhat suspicious: some red-flag links.",
-        3: "Subtle clues only: nearly convincing fake results.",
-        4: "Nearly perfect scam site — only an expert would notice.",
-    }[difficulty]
-
-    safe_difficulty_text = {
-        1: "Clearly legitimate results: real brand domains, no suspicious ads.",
-        2: "Mostly legitimate with generically-worded ads that could raise mild doubt.",
-        3: "Realistic legitimate search page — very close to real Google results.",
-        4: "Perfect search results page indistinguishable from real Google.",
-    }[difficulty]
-
-    theme = request.json.get("theme", "search / login / refund / alert")
-
-    if is_scam:
-        prompt = f"""
-Generate extremely realistic FAKE GOOGLE SEARCH RESULTS that contain scam content.
-
-STRICT RULES:
-- Output ONLY JSON.
-- NO markdown.
-- Follow this structure:
-
-{{
-    "ads": [{{"title":"...", "url":"...", "snippet":"..."}}],
-    "results": [{{"title":"...", "url":"...", "snippet":"..."}}],
-  "pagination": {{
-      "next_page_label": "Next >",
-      "page_number": 1
-  }},
-  "clues": ["...", "..."]
-}}
-
-- Return exactly 2 ads and exactly 6 results.
-- Every ad/result item must include non-empty "title", "url", and "snippet" strings.
-
-Difficulty={difficulty}
-{scam_difficulty_text}
-Theme={theme}
-Write all ad/result text and clues in {output_language}.
-"""
-    else:
-        prompt = f"""
-Generate extremely realistic LEGITIMATE GOOGLE SEARCH RESULTS from real companies and brands.
-
-STRICT RULES:
-- Output ONLY JSON.
-- NO markdown.
-- Follow this structure:
-
-{{
-    "ads": [{{"title":"...", "url":"...", "snippet":"..."}}],
-    "results": [{{"title":"...", "url":"...", "snippet":"..."}}],
-  "pagination": {{
-      "next_page_label": "Next >",
-      "page_number": 1
-  }},
-  "clues": []
-}}
-
-- Return exactly 2 ads and exactly 6 results.
-- Every ad/result item must include non-empty "title", "url", and "snippet" strings.
-
-REQUIREMENTS:
-- Use real well-known brand domains (amazon.com, chase.com, usps.com, etc.).
-- Professional ad copy and descriptions.
-- No typo-squatted URLs, no suspicious links.
-- NEVER mention SilverShield.
-
-Difficulty={difficulty}
-{safe_difficulty_text}
-Theme={theme}
-Write all ad/result text in {output_language}.
-"""
+    query = (data.get("query") or data.get("theme") or "bank account security tips").strip()
 
     headers = {"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"}
 
-    payload = {
-        "model": "llama-3.1-8b-instant",
-        "messages": [{"role": "user", "content": prompt}]
-    }
+    def safe_extract_json(raw_text):
+        raw_text = (raw_text or "").strip()
+        if raw_text.startswith("```"):
+            raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+        try:
+            return json.loads(raw_text)
+        except Exception:
+            return None
 
-    r = requests.post("https://api.groq.com/openai/v1/chat/completions",
-                      headers=headers, json=payload)
-
-    raw = r.json()["choices"][0]["message"]["content"].strip()
-
-    if raw.startswith("```"):
-        raw = raw.replace("```json", "").replace("```", "").strip()
-
-    try:
-        web_obj = json.loads(raw)
-    except:
-        return jsonify({"success": False, "error": "Invalid JSON"}), 500
-
-    # Normalize LLM output so the frontend always gets consistent fields.
-    def normalize_item(item):
+    def normalize_item(item, fallback_type="legit"):
         if not isinstance(item, dict):
             return None
 
         title = (item.get("title") or item.get("headline") or item.get("name") or "").strip()
         url = (item.get("url") or item.get("link") or item.get("domain") or "").strip()
         snippet = (item.get("snippet") or item.get("description") or item.get("text") or "").strip()
+        site_type = item.get("site_type") if item.get("site_type") in ("legit", "phishing") else fallback_type
 
         if not title and not url and not snippet:
             return None
@@ -1635,18 +1698,193 @@ Write all ad/result text in {output_language}.
             "title": title,
             "url": url,
             "snippet": snippet,
+            "site_type": site_type,
         }
 
-    ads = [normalize_item(x) for x in (web_obj.get("ads") or [])]
-    results = [normalize_item(x) for x in (web_obj.get("results") or [])]
+    def build_fallback_items():
+        slug = "-".join(query.lower().split()) or "security-tips"
+        ads = [
+            {
+                "title": f"Official help for {query}",
+                "url": f"https://www.{slug}.example.com",
+                "snippet": f"Review the official information related to {query}.",
+                "site_type": "legit",
+            },
+            {
+                "title": f"Fix {query} immediately",
+                "url": f"https://{slug}-verify-now.com",
+                "snippet": "An urgent-looking ad asking you to confirm details right away.",
+                "site_type": "phishing",
+            },
+        ]
+        results = [
+            {
+                "title": f"What to know about {query}",
+                "url": f"https://support.{slug}.example.com",
+                "snippet": "Read practical safety guidance from an official-looking help center.",
+                "site_type": "legit",
+            },
+            {
+                "title": f"{query.title()} account verification",
+                "url": f"https://login-{slug}-review.com",
+                "snippet": "A believable but suspicious page asking you to sign in quickly.",
+                "site_type": "phishing",
+            },
+            {
+                "title": f"{query.title()} customer support",
+                "url": f"https://www.{slug}.support.example.com",
+                "snippet": "Contact details and FAQs for the topic you searched.",
+                "site_type": "legit",
+            },
+            {
+                "title": f"{query.title()} alerts and updates",
+                "url": f"https://alerts-{slug}.net",
+                "snippet": "A vague result using urgency and generic warnings to pressure the user.",
+                "site_type": "phishing",
+            },
+            {
+                "title": f"How to stay safe online with {query}",
+                "url": "https://staysafeonline.org",
+                "snippet": "General cybersecurity advice presented in a calm, educational tone.",
+                "site_type": "legit",
+            },
+            {
+                "title": f"Report suspicious {query} messages",
+                "url": "https://consumer.ftc.gov",
+                "snippet": "A legitimate public information page about scams and fraud reporting.",
+                "site_type": "legit",
+            },
+        ]
+        return ads, results
+
+    if mode == "open":
+        title = data.get("title") or query.title()
+        url = data.get("url") or "https://example.com"
+        site_type = data.get("site_type") or "legit"
+
+        prompt = f"""
+Generate the main visible content of a mobile-friendly webpage that a user clicked from Google search results.
+This is an educational cybersecurity-awareness mockup, not a real phishing page.
+Search query: {query}
+Page title: {title}
+URL: {url}
+Site type: {site_type}
+Difficulty level: {difficulty}
+Language: {output_language}
+
+Return ONLY HTML inside a single <div>...</div>.
+Make the site easy to inspect for trust signals and warning signs.
+Use safe placeholder content only and do not include operationally harmful instructions.
+"""
+
+        html = None
+        try:
+            payload = {
+                "model": "llama-3.1-8b-instant",
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=20
+            )
+            html = response.json()["choices"][0]["message"]["content"].strip()
+            if html.startswith("```"):
+                html = html.replace("```html", "").replace("```", "").strip()
+            if is_model_refusal(html):
+                html = None
+        except Exception:
+            html = None
+
+        if not html:
+            if site_type == "phishing":
+                html = f"""
+<div style=\"font-family:Arial,sans-serif;color:#000;\">
+  <h2>{title}</h2>
+  <p><strong>Security check required</strong></p>
+  <p>To continue with <strong>{query}</strong>, confirm your account information now.</p>
+  <input style=\"width:100%;padding:8px;margin:8px 0;\" placeholder=\"Username or email\">
+  <input style=\"width:100%;padding:8px;margin:8px 0;\" placeholder=\"Password\" type=\"password\">
+  <button style=\"padding:10px 14px;background:#1a73e8;color:#fff;border:none;border-radius:6px;\">Sign in</button>
+</div>
+"""
+            else:
+                html = f"""
+<div style=\"font-family:Arial,sans-serif;color:#000;\">
+  <h2>{title}</h2>
+  <p>This is an informational page related to <strong>{query}</strong>.</p>
+  <ul>
+    <li>Review your settings and safety tips</li>
+    <li>Read official guidance</li>
+    <li>Use verified support channels if needed</li>
+  </ul>
+</div>
+"""
+
+        return jsonify({
+            "success": True,
+            "difficulty": difficulty,
+            "query": query,
+            "html": html,
+            "site_type": site_type
+        })
+
+    prompt = f"""
+Generate realistic Google-style mobile search results for the user query: "{query}".
+Return ONLY valid JSON with these top-level keys: ads, results, pagination, clues.
+Requirements:
+- include exactly 2 ads and exactly 6 results
+- each item must contain: title, url, snippet, site_type
+- mix legitimate and phishing results so the user has to inspect carefully
+- keep phishing results believable, not cartoonishly fake
+- write all visible text in {output_language}
+"""
+
+    web_obj = None
+    try:
+        payload = {
+            "model": "llama-3.1-8b-instant",
+            "messages": [{"role": "user", "content": prompt}]
+        }
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=20
+        )
+        raw = response.json()["choices"][0]["message"]["content"].strip()
+        web_obj = safe_extract_json(raw)
+    except Exception:
+        web_obj = None
+
+    if not isinstance(web_obj, dict):
+        ads, results = build_fallback_items()
+        web_obj = {
+            "ads": ads,
+            "results": results,
+            "pagination": {"next_page_label": "Next >", "page_number": 1},
+            "clues": []
+        }
+
+    ads = [normalize_item(x, x.get("site_type", "legit") if isinstance(x, dict) else "legit") for x in (web_obj.get("ads") or [])]
+    results = [normalize_item(x, x.get("site_type", "legit") if isinstance(x, dict) else "legit") for x in (web_obj.get("results") or [])]
+
+    if len([x for x in ads if x]) < 2 or len([x for x in results if x]) < 6:
+        fallback_ads, fallback_results = build_fallback_items()
+        ads = [normalize_item(x, x["site_type"]) for x in fallback_ads]
+        results = [normalize_item(x, x["site_type"]) for x in fallback_results]
+
+    _random.shuffle(results)
 
     web_obj["ads"] = [x for x in ads if x][:2]
     web_obj["results"] = [x for x in results if x][:6]
+    web_obj["pagination"] = web_obj.get("pagination") or {"next_page_label": "Next >", "page_number": 1}
 
     return jsonify({
         "success": True,
         "difficulty": difficulty,
-        "expected_label": expected_label,
+        "query": query,
         "web": web_obj
     })
 

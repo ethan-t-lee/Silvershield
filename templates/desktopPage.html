@@ -43,34 +43,73 @@
         <span class="popup-close">X</span>
     </div>
 
-    <div class="popup-body">
+    <div class="popup-body gmail-shell">
 
-        <!-- AI generated email content -->
-        <div id="emailContent" class="email-overlay">
-            {{ _("Loading...") }}
+        <div class="gmail-topbar">
+            <div class="gmail-brand">
+                <span class="gmail-menu">☰</span>
+                <span class="gmail-logo-mark">M</span>
+                <span class="gmail-logo-text">Gmail</span>
+            </div>
+
+            <div class="gmail-searchbar">
+                <input value="in:inbox newer_than:7d" readonly>
+            </div>
+
+            <div class="gmail-top-actions" aria-hidden="true">
+                <span>?</span>
+                <span>⚙</span>
+                <span>👤</span>
+            </div>
         </div>
 
-        <!-- Real/Fake buttons -->
-        <div id="emailButtons" class="rf-container" style="display:none;">
-            <button id="realBtn" class="rf-btn real">
-                {{ _("REAL") }}
-            </button>
+        <div class="gmail-main">
+            <aside class="gmail-sidebar" aria-hidden="true">
+                <button class="gmail-compose" type="button">Compose</button>
+                <div class="gmail-nav-item active">Inbox <span>18</span></div>
+                <div class="gmail-nav-item">Starred</div>
+                <div class="gmail-nav-item">Sent</div>
+                <div class="gmail-nav-item">Drafts</div>
+                <div class="gmail-nav-item">More</div>
+            </aside>
 
-            <button id="fakeBtn" class="rf-btn fake">
-                {{ _("FAKE") }}
-            </button>
+            <section class="gmail-content-shell">
+                <div class="gmail-message-toolbar" aria-hidden="true">
+                    <span>Archive</span>
+                    <span>Report spam</span>
+                    <span>Delete</span>
+                    <span>Mark unread</span>
+                </div>
 
-            <button id="emailVoiceBtn" class="rf-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">
-                Speak
-            </button>
+                <div class="gmail-reading-pane">
+                    <div id="emailContent" class="email-overlay">
+                        {{ _("Loading...") }}
+                    </div>
+                </div>
+
+                <div class="desktop-actions-row">
+                    <div class="email-controls" style="display:flex;gap:8px;align-items:center;">
+                        <button id="readAloudBtn" class="rf-btn">{{ _("Read aloud") }}</button>
+                    </div>
+
+                    <div id="emailButtons" class="rf-container" style="display:none;">
+                        <button id="realBtn" class="rf-btn real">
+                            {{ _("REAL") }}
+                        </button>
+
+                        <button id="fakeBtn" class="rf-btn fake">
+                            {{ _("FAKE") }}
+                        </button>
+
+                        <button id="emailVoiceBtn" class="rf-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">
+                            Speak
+                        </button>
+                    </div>
+                </div>
+
+                <div id="emailFeedback" class="feedback-box" style="display:none;"></div>
+            </section>
         </div>
-
-        <div class="email-controls" style="display:flex;gap:8px;align-items:center;margin-top:12px;">
-            <button id="readAloudBtn" class="rf-btn">{{ _("Read aloud") }}</button>
-        </div>
-
-        <!-- Feedback -->
-        <div id="emailFeedback" class="feedback-box" style="display:none;"></div>
 
     </div>
 
@@ -95,44 +134,71 @@
         <span class="popup-close">X</span>
     </div>
 
-    <div class="popup-body">
+    <div class="popup-body chrome-shell">
 
-        <!-- Address Bar -->
-        <div class="browser-bar">
-            <input
-                id="addressBar"
-                value="https://search.cyber-training.local/?q=security+alerts"
-                readonly>
+        <div class="chrome-tabs-row" aria-hidden="true">
+            <div class="chrome-tab active">Cyber Search</div>
+            <div class="chrome-tab">New Tab</div>
+            <div class="chrome-window-actions">— □ ✕</div>
         </div>
 
-        <!-- AI generated search results -->
+        <div class="chrome-toolbar">
+            <div class="chrome-nav-buttons" aria-hidden="true">
+                <span class="chrome-nav-icon">←</span>
+                <span class="chrome-nav-icon">→</span>
+                <span class="chrome-nav-icon">⟳</span>
+            </div>
+
+            <div class="browser-bar">
+                <button id="internetBackBtn" class="browser-nav-btn" style="display:none;">← Results</button>
+                <input
+                    id="addressBar"
+                    value="security alerts"
+                    placeholder="Search Google or type a topic">
+                <button id="internetSearchBtn" class="browser-search-btn">Search</button>
+            </div>
+
+            <div class="chrome-toolbar-tools" aria-hidden="true">
+                <span>☆</span>
+                <span>⋮</span>
+            </div>
+        </div>
+
+        <div class="chrome-bookmarks-row" aria-hidden="true">
+            <span class="chrome-chip active">All</span>
+            <span class="chrome-chip">News</span>
+            <span class="chrome-chip">Images</span>
+            <span class="chrome-chip">Maps</span>
+        </div>
+
+        <div id="internetSearchMeta" class="internet-search-meta">
+            Search a topic, open a result, and inspect the website before deciding if it is real or a scam.
+        </div>
+
         <div id="internetContent" class="internet-content">
             {{ _("Loading...") }}
         </div>
 
+        <div class="desktop-actions-row">
+            <div class="internet-controls" style="display:flex;gap:8px;align-items:center;">
+                <button id="internetReadAloudBtn" class="rf-btn">{{ _("Read aloud") }}</button>
+            </div>
 
-        <!-- Internet Real/Fake Buttons -->
-        <div id="internetButtons" class="site-actions" style="display:none;">
+            <div id="internetButtons" class="site-actions" style="display:none;">
+                <button id="internetRealBtn" class="rf-btn real">
+                    {{ _("REAL") }}
+                </button>
 
-            <button id="internetRealBtn" class="rf-btn real">
-                {{ _("REAL") }}
-            </button>
+                <button id="internetFakeBtn" class="rf-btn fake">
+                    {{ _("FAKE") }}
+                </button>
 
-            <button id="internetFakeBtn" class="rf-btn fake">
-                {{ _("FAKE") }}
-            </button>
-
-            <button id="internetVoiceBtn" class="rf-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">
-                Speak
-            </button>
-
+                <button id="internetVoiceBtn" class="rf-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">
+                    Speak
+                </button>
+            </div>
         </div>
 
-        <div class="internet-controls" style="display:flex;gap:8px;align-items:center;margin-top:12px;">
-            <button id="internetReadAloudBtn" class="rf-btn">{{ _("Read aloud") }}</button>
-        </div>
-
-        <!-- Feedback -->
         <div id="internetFeedback" class="feedback-box"></div>
 
     </div>

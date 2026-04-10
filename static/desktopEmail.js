@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 lastGeneratedEmail = data.email;
                 lastEmailExpectedLabel = data.expected_label || "";
                 emailLoadTime = Date.now();  // Record time email was displayed
-                rfContainer.style.display = "block";
+                rfContainer.style.display = "flex";
 
                 // Preload TTS immediately to reduce play delay
                 try {

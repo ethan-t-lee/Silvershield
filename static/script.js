@@ -6,6 +6,8 @@ let currentType = "";
 let currentDifficulty = "";
 let currentExpectedLabel = "";
 let scenarioLoadTime = null;
+let currentWebQuery = "";
+let currentWebResults = null;
 const mobileLabels = globalThis.mobileLabels || {};
 
 function applyMobileTranslations() {
@@ -61,6 +63,12 @@ function buildWebSpeechText(sc) {
     return `${adText} ${resultText}`.replace(/\s+/g, " ").trim();
 }
 
+function htmlToPlainText(html) {
+    const temp = document.createElement("div");
+    temp.innerHTML = html || "";
+    return (temp.textContent || temp.innerText || "").replace(/\s+/g, " ").trim();
+}
+
 const ScenarioEngine = {
     endpoints: {
         email: "/generate-email",
@@ -84,6 +92,12 @@ const ScenarioEngine = {
         const htmlResp = await fetch(`/static/snippets/${type}.html`);
         scenarioBody.innerHTML = await htmlResp.text();
         applyMobileTranslations();
+
+        if (type === "web") {
+            this.setupWebSearchUI();
+            await this.loadWebSearch((document.getElementById("fakeSearchInput")?.value || "bank account security tips").trim());
+            return;
+        }
 
         // Pick appropriate endpoint
         const endpoint = this.endpoints[type];
@@ -187,6 +201,207 @@ const ScenarioEngine = {
         }
     },
 
+    setupWebSearchUI() {
+        const webActions = document.getElementById("webActions");
+        const searchInput = document.getElementById("fakeSearchInput");
+        const searchBtn = document.getElementById("mobileSearchBtn");
+        const resultsBtn = document.getElementById("webBackToResults");
+        const statusText = document.getElementById("webStatusText");
+
+        if (webActions) webActions.style.display = "none";
+        if (resultsBtn) resultsBtn.style.display = "none";
+        if (statusText) {
+            statusText.textContent = "Search a topic, open a result, and inspect the page before deciding if it is real or a scam.";
+        }
+
+        if (searchBtn && !searchBtn.dataset.bound) {
+            searchBtn.dataset.bound = "true";
+            searchBtn.onclick = () => this.loadWebSearch(searchInput?.value || "bank account security tips");
+        }
+
+        if (searchInput && !searchInput.dataset.bound) {
+            searchInput.dataset.bound = "true";
+            searchInput.addEventListener("keydown", event => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    this.loadWebSearch(searchInput.value || "bank account security tips");
+                }
+            });
+        }
+
+        if (resultsBtn && !resultsBtn.dataset.bound) {
+            resultsBtn.dataset.bound = "true";
+            resultsBtn.onclick = () => {
+                if (currentWebResults) {
+                    this.renderMobileWebResults(currentWebResults);
+                }
+            };
+        }
+    },
+
+    async loadWebSearch(query) {
+        const normalizedQuery = (query || "bank account security tips").trim() || "bank account security tips";
+        const container = document.getElementById("web-content");
+        const statusText = document.getElementById("webStatusText");
+        const webActions = document.getElementById("webActions");
+        const resultsBtn = document.getElementById("webBackToResults");
+        const searchInput = document.getElementById("fakeSearchInput");
+
+        currentType = "web";
+        currentWebQuery = normalizedQuery;
+        currentExpectedLabel = "";
+        currentMessage = "";
+        scenarioLoadTime = Date.now();
+
+        if (searchInput) searchInput.value = normalizedQuery;
+        if (webActions) webActions.style.display = "none";
+        if (resultsBtn) resultsBtn.style.display = "none";
+        if (statusText) statusText.textContent = `Searching for “${normalizedQuery}”...`;
+        if (container) container.innerHTML = "<p class='loading'>Loading search results...</p>";
+
+        try {
+            const response = await fetch("/generate-web", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ mode: "search", query: normalizedQuery })
+            });
+
+            const data = await response.json();
+            if (!data.success || !data.web) {
+                throw new Error(data.error || "Search results failed to load.");
+            }
+
+            currentDifficulty = data.difficulty;
+            currentWebResults = data.web;
+            currentMessage = buildWebSpeechText(data.web);
+            this.renderMobileWebResults(data.web);
+
+            if (window.preloadTTS && currentMessage) {
+                const lang = (window.getTTSLang && window.getTTSLang()) || "en";
+                try { window.preloadTTS(currentMessage, { lang, slow: false }); } catch (e) { /* ignore */ }
+            }
+        } catch (err) {
+            console.error("loadWebSearch error:", err);
+            if (container) container.innerHTML = "<p>Error loading search results.</p>";
+            if (statusText) statusText.textContent = "Try a different search or reload the scenario.";
+        }
+    },
+
+    async openWebResult(site) {
+        const container = document.getElementById("web-content");
+        const statusText = document.getElementById("webStatusText");
+        const webActions = document.getElementById("webActions");
+        const resultsBtn = document.getElementById("webBackToResults");
+        const searchInput = document.getElementById("fakeSearchInput");
+
+        if (!site || !container) return;
+
+        container.innerHTML = "<p class='loading'>Opening website...</p>";
+        if (statusText) statusText.textContent = "Loading the selected website...";
+
+        try {
+            const response = await fetch("/generate-web", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    mode: "open",
+                    query: currentWebQuery,
+                    title: site.title,
+                    url: site.url,
+                    site_type: site.site_type
+                })
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error || "Unable to open site.");
+            }
+
+            currentExpectedLabel = site.site_type === "phishing" ? "scam" : "not_scam";
+            currentMessage = `${site.title}. ${site.url}. ${htmlToPlainText(data.html)}`;
+            scenarioLoadTime = Date.now();
+
+            if (searchInput) searchInput.value = site.url;
+            if (resultsBtn) resultsBtn.style.display = "inline-flex";
+            if (webActions) webActions.style.display = "grid";
+            if (statusText) {
+                statusText.textContent = "Inspect the website carefully, then choose REAL or FAKE.";
+            }
+
+            container.innerHTML = `
+                <div class="mobile-site-page">
+                    <div class="mobile-site-header">
+                        <div class="search-result-title">${site.title}</div>
+                        <div class="search-result-link">${site.url}</div>
+                    </div>
+                    <div class="web-content-body">${data.html}</div>
+                </div>
+            `;
+
+            if (window.preloadTTS && currentMessage) {
+                const lang = (window.getTTSLang && window.getTTSLang()) || "en";
+                try { window.preloadTTS(currentMessage, { lang, slow: false }); } catch (e) { /* ignore */ }
+            }
+        } catch (err) {
+            console.error("openWebResult error:", err);
+            container.innerHTML = "<p>Error loading website.</p>";
+            if (statusText) statusText.textContent = "Unable to open that result. Please try another one.";
+        }
+    },
+
+    renderMobileWebResults(sc) {
+        const container = document.getElementById("web-content");
+        const statusText = document.getElementById("webStatusText");
+        const webActions = document.getElementById("webActions");
+        const resultsBtn = document.getElementById("webBackToResults");
+        const pagination = document.getElementById("pagination");
+        const searchInput = document.getElementById("fakeSearchInput");
+
+        if (!container || !sc) return;
+
+        currentExpectedLabel = "";
+        currentMessage = buildWebSpeechText(sc);
+        if (webActions) webActions.style.display = "none";
+        if (resultsBtn) resultsBtn.style.display = "none";
+        if (pagination) pagination.innerHTML = "";
+        if (searchInput) searchInput.value = currentWebQuery;
+        if (statusText) {
+            statusText.textContent = `Showing results for “${currentWebQuery}”. Open a site and inspect it before answering.`;
+        }
+
+        container.innerHTML = "";
+
+        const stats = document.createElement("div");
+        stats.className = "search-results-stats";
+        stats.textContent = `About ${((sc.results || []).length + (sc.ads || []).length) * 142000} results (0.38 seconds)`;
+        container.appendChild(stats);
+
+        const renderCard = (item, sponsored = false) => {
+            const card = document.createElement("button");
+            card.type = "button";
+            card.className = `search-result ${sponsored ? "sponsored" : ""}`;
+            card.innerHTML = `
+                ${sponsored ? '<div class="sponsored-label">Sponsored</div>' : ''}
+                <div class="search-result-title">${item.title}</div>
+                <div class="search-result-link">${item.url}</div>
+                <div class="search-result-snippet">${item.snippet}</div>
+            `;
+            card.onclick = () => this.openWebResult(item);
+            container.appendChild(card);
+        };
+
+        (sc.ads || []).forEach(ad => renderCard(ad, true));
+        (sc.results || []).forEach(result => renderCard(result, false));
+
+        if (pagination) {
+            pagination.innerHTML = `<button id="nextPageBtn">${sc.pagination?.next_page_label || "Next >"}</button>`;
+            const nextPageBtn = document.getElementById("nextPageBtn");
+            if (nextPageBtn) {
+                nextPageBtn.onclick = () => this.loadWebSearch(currentWebQuery);
+            }
+        }
+    },
+
     fill(type, sc) {
         if (!sc) return;
 
@@ -226,7 +441,15 @@ const ScenarioEngine = {
         if (type === "sms") {
             document.getElementById("smsBody").innerText = sc.text;
             document.getElementById("smsNumber").innerText = sc.number;
-            document.getElementById("smsTime").innerText = sc.time || "12:04 PM";
+            document.getElementById("smsTime").innerText = sc.time || "Today 12:04 PM";
+
+            const smsContactName = document.getElementById("smsContactName");
+            const smsAvatar = document.getElementById("smsAvatar");
+            const senderLabel = sc.sender_name || "Bank Alerts";
+
+            if (smsContactName) smsContactName.innerText = senderLabel;
+            if (smsAvatar) smsAvatar.innerText = senderLabel.charAt(0).toUpperCase();
+
             currentMessage = sc.text;
             return;
         }
@@ -242,87 +465,8 @@ const ScenarioEngine = {
 
         // WEB
         if (type === "web") {
-              const container = document.getElementById("web-content");
-
-
-    // Clear container
-    container.innerHTML = "";
-
-    // -----------------------------
-    // if ads exist, render ads
-    // -----------------------------
-    if (sc.ads && sc.ads.length > 0) {
-        const adSection = document.createElement("div");
-        adSection.classList.add("ads-section");
-
-        sc.ads.forEach(ad => {
-            const adTitle = (ad && ad.title) ? ad.title : "Sponsored result";
-            const adUrl = (ad && ad.url) ? ad.url : "";
-            const adSnippet = (ad && ad.snippet) ? ad.snippet : "";
-            const adBox = document.createElement("div");
-            adBox.classList.add("ad-box");
-            adBox.innerHTML = `
-                <div class="ad-title">${adTitle}</div>
-                <div class="ad-url">${adUrl}</div>
-                <div class="ad-snippet">${adSnippet}</div>
-                <div class="ad-label">Sponsored</div>
-            `;
-            adSection.appendChild(adBox);
-        });
-
-        container.appendChild(adSection);
-    }
-
-  // -----------------------------
-//  render actual search results
-// -----------------------------
-if (sc.results && sc.results.length > 0) {
-
-    // Render top title INSIDE container (like Google does)
-    const heading = document.createElement("div");
-    heading.classList.add("search-main-title");
-    heading.innerText = sc.results[0].title || "Search Results";
-    container.appendChild(heading);
-
-    sc.results.forEach(result => {
-        const resultBox = document.createElement("div");
-        resultBox.classList.add("search-result");
-
-        resultBox.innerHTML = `
-            <div class="search-result-title">${result.title}</div>
-            <div class="search-result-link">${result.url}</div>
-            <div class="search-result-snippet">${result.snippet}</div>
-        `;
-
-        container.appendChild(resultBox);
-    });
-} else {
-    const heading = document.createElement("div");
-    heading.classList.add("search-main-title");
-    heading.innerText = "Search Results";
-    container.appendChild(heading);
-}
-
-// -----------------------------
-//  pagination
-// -----------------------------
-if (sc.pagination) {
-    const nav = document.createElement("div");
-    nav.classList.add("pagination-nav");
-
-    nav.innerHTML = `
-        <button id="nextPageBtn">${sc.pagination.next_page_label || "Next >"}</button>
-    `;
-
-    container.appendChild(nav);
-
-    document.getElementById("nextPageBtn").onclick = () => {
-        ScenarioEngine.load("web");
-    };
-}
-
-currentMessage = buildWebSpeechText(sc);
-return;
+            this.renderMobileWebResults(sc);
+            return;
         }
     }
 };
@@ -353,6 +497,11 @@ document.addEventListener('visibilitychange', () => {
 
 async function analyzeChoice(choice) {
     try {
+        if (currentType === "web" && !currentExpectedLabel) {
+            alert("Open a search result and inspect the site before answering.");
+            return;
+        }
+
         // Calculate time spent on scenario (in seconds)
         const timeSpent = scenarioLoadTime ? Math.round((Date.now() - scenarioLoadTime) / 1000) : 0;
 

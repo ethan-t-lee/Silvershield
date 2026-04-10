@@ -1,27 +1,33 @@
-<div class="sms-app">
+<div class="sms-app ios-messages-view">
 
-    <div class ="top-bar">
-        <button class="back-button" onclick = "backToApps()">← Back</button>
+    <div class="ios-messages-header">
+        <button class="back-button ios-nav-back" onclick="backToApps()">← Back</button>
+
+        <div class="ios-contact-center">
+            <div id="smsAvatar" class="ios-contact-avatar">B</div>
+            <div class="ios-contact-details">
+                <div id="smsContactName" class="ios-contact-name">Bank Alerts</div>
+                <div class="ios-contact-subtitle">Text Message</div>
+            </div>
+        </div>
+
+        <div class="ios-info-icon" aria-hidden="true">ⓘ</div>
     </div>
 
+    <div class="ios-message-thread flip-thread">
+        <div class="ios-date-divider" id="smsTime">Today 12:04 PM</div>
 
-      <!-- Flip phone top bar -->
-    <div class="flip-status-bar">
-                <span class="signal">SIG</span>
-        <span class="carrier">Cingular</span>
-                <span class="battery">BAT</span>
-    </div>
-
-       <!-- SMS thread -->
-    <div class="flip-thread">
-        <div class="flip-bubble incoming">
+        <div class="flip-bubble incoming imessage-bubble">
             <div id="smsBody">SMS content goes here...</div>
         </div>
 
-        <div class="flip-meta" id="smsNumber">+1 000 000 0000</div>
-        <div class="flip-time" id="smsTime">12:04 PM</div>
+        <div class="imessage-meta" id="smsNumber">+1 000 000 0000</div>
     </div>
 
+    <div class="ios-compose-strip" aria-hidden="true">
+        <span class="compose-pill">iMessage</span>
+        <span class="compose-plus">＋</span>
+    </div>
 
     <div class="actions">
         <button id="readAloudMobile" class="tts-btn">Read Aloud</button>

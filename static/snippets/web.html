@@ -1,27 +1,41 @@
-<div class="web-view">
+<div class="web-view chrome-mobile-view">
 
-    <div class="web-toolbar">
+    <div class="chrome-mobile-topbar">
         <button class="back-btn" onclick="backToApps()">← Back</button>
         <span class="web-browser-title">Chrome</span>
+        <div class="chrome-mobile-top-icons" aria-hidden="true">
+            <span>▢</span>
+            <span>⋮</span>
+        </div>
     </div>
 
-    <div class="search-bar">
-        <input type="text" id="fakeSearchInput" value="how to make money fast">
+    <div class="search-bar mobile-search-bar chrome-mobile-search-shell">
+        <span class="chrome-mobile-lock" aria-hidden="true">🔒</span>
+        <input type="text" id="fakeSearchInput" class="search-input" value="bank account security tips" placeholder="Search or type web address">
+        <button id="mobileSearchBtn" class="search-submit-btn">Go</button>
     </div>
 
-    <!-- Search Results -->
+    <div class="chrome-mobile-chip-row" aria-hidden="true">
+        <span class="chrome-mobile-chip active">All</span>
+        <span class="chrome-mobile-chip">News</span>
+        <span class="chrome-mobile-chip">Images</span>
+        <button id="webBackToResults" class="secondary-web-btn" style="display:none;">Results</button>
+    </div>
+
+    <div id="webStatusText" class="web-status-text">
+        Search a topic, open a result, and inspect the site before choosing REAL or FAKE.
+    </div>
+
     <div id="web-content" class="web-results-container"></div>
 
-    <!-- Pagination -->
     <div id="pagination"></div>
 
-    <!-- Fake / Real Buttons  -->
-    <div class="web-actions">
+    <div id="webActions" class="web-actions" style="display:none;">
         <button id="readAloudMobile" class="tts-btn">Read Aloud</button>
         <button id="voiceAnswerBtn" class="tts-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">Speak</button>
         <button id="markSafe" class="safe-btn">Real</button>
         <button id="markScam" class="scam-btn">Fake</button>
     </div>
 
-    <div class="fake-footer">Google © 2025</div>
+    <div class="fake-footer chrome-mobile-footer">Google © 2025</div>
 </div>

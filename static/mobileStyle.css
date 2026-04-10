@@ -218,19 +218,48 @@
 
 /* result search */
 /* GOOGLE RESULTS STYLE */
+.mobile-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+}
+
 .search-input {
-    width: 90%;
-    padding: 8px;
+    flex: 1;
+    padding: 10px 12px;
     font-size: 14px;
     border-radius: 20px;
     border: 1px solid #ccc;
-    margin: 10px auto;
     display: block;
     background: #f5f5f5;
 }
 
-.search-results {
-    padding: 10px;
+.search-submit-btn,
+.secondary-web-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.search-submit-btn {
+    background: #1a73e8;
+    color: white;
+}
+
+.secondary-web-btn {
+    background: #e8f0fe;
+    color: #1a73e8;
+}
+
+.web-status-text,
+.search-results-stats {
+    color: #5f6368;
+    font-size: 13px;
+    padding: 0 14px 8px;
 }
 
 .search-result-title {
@@ -241,11 +270,14 @@
 .search-result-link {
     font-size: 14px;
     color: #006621;
+    margin: 4px 0;
 }
 
-.search-result-description {
+.search-result-description,
+.search-result-snippet {
     font-size: 14px;
     color: #444;
+    line-height: 1.4;
 }
 
 .sponsored-label {
@@ -259,11 +291,37 @@
 }
 
 .search-result {
+    width: calc(100% - 20px);
+    text-align: left;
+    border: none;
     background: white;
     padding: 12px;
     margin: 10px;
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.mobile-site-page {
+    background: white;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.mobile-site-header {
+    border-bottom: 1px solid #eceff3;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.web-content-body {
+    color: #000;
+    line-height: 1.45;
+}
+
+.web-content-body * {
+    color: #000 !important;
 }
 
 /* SMS - Flip Phone UI */
@@ -595,4 +653,337 @@
     font-size: 22px;
     cursor: pointer;
     color: #0056ff;
+}
+
+/*****************************
+   Mobile realism refresh
+*****************************/
+.ios-messages-view,
+.gmail-mobile-view,
+.chrome-mobile-view {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.ios-messages-view {
+    background: linear-gradient(180deg, #f7f7fb 0%, #eef1f7 100%);
+}
+
+.ios-messages-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: rgba(248, 248, 252, 0.96);
+    border-bottom: 1px solid #dde3ee;
+}
+
+.ios-nav-back,
+.back-btn {
+    color: #007aff;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.ios-contact-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.ios-contact-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d1d5db, #9ca3af);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.ios-contact-name {
+    font-weight: 700;
+    color: #111827;
+}
+
+.ios-contact-subtitle,
+.imessage-meta {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.ios-info-icon {
+    color: #007aff;
+    font-size: 20px;
+}
+
+.ios-message-thread {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.82), rgba(245,247,251,0.95)),
+        #f5f7fb;
+}
+
+.ios-date-divider {
+    align-self: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    color: #4b5563;
+    font-size: 12px;
+}
+
+.imessage-bubble {
+    align-self: flex-start;
+    max-width: 84%;
+    padding: 12px 14px;
+    border: none;
+    border-radius: 18px 18px 18px 6px;
+    background: #e9eaee;
+    color: #111827;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    line-height: 1.45;
+}
+
+.ios-compose-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 14px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid #dbe1ea;
+    color: #6b7280;
+}
+
+.compose-pill {
+    font-size: 14px;
+}
+
+.compose-plus {
+    color: #007aff;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.gmail-mobile-view {
+    background: #f6f8fc;
+    gap: 10px;
+}
+
+.gmail-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px 6px;
+}
+
+.gmail-mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #374151;
+    font-weight: 600;
+}
+
+.gmail-mobile-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #ea4335;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.gmail-mobile-wordmark {
+    font-size: 20px;
+}
+
+.gmail-mobile-icons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #6b7280;
+}
+
+.gmail-mobile-search-pill {
+    margin: 0 14px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #dbe3ef;
+    color: #6b7280;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+.gmail-mobile-card {
+    flex: 1;
+    min-height: 0;
+    margin: 0 14px;
+    background: white;
+    border: 1px solid #dbe3ef;
+    border-radius: 18px;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.gmail-mobile-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-bottom: 1px solid #eef2f7;
+    color: #475569;
+    font-size: 13px;
+    background: #fbfcfe;
+}
+
+.gmail-mobile-unread {
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+.gmail-mobile-body {
+    margin-top: 0;
+    padding: 18px 16px 10px;
+    background: white;
+}
+
+.chrome-mobile-view {
+    background: #f1f5f9;
+}
+
+.chrome-mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px 6px;
+    background: #ffffff;
+    border-bottom: 1px solid #dbe3ef;
+}
+
+.chrome-mobile-top-icons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #64748b;
+}
+
+.chrome-mobile-search-shell {
+    margin: 10px 12px 8px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #dbe3ef;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.chrome-mobile-lock {
+    font-size: 14px;
+}
+
+.chrome-mobile-search-shell .search-input {
+    background: transparent;
+    border: none;
+    padding: 8px 4px;
+}
+
+.chrome-mobile-search-shell .search-input:focus {
+    outline: none;
+}
+
+.chrome-mobile-chip-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px 8px;
+    overflow-x: auto;
+}
+
+.chrome-mobile-chip {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.chrome-mobile-chip.active {
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+.chrome-mobile-view .web-results-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 6px;
+}
+
+.chrome-mobile-view .search-result {
+    width: calc(100% - 16px);
+    margin: 8px;
+    border-radius: 16px;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+}
+
+.chrome-mobile-view .mobile-site-page {
+    margin: 8px;
+    border-radius: 16px;
+    border: 1px solid #dbe3ef;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.email-actions,
+.sms-app .actions,
+.web-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 14px 14px;
+    margin-top: 10px;
+    flex-shrink: 0;
+    background: transparent;
+}
+
+.gmail-mobile-view .email-actions,
+.chrome-mobile-view .web-actions,
+.ios-messages-view .actions {
+    margin-top: 8px;
+}
+
+.scam-btn, .safe-btn, .tts-btn {
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.chrome-mobile-footer {
+    text-align: center;
+    color: #6b7280;
+    font-size: 12px;
+    padding: 6px 0 10px;
 }
