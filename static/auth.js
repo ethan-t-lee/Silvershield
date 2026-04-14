@@ -108,6 +108,13 @@ if(loginNext)
             return;
         }
 
+        if (result.twilio_bypassed)
+        {
+            alert("Login successful!");
+            window.location.href = "/dashboard";
+            return;
+        }
+
         if (result.otp_sent)
         {
             currentPhoneLogin = result.phone;

@@ -28,12 +28,12 @@ def user_registration(username, password, email, phone, address):
 def verifying_login (usernameOrEmail, password):
     connect = connecting_to_database()
     cursor = connect.cursor()
-    cursor.execute("SELECT password_hash, phone FROM users WHERE username = ? OR email = ?", (usernameOrEmail, usernameOrEmail))
+    cursor.execute("SELECT username, password_hash, phone FROM users WHERE username = ? OR email = ?", (usernameOrEmail, usernameOrEmail))
     result = cursor.fetchone()
     connect.close()
 
     if result and check_password_hash(result['password_hash'], password):
         phone = result['phone']
-        return True, phone
+        return True, phone, result['username']
     else:
-        return False, None
+        return False, None, None

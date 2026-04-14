@@ -56,6 +56,28 @@ def test_register_and_login_flow(app_client):
     assert login_payload["otp_sent"] is True
 
 
+def test_seeded_test_user_bypasses_otp(app_client):
+    client, app_module, _ = app_client
+
+    send_otp_calls = []
+    app_module.send_otp = lambda phone: send_otp_calls.append(phone)
+
+    login_response = client.post(
+        "/login",
+        data={
+            "username": app_module.TEST_USER_USERNAME,
+            "password": "SilverShieldTest!1",
+        },
+    )
+
+    login_payload = login_response.get_json()
+    assert login_response.status_code == 200
+    assert login_payload["success"] is True
+    assert login_payload["twilio_bypassed"] is True
+    assert login_payload["otp_sent"] is False
+    assert send_otp_calls == []
+
+
 def test_phone_roleplay_session_requires_login(app_client):
     client, _, _ = app_client
     response = client.post(

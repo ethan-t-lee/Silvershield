@@ -1,6 +1,12 @@
 import sqlite3
+from werkzeug.security import generate_password_hash
 
 DB_PATH = 'silvershieldDatabase.db'
+TEST_USER_USERNAME = 'testuser'
+TEST_USER_PASSWORD = 'SilverShieldTest!1'
+TEST_USER_EMAIL = 'testuser@silvershield.local'
+TEST_USER_PHONE = '5551234567'
+TEST_USER_ADDRESS = 'Test Address'
 
 
 def _column_names(cursor, table_name):
@@ -84,6 +90,27 @@ def _migrate_scenario_attempts(cursor):
         cursor.execute('ALTER TABLE scenario_attempts ADD COLUMN message TEXT')
 
 
+def _ensure_test_user(cursor):
+    password_hash = generate_password_hash(TEST_USER_PASSWORD)
+    cursor.execute('SELECT 1 FROM users WHERE username = ?', (TEST_USER_USERNAME,))
+    exists = cursor.fetchone() is not None
+
+    if exists:
+        cursor.execute(
+            '''UPDATE users
+               SET email = ?, phone = ?, address = ?, password_hash = ?
+               WHERE username = ?''',
+            (TEST_USER_EMAIL, TEST_USER_PHONE, TEST_USER_ADDRESS, password_hash, TEST_USER_USERNAME)
+        )
+        return
+
+    cursor.execute(
+        '''INSERT INTO users (username, email, phone, address, password_hash)
+           VALUES (?, ?, ?, ?, ?)''',
+        (TEST_USER_USERNAME, TEST_USER_EMAIL, TEST_USER_PHONE, TEST_USER_ADDRESS, password_hash)
+    )
+
+
 def init_database():
     connect = sqlite3.connect(DB_PATH)
     cursor = connect.cursor()
@@ -102,6 +129,8 @@ def init_database():
                     difficulty_call_mobile INTEGER DEFAULT 1,
                     difficulty_web_mobile INTEGER DEFAULT 1)
     ''')
+
+    _ensure_test_user(cursor)
 
     _migrate_scenario_attempts(cursor)
 

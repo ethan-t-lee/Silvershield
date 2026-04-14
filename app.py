@@ -3,7 +3,7 @@ import os
 import sqlite3
 from dotenv import load_dotenv
 import requests
-from database import init_database
+from database import init_database, TEST_USER_USERNAME
 from user_login import user_registration, verifying_login
 from TWOFA import send_otp, verify_otp
 from flask_babel import Babel, gettext, get_locale, _
@@ -392,16 +392,24 @@ def login_post():
     usernameorEmail = request.form['username'].strip()
     password = request.form['password'].strip()
 
-    valid, phone = verifying_login(usernameorEmail, password)
+    valid, phone, canonical_username = verifying_login(usernameorEmail, password)
 
     if not valid:
         return jsonify({"success": False, "message": "Invalid username or password"})
 
+    # Storing logged in user for session
+    session["username"] = canonical_username
+
+    if canonical_username == TEST_USER_USERNAME:
+        return jsonify({
+            "success": True,
+            "otp_sent": False,
+            "twilio_bypassed": True,
+            "message": "Test user logged in without OTP"
+        })
+
     if not phone.startswith("+"):
         phone = "+1" + phone
-
-    # Storing logged in user for session
-    session["username"] = usernameorEmail
 
     try:
         send_otp(phone)
@@ -456,6 +464,9 @@ def send_otp_route():
 
 @app.route('/verify_otp', methods=['POST'])
 def verify_otp_route():
+    if session.get("username") == TEST_USER_USERNAME:
+        return jsonify({"success": True, "message": "OTP bypassed for test user"})
+
     phone = request.form['phone']
     code = request.form['code']
 
