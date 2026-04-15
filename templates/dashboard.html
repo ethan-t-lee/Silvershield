@@ -37,8 +37,8 @@
 </button>
 
 <button class="btn" style="background-color: #2563eb;">
-<a href="{{ url_for('post_survey') }}">
-{{ _("Post-Survey") }}
+<a href="{{ assessment_cta_url }}">
+{{ _(assessment_cta_title) }}
 </a>
 </button>
 
@@ -78,11 +78,11 @@
 
 <div class="heroSurveyCard">
 
-<h2>{{ _("Finish the assessment loop") }}</h2>
+<h2>{{ _(assessment_cta_button_label) }}</h2>
 
-<p>{{ _("Complete the post-survey after training to compare your confidence and learning outcomes.") }}</p>
+<p>{{ _(assessment_cta_description) }}</p>
 
-<a class="heroAction" href="{{ url_for('post_survey') }}">{{ _("Open Post-Survey") }}</a>
+<a class="heroAction" href="{{ assessment_cta_url }}">{{ _(assessment_cta_hero_label) }}</a>
 
 </div>
 
@@ -143,7 +143,7 @@ alt="{{ _('Cellphone simulation') }}">
 
 <div class="sectionHeadingRow">
 <h2>{{ _("Learning Analytics") }}</h2>
-<p>{{ _("Your scenario performance, progress, and survey results update automatically.") }}</p>
+<p>{{ _("Your scenario performance, progress, and assessment results update automatically.") }}</p>
 </div>
 
 <div class="metricsGrid" id="metricsGrid">
@@ -196,14 +196,6 @@ alt="{{ _('Cellphone simulation') }}">
 <div id="attemptHistoryList" class="stackList loadingState">{{ _("Loading attempt history...") }}</div>
 </section>
 
-<section class="panelCard">
-<div class="panelHeader">
-<h3>{{ _("Survey Comparison") }}</h3>
-<p>{{ _("Measure changes between your pre-survey and post-survey responses.") }}</p>
-</div>
-<div id="surveyComparisonCard" class="stackList loadingState">{{ _("Loading survey results...") }}</div>
-</section>
-
 <section class="panelCard panelWide">
 <div class="panelHeader">
 <h3>{{ _("Current Difficulty Levels") }}</h3>
@@ -223,13 +215,6 @@ window.dashboardLabels = {
     noPerformance: {{ _("No performance data yet. Complete a few scenarios to populate this section.")|tojson }},
     noProgress: {{ _("No module progress yet. Start a module to begin tracking progress.")|tojson }},
     noAttempts: {{ _("No attempts recorded yet.")|tojson }},
-    noSurvey: {{ _("Complete both the pre-survey and post-survey to see a comparison here.")|tojson }},
-    surveyConfidenceChange: {{ _("Confidence change")|tojson }},
-    preSurveyConfidence: {{ _("Pre-survey confidence")|tojson }},
-    postSurveyConfidence: {{ _("Post-survey confidence")|tojson }},
-    behaviorChange: {{ _("Behavior change")|tojson }},
-    recommendationLikelihood: {{ _("Recommendation likelihood")|tojson }},
-    learningRating: {{ _("Learning rating")|tojson }},
     attempts: {{ _("attempts")|tojson }},
     correct: {{ _("correct")|tojson }},
     avgTime: {{ _("Avg. time")|tojson }},

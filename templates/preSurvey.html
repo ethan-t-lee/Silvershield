@@ -29,52 +29,136 @@
       {% endwith %}
 
       <form method="POST">
-        <label>Age</label>
-        <select name="age" required>
+        <label>How familiar are you with the term "smishing"?</label>
+        <select name="smishing_familiarity" required>
           <option value="">Select</option>
-          <option value="Under 18">Under 18</option>
-          <option value="18-24">18–24</option>
-          <option value="25-34">25–34</option>
-          <option value="35-44">35–44</option>
-          <option value="45-54">45–54</option>
-          <option value="55-64">55–64</option>
-          <option value="65+">65+</option>
+          <option value="Extremely unfamiliar">Extremely unfamiliar</option>
+          <option value="Unfamiliar">Unfamiliar</option>
+          <option value="Neither familiar nor unfamiliar">Neither familiar nor unfamiliar</option>
+          <option value="Familiar">Familiar</option>
+          <option value="Extremely familiar">Extremely familiar</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
         </select>
 
-        <label>Have you ever been scammed (online or by phone)?</label>
-        <select name="scammed" required>
+        <label>Do you use any security software or apps on your phone?</label>
+        <select name="security_software_usage" required>
           <option value="">Select</option>
+          <option value="Yes">Yes</option>
           <option value="No">No</option>
-          <option value="Yes - attempted">Yes (someone tried)</option>
-          <option value="Yes - happened">Yes (it happened)</option>
-          <option value="Not sure">Not sure</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
         </select>
 
-        <label>How good are you with technology?</label>
-        <select name="tech_level" required>
+        <label>How often do you click on links in text messages from unknown numbers?</label>
+        <select name="unknown_link_click_frequency" required>
           <option value="">Select</option>
-          <option value="Beginner">Beginner</option>
-          <option value="Okay">Okay</option>
-          <option value="Good">Good</option>
-          <option value="Very good">Very good</option>
+          <option value="Always">Always</option>
+          <option value="Often">Often</option>
+          <option value="Sometimes">Sometimes</option>
+          <option value="Rarely">Rarely</option>
+          <option value="Never">Never</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
         </select>
 
-        <label>What device do you use most?</label>
-        <select name="device" required>
+        <label>How aware are you of SMS phishing?</label>
+        <select name="sms_phishing_awareness" required>
           <option value="">Select</option>
-          <option value="Phone">Phone</option>
-          <option value="Computer">Computer/Laptop</option>
-          <option value="Both">Both</option>
+          <option value="Fully aware">Fully aware</option>
+          <option value="Aware">Aware</option>
+          <option value="Neither Aware nor not aware">Neither aware nor not aware</option>
+          <option value="Not aware">Not aware</option>
+          <option value="Fully not aware">Fully not aware</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
         </select>
 
-        <label>How confident do you feel about spotting scams right now?</label>
-        <select name="confidence" required>
+        <label>Have you ever been a victim of SMS phishing?</label>
+        <select name="sms_phishing_victim" required>
           <option value="">Select</option>
-          <option value="1">1 (Not confident)</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5 (Very confident)</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>Are you familiar with the number "7726"?</label>
+        <select name="familiar_7726" required>
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>If you suspected an SMS as phishing, what would you do?</label>
+        <select name="suspected_sms_action" required>
+          <option value="">Select</option>
+          <option value="Ignore or delete the message">Ignore or delete the message</option>
+          <option value="Report the message through the platform it was received on">Report the message through the platform it was received on</option>
+          <option value="Inform a parent, teacher, or guardian">Inform a parent, teacher, or guardian</option>
+          <option value="Click on the links to see if they are legitimate">Click on the links to see if they are legitimate</option>
+          <option value="Respond to ask for more information">Respond to ask for more information</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>What do you think an SMS phishing attack involves?</label>
+        <select name="sms_phishing_definition" required>
+          <option value="">Select</option>
+          <option value="Sending fake text messages to steal personal information">Sending fake text messages to steal personal information</option>
+          <option value="Installing viruses on computers and phones">Installing viruses on computers and phones</option>
+          <option value="Making fraudulent phone calls">Making fraudulent phone calls</option>
+          <option value="Creating fake websites to gather personal details">Creating fake websites to gather personal details</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>Have you ever obtained any education or training on online safety or scams?</label>
+        <select name="cyber_training_history" required>
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>If yes, in what form?</label>
+        <select name="cyber_training_format" required>
+          <option value="">Select</option>
+          <option value="Cyber Training">Cyber Training</option>
+          <option value="Class lecture">Class lecture</option>
+          <option value="Video tutorial">Video tutorial</option>
+          <option value="Informative sessions arranged by school">Informative sessions arranged by school</option>
+          <option value="Self-learning videos">Self-learning videos</option>
+          <option value="N/A">N/A</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>If yes, when did you get the training or education?</label>
+        <select name="cyber_training_timing" required>
+          <option value="">Select</option>
+          <option value="Within a year">Within a year</option>
+          <option value="Within two years">Within two years</option>
+          <option value="Within 3 years">Within 3 years</option>
+          <option value="Within 4 years">Within 4 years</option>
+          <option value="Within 5 or more years">Within 5 or more years</option>
+          <option value="N/A">N/A</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>Did the education or training cover SMS phishing?</label>
+        <select name="training_covered_sms_phishing" required>
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="I don't remember">I don't remember</option>
+          <option value="N/A">N/A</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>If yes, how useful did you find this education in tackling SMS phishing and other online threats?</label>
+        <select name="training_usefulness" required>
+          <option value="">Select</option>
+          <option value="Very useful">Very useful</option>
+          <option value="Somewhat useful">Somewhat useful</option>
+          <option value="Neutral">Neutral</option>
+          <option value="Not very useful">Not very useful</option>
+          <option value="Not useful at all">Not useful at all</option>
+          <option value="N/A">N/A</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
         </select>
 
         <button type="submit">Continue</button>

@@ -1,4 +1,8 @@
 .env
+.env.*
+!.env.example
+*.pem
+*.key
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,3 +27,5 @@ env/
 .vscode/
 .idea/
 *.db
+main_bundle.js
+main_bundle_amplify.js

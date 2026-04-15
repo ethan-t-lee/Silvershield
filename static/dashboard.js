@@ -155,30 +155,6 @@ function renderAttempts(attempts) {
     }
 }
 
-function renderSurvey(data) {
-    const container = document.getElementById('surveyComparisonCard');
-    if (!data.pre_survey || !data.post_survey) {
-        container.className = 'stackList emptyState';
-        container.textContent = dashboardLabels.noSurvey || 'Complete both surveys to compare results.';
-        return;
-    }
-
-    container.className = 'stackList';
-    container.innerHTML = `
-        <div class="surveyMetric">
-            <strong>${escapeHtml(dashboardLabels.surveyConfidenceChange || 'Confidence change')}</strong>
-            <span class="pillTag">${escapeHtml(data.confidence_change ?? 0)}</span>
-        </div>
-        <div class="surveyMeta">
-            <span>${escapeHtml(dashboardLabels.preSurveyConfidence || 'Pre-survey confidence')}: ${escapeHtml(data.pre_survey.confidence)}</span>
-            <span>${escapeHtml(dashboardLabels.postSurveyConfidence || 'Post-survey confidence')}: ${escapeHtml(data.post_survey.confidence)}</span>
-            <span>${escapeHtml(dashboardLabels.behaviorChange || 'Behavior change')}: ${escapeHtml(data.post_survey.behavior_change)}</span>
-            <span>${escapeHtml(dashboardLabels.recommendationLikelihood || 'Recommendation likelihood')}: ${escapeHtml(data.post_survey.recommendation_likelihood)}</span>
-            <span>${escapeHtml(dashboardLabels.learningRating || 'Learning rating')}: ${escapeHtml(data.post_survey.learning_rating)}</span>
-        </div>
-    `;
-}
-
 function renderDifficulty(items) {
     const container = document.getElementById('difficultyList');
     if (!items?.length) {
@@ -200,11 +176,10 @@ function renderDifficulty(items) {
 
 async function loadDashboardAnalytics() {
     try {
-        const [performance, progress, attempts, survey, learning] = await Promise.all([
+        const [performance, progress, attempts, learning] = await Promise.all([
             fetchJson('/api/user_performance'),
             fetchJson('/api/module_progress'),
             fetchJson('/api/attempt_history?limit=50'),
-            fetchJson('/api/survey_comparison'),
             fetchJson('/api/learning_metrics')
         ]);
 
@@ -212,12 +187,11 @@ async function loadDashboardAnalytics() {
         renderPerformance(performance.data || []);
         renderProgress(progress.modules || []);
         renderAttempts(attempts.attempts || []);
-        renderSurvey(survey || {});
         renderDifficulty(learning.metrics?.difficulty_progression || []);
     } catch (error) {
         console.error('Dashboard analytics failed to load:', error);
         const fallbackMessage = dashboardLabels.loadingAnalytics || 'Analytics are unavailable right now.';
-        ['performanceList', 'moduleProgressList', 'attemptHistoryList', 'surveyComparisonCard', 'difficultyList'].forEach(id => {
+        ['performanceList', 'moduleProgressList', 'attemptHistoryList', 'difficultyList'].forEach(id => {
             const node = document.getElementById(id);
             if (node) {
                 node.className = node.id === 'difficultyList' ? 'difficultyGrid emptyState' : 'stackList emptyState';

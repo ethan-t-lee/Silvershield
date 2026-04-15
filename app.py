@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify, flash, session, redirect, url_for, send_file, abort
 import os
 import sqlite3
+import random
+import hashlib
 from dotenv import load_dotenv
 import requests
 from database import init_database, TEST_USER_USERNAME
@@ -54,6 +56,354 @@ def is_model_refusal(text):
         "something else i can help you with",
     )
     return any(marker in lowered for marker in refusal_markers)
+
+
+MODULE_ROUTE_MAP = {
+    "desktop": "module1",
+    "mobile": "module2",
+    "phone": "phone_roleplay",
+}
+
+MODULE_LABELS = {
+    "desktop": "Desktop Simulation",
+    "mobile": "Mobile Simulation",
+    "phone": "Phone Role-Play",
+}
+
+MODULE_PROGRESS_REQUIREMENTS = {
+    "desktop": ["email_desktop", "internet_desktop"],
+    "mobile": ["email_mobile", "sms_mobile", "call_mobile", "web_mobile"],
+    "phone": ["phone_roleplay"],
+}
+
+MODULE_ASSESSMENT_QUESTION_BANKS = {
+    "desktop": [
+        {
+            "id": 1,
+            "channel": "email",
+            "difficulty": 1,
+            "prompt": "Do you think the following email screenshot is real?",
+            "email_from": "Samantha Jenkins <samantha.jenkins@amazonpayreview.com>",
+            "email_subject": "Urgent: Amazon Pay Update Required",
+            "email_html": "<p>Dear valued customer,</p><p>We have recently updated our Amazon Pay system to provide an enhanced user experience. To ensure a seamless transition, it is essential that you reset your password and update your account information.</p><p>Please click <a href='https://amazonpayreview.com/account-update'>here</a> to complete the required steps.</p><p>If you need assistance, contact support at 1-800-123-4567. We are available 24/7.</p><p>Best regards,<br>Samantha Jenkins</p>",
+            "options": ["real", "fake"],
+            "correct": "fake"
+        },
+        {
+            "id": 2,
+            "channel": "email",
+            "difficulty": 1,
+            "prompt": "Do you think the following email screenshot is real?",
+            "email_from": "City Utilities Billing <billing@cityutilities.com>",
+            "email_subject": "Monthly Statement Available",
+            "email_html": "<p>Hello,</p><p>Your monthly utility statement is now available in your account dashboard. Payment is due on your normal billing date.</p><p>To view your statement, sign in directly through your saved utility portal bookmark or by typing cityutilities.com in your browser.</p><p>Thank you,<br>City Utilities Billing Team</p>",
+            "options": ["real", "fake"],
+            "correct": "real"
+        },
+        {
+            "id": 3,
+            "channel": "email",
+            "difficulty": 2,
+            "prompt": "Do you think the following email screenshot is real?",
+            "email_from": "FedEx Delivery Center <alerts@fedex-delivery-update.net>",
+            "email_subject": "Action Needed: Delivery On Hold",
+            "email_html": "<p>Hi,</p><p>Your package could not be delivered and is now on hold.</p><p>Pay a re-delivery fee of $2.00 within 12 hours to avoid return to sender:</p><p><a href='https://fedex-delivery-update.net/release'>Release My Package</a></p><p>FedEx Support</p>",
+            "options": ["real", "fake"],
+            "correct": "fake"
+        },
+        {
+            "id": 4,
+            "channel": "email",
+            "difficulty": 2,
+            "prompt": "Do you think the following email screenshot is real?",
+            "email_from": "HR Benefits Team <benefits@contoso.com>",
+            "email_subject": "Open Enrollment Reminder",
+            "email_html": "<p>Hello team member,</p><p>This is a reminder that open enrollment closes Friday at 5:00 PM.</p><p>Please review plan updates using the HR portal. Do not share passwords or one-time codes with anyone.</p><p>Regards,<br>HR Benefits Team</p>",
+            "options": ["real", "fake"],
+            "correct": "real"
+        },
+        {
+            "id": 5,
+            "channel": "email",
+            "difficulty": 3,
+            "prompt": "Do you think the following email screenshot is real?",
+            "email_from": "Chase Security Desk <alerts@secure-chasehelp.com>",
+            "email_subject": "Suspicious Login Detected",
+            "email_html": "<p>We noticed unusual login activity on your account.</p><p>For your protection, reply to this email with the one-time code we just sent to your phone so we can verify your identity and unlock access.</p><p>If we do not receive the code in 10 minutes, your account will be frozen.</p>",
+            "options": ["real", "fake"],
+            "correct": "fake"
+        },
+        {"id": 6, "channel": "chrome", "difficulty": 1, "prompt": "Top search result says IRS payment portal and links to irs-payment-help.net with a Sponsored label. Is this real or fake?", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 7, "channel": "chrome", "difficulty": 2, "prompt": "Chrome warning page states Deceptive site ahead for a domain you tried to open. Is this real or fake?", "options": ["real", "fake"], "correct": "real"},
+        {"id": 8, "channel": "chrome", "difficulty": 2, "prompt": "Browser popup claims your computer is infected and asks you to call support immediately to avoid data loss. Is this real or fake?", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 9, "channel": "chrome", "difficulty": 3, "prompt": "Sign-in page looks like PayPal but URL is paypa1.com/security-check before login. Is this real or fake?", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 10, "channel": "chrome", "difficulty": 3, "prompt": "Website shows HTTPS and padlock but asks for full card number, PIN, and OTP on one form. Is this real or fake?", "options": ["real", "fake"], "correct": "fake"},
+    ],
+    "mobile": [
+        {"id": 101, "channel": "email", "difficulty": 1, "prompt": "Mobile email says your Google account storage is full and asks you to sign in using a link to account-recovery-storage.com. Is this real or fake?", "app_label": "Gmail", "email_from": "Google Storage <notice@account-recovery-storage.com>", "email_subject": "Storage limit reached - immediate action", "email_html": "<p>Your cloud storage is full.</p><p>Sign in now to prevent account restrictions: <a href='https://account-recovery-storage.com'>Review storage</a>.</p>", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 102, "channel": "email", "difficulty": 2, "prompt": "Email receipt from Apple for an app purchase matches your device and links to reportaproblem.apple.com only. Is this real or fake?", "app_label": "Gmail", "email_from": "Apple <do_not_reply@apple.com>", "email_subject": "Your App Store receipt", "email_html": "<p>Thanks for your purchase.</p><p>If this was not you, visit <a href='https://reportaproblem.apple.com'>reportaproblem.apple.com</a>.</p>", "options": ["real", "fake"], "correct": "real"},
+        {"id": 103, "channel": "email", "difficulty": 2, "prompt": "Email claims your payroll direct deposit changed and tells you to verify by sharing your password in reply. Is this real or fake?", "app_label": "Gmail", "email_from": "Payroll Team <payroll-alert@company-payroll-help.com>", "email_subject": "Urgent payroll verification", "email_html": "<p>We detected a direct deposit change request.</p><p>Reply with your employee password to confirm no changes are needed.</p>", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 104, "channel": "sms", "difficulty": 1, "prompt": "SMS says FedEx package is delayed and requires a small fee at fdx-track-help.info to continue delivery. Is this real or fake?", "sender": "48773", "message": "FedEx: Delivery on hold. Pay $2.00 to release package: fdx-track-help.info", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 105, "channel": "sms", "difficulty": 2, "prompt": "Text from your bank says do not share this one-time code with anyone and contains no links. Is this real or fake?", "sender": "YourBank", "message": "Your one-time code is 881204. We will never ask for this code by call or text.", "options": ["real", "fake"], "correct": "real"},
+        {"id": 106, "channel": "sms", "difficulty": 2, "prompt": "SMS says Congratulations, claim gift card now by tapping bit.ly/reward-now in 10 minutes. Is this real or fake?", "sender": "PrizeCenter", "message": "Congrats! You were selected for a gift card. Claim in 10 minutes: bit.ly/reward-now", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 107, "channel": "phone", "difficulty": 2, "prompt": "Caller says they are bank fraud team and asks for card number and OTP to secure your account immediately. Is this real or fake?", "caller_name": "Bank Fraud Dept.", "caller_number": "(800) 555-2319", "call_line": "For security verification, read me your one-time code and card number now.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 108, "channel": "phone", "difficulty": 3, "prompt": "Caller says they are Microsoft support and requests remote access app installation to remove malware from your phone. Is this real or fake?", "caller_name": "Microsoft Support", "caller_number": "(888) 555-4402", "call_line": "Install this remote app now so I can clean your phone and secure your accounts.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 109, "channel": "phone", "difficulty": 3, "prompt": "Caller claims to be a relative in urgent trouble and asks for gift card payment while telling you not to contact family. Is this real or fake?", "caller_name": "Unknown Family Caller", "caller_number": "(619) 555-7802", "call_line": "Please do not call anyone. Just buy gift cards now and read me the numbers.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 110, "channel": "chrome", "difficulty": 1, "prompt": "Mobile browser page says Session expired, sign in again at chase-secure-login.co to avoid account lock. Is this real or fake?", "browser_url": "https://chase-secure-login.co/session", "browser_title": "Chase Secure Sign-In", "browser_snippet": "Your session expired. Sign in within 2 minutes to avoid temporary account lock.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 111, "channel": "chrome", "difficulty": 2, "prompt": "Chrome on mobile warns This site may be trying to steal your information before loading. Is this real or fake?", "browser_url": "chrome://safe-browsing-warning", "browser_title": "Security warning", "browser_snippet": "Chrome blocked this page because it may trick you into revealing passwords or card data.", "options": ["real", "fake"], "correct": "real"},
+    ],
+    "phone": [
+        {"id": 201, "channel": "phone", "difficulty": 1, "prompt": "Caller says they are your bank and needs your one-time code right now to stop fraud. Is this real or fake?", "caller_name": "Bank Fraud Dept.", "caller_number": "(800) 555-2319", "call_line": "Read the one-time code now or your account will be locked.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 202, "channel": "phone", "difficulty": 1, "prompt": "Caller says there is a tax warrant and demands gift card payment within 30 minutes. Is this real or fake?", "caller_name": "Government Office", "caller_number": "(877) 555-9021", "call_line": "Pay with gift cards in 30 minutes or police will be dispatched.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 203, "channel": "phone", "difficulty": 2, "prompt": "Caller says they are tech support and asks you to install remote software during the call. Is this real or fake?", "caller_name": "Microsoft Support", "caller_number": "(888) 555-4402", "call_line": "Install the remote app so I can remove malware from your device.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 204, "channel": "phone", "difficulty": 2, "prompt": "Caller says they are your grandchild and asks for urgent money but refuses to answer personal verification questions. Is this real or fake?", "caller_name": "Unknown Family Member", "caller_number": "(619) 555-7802", "call_line": "Do not call anyone else, please wire money right now.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 205, "channel": "phone", "difficulty": 2, "prompt": "Caller says they are from Social Security and requests your full SSN to prevent benefits suspension today. Is this real or fake?", "caller_name": "Social Security Office", "caller_number": "(855) 555-1020", "call_line": "Verify your full SSN now to avoid immediate suspension.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 206, "channel": "phone", "difficulty": 2, "prompt": "Caller asks you to keep the call secret and not speak with family while you send payment. Is this real or fake?", "caller_name": "Account Resolution Team", "caller_number": "(844) 555-7642", "call_line": "For your safety, keep this confidential and do not call family.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 207, "channel": "phone", "difficulty": 3, "prompt": "Caller ID shows your bank name, but caller asks for debit PIN and CVV to verify identity. Is this real or fake?", "caller_name": "Bank Security", "caller_number": "(800) 555-7621", "call_line": "To verify identity, provide your card PIN and CVV now.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 208, "channel": "phone", "difficulty": 3, "prompt": "Caller threatens account freeze unless you move funds to a safe account by wire transfer now. Is this real or fake?", "caller_name": "Fraud Escalation Unit", "caller_number": "(833) 555-2701", "call_line": "Wire your balance to our safe account immediately to prevent loss.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 209, "channel": "phone", "difficulty": 3, "prompt": "Caller says they are government collections and refuses to send official documents by mail or secure portal. Is this real or fake?", "caller_name": "Collections Office", "caller_number": "(866) 555-3188", "call_line": "No paperwork will be sent. Pay now by phone to resolve this case.", "options": ["real", "fake"], "correct": "fake"},
+        {"id": 210, "channel": "phone", "difficulty": 3, "prompt": "Caller claims to be your mobile carrier and asks for MFA code to restore service after suspicious login. Is this real or fake?", "caller_name": "Carrier Security", "caller_number": "(877) 555-6651", "call_line": "Tell me the texted verification code so I can restore your service.", "options": ["real", "fake"], "correct": "fake"},
+    ],
+}
+
+# Backward-compatible alias used by tests and tooling.
+MODULE_ASSESSMENT_QUESTION_BANK = MODULE_ASSESSMENT_QUESTION_BANKS["desktop"]
+
+
+def _get_module_question_bank(module_name):
+    return MODULE_ASSESSMENT_QUESTION_BANKS.get(module_name, MODULE_ASSESSMENT_QUESTION_BANKS["desktop"])
+
+
+def _get_module_question_map(module_name):
+    bank = _get_module_question_bank(module_name)
+    return {question["id"]: question for question in bank}
+
+
+def _get_module_redirect(module_name):
+    route_name = MODULE_ROUTE_MAP.get(module_name)
+    if not route_name:
+        return redirect('/dashboard')
+    return redirect(url_for(route_name))
+
+
+def _is_module_phase_complete(username, module_name, phase):
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute(
+            '''SELECT COUNT(*)
+               FROM module_assessment_assignments
+               WHERE username = ? AND module_name = ? AND phase = ?''',
+            (username, module_name, phase),
+        )
+        target_count = cur.fetchone()[0]
+
+        cur.execute(
+            '''SELECT COUNT(*)
+               FROM module_assessment_results
+               WHERE username = ? AND module_name = ? AND phase = ?''',
+            (username, module_name, phase),
+        )
+        answered_count = cur.fetchone()[0]
+    return target_count > 0 and answered_count >= target_count
+
+
+def _get_or_create_module_variant(username, module_name):
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute(
+            '''SELECT variant
+               FROM module_assessment_enrollments
+               WHERE username = ? AND module_name = ?''',
+            (username, module_name),
+        )
+        row = cur.fetchone()
+        if row:
+            return row[0]
+
+        digest = hashlib.sha256(f"{username}:{module_name}".encode("utf-8")).hexdigest()
+        variant = 'A' if int(digest[:8], 16) % 2 == 0 else 'B'
+        cur.execute(
+            '''INSERT INTO module_assessment_enrollments (username, module_name, variant)
+               VALUES (?, ?, ?)''',
+            (username, module_name, variant),
+        )
+        conn.commit()
+        return variant
+
+
+def _balanced_pre_question_ids_for_seed(module_name, seed_value):
+    rng = random.Random(seed_value)
+    bank = _get_module_question_bank(module_name)
+    question_ids = [q["id"] for q in bank]
+    question_map = _get_module_question_map(module_name)
+    pre_count = max(1, len(question_ids) // 2)
+    post_count = len(question_ids) - pre_count
+    best_pre_ids = None
+    best_diff = None
+
+    for _ in range(250):
+        pre_ids = set(rng.sample(question_ids, pre_count))
+        post_ids = [qid for qid in question_ids if qid not in pre_ids]
+
+        pre_avg = sum(question_map[qid]["difficulty"] for qid in pre_ids) / pre_count
+        post_avg = sum(question_map[qid]["difficulty"] for qid in post_ids) / post_count
+        diff = abs(pre_avg - post_avg)
+
+        if best_diff is None or diff < best_diff:
+            best_diff = diff
+            best_pre_ids = pre_ids
+
+        if diff <= 0.20:
+            return pre_ids
+
+    return best_pre_ids or set(question_ids[:5])
+
+
+def _ensure_module_question_assignments(username, module_name):
+    variant = _get_or_create_module_variant(username, module_name)
+    bank = _get_module_question_bank(module_name)
+    expected_total = len(bank)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute(
+            '''SELECT question_id, phase
+               FROM module_assessment_assignments
+               WHERE username = ? AND module_name = ?''',
+            (username, module_name),
+        )
+        rows = cur.fetchall()
+
+        if len(rows) == expected_total:
+            return
+
+        if rows:
+            cur.execute(
+                '''DELETE FROM module_assessment_results
+                   WHERE username = ? AND module_name = ?''',
+                (username, module_name),
+            )
+            cur.execute(
+                '''DELETE FROM module_assessment_assignments
+                   WHERE username = ? AND module_name = ?''',
+                (username, module_name),
+            )
+
+        pre_ids = _balanced_pre_question_ids_for_seed(module_name, f"{username}:{module_name}:{variant}")
+        for question in bank:
+            phase = "pre" if question["id"] in pre_ids else "post"
+            cur.execute(
+                '''INSERT INTO module_assessment_assignments
+                   (username, module_name, question_id, phase, difficulty_level)
+                   VALUES (?, ?, ?, ?, ?)''',
+                (username, module_name, question["id"], phase, question["difficulty"]),
+            )
+
+        conn.commit()
+
+
+def _get_module_phase_questions(username, module_name, phase):
+    question_map = _get_module_question_map(module_name)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute(
+            '''SELECT question_id
+               FROM module_assessment_assignments
+               WHERE username = ? AND module_name = ? AND phase = ?''',
+            (username, module_name, phase),
+        )
+        question_ids = [row[0] for row in cur.fetchall()]
+
+    random.shuffle(question_ids)
+    return [question_map[qid] for qid in question_ids if qid in question_map]
+
+
+def _build_module_assessment_status(username):
+    status = []
+    for module_name, route_name in MODULE_ROUTE_MAP.items():
+        variant = _get_or_create_module_variant(username, module_name)
+        _ensure_module_question_assignments(username, module_name)
+        pre_complete = _is_module_phase_complete(username, module_name, 'pre')
+        post_complete = _is_module_phase_complete(username, module_name, 'post')
+        training_complete = _is_module_training_complete(username, module_name)
+        post_available = pre_complete and training_complete
+        status.append({
+            "module_name": module_name,
+            "module_label": MODULE_LABELS.get(module_name, module_name.title()),
+            "variant": variant,
+            "pre_complete": pre_complete,
+            "post_complete": post_complete,
+            "training_complete": training_complete,
+            "post_available": post_available,
+            "module_url": url_for(route_name),
+            "pre_url": url_for('module_assessment', module_name=module_name, phase='pre'),
+            "post_url": url_for('module_assessment', module_name=module_name, phase='post'),
+        })
+    return status
+
+
+def _require_module_pretest(module_name):
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
+        if not cur.fetchone():
+            flash('Please complete the pre-survey first.', 'info')
+            return redirect('/pre_survey')
+
+    _ensure_module_question_assignments(username, module_name)
+    if _is_module_phase_complete(username, module_name, 'pre'):
+        return None
+
+    flash('Please complete the module pre-test first.', 'info')
+    return redirect(url_for('module_assessment', module_name=module_name, phase='pre'))
+
+
+def _is_module_training_complete(username, module_name):
+    required_progress_keys = MODULE_PROGRESS_REQUIREMENTS.get(module_name, [])
+    if not required_progress_keys:
+        return False
+
+    placeholders = ",".join("?" for _ in required_progress_keys)
+    params = [username] + required_progress_keys
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute(
+            f'''SELECT module_name, scenarios_completed, total_scenarios
+                FROM module_progress
+                WHERE username = ? AND module_name IN ({placeholders})''',
+            params,
+        )
+        rows = cur.fetchall()
+
+    progress_by_module = {row[0]: row for row in rows}
+    for progress_key in required_progress_keys:
+        row = progress_by_module.get(progress_key)
+        if not row:
+            return False
+        completed = row[1] or 0
+        total = row[2] or 0
+        if total <= 0 or completed < total:
+            return False
+    return True
+
+
+def _build_module_posttest_context(username, module_name):
+    pre_complete = _is_module_phase_complete(username, module_name, 'pre')
+    post_complete = _is_module_phase_complete(username, module_name, 'post')
+    training_complete = _is_module_training_complete(username, module_name)
+    show_post_test_button = pre_complete and training_complete and not post_complete
+    post_test_url = url_for('module_assessment', module_name=module_name, phase='post')
+    back_to_dashboard_url = post_test_url if show_post_test_button else url_for('dashboard')
+    return {
+        "show_post_test_button": show_post_test_button,
+        "post_test_url": post_test_url,
+        "back_to_dashboard_url": back_to_dashboard_url,
+    }
 
 babel = Babel(app, locale_selector=select_locale)
 
@@ -136,37 +486,198 @@ def pre_survey():
         if cur.fetchone():
             return redirect('/dashboard')
 
+    demographics = session.get('pre_survey_demographics')
+    if not demographics:
+        return redirect('/pre_survey_demographics')
+
     # POST block is inside function (indented)
     if request.method == 'POST':
-        age = request.form.get('age')
-        scammed = request.form.get('scammed')
-        tech_level = request.form.get('tech_level')
-        device = request.form.get('device')
-        confidence = request.form.get('confidence')
+        smishing_familiarity = request.form.get('smishing_familiarity')
+        security_software_usage = request.form.get('security_software_usage')
+        unknown_link_click_frequency = request.form.get('unknown_link_click_frequency')
+        sms_phishing_awareness = request.form.get('sms_phishing_awareness')
+        sms_phishing_victim = request.form.get('sms_phishing_victim')
+        familiar_7726 = request.form.get('familiar_7726')
+        suspected_sms_action = request.form.get('suspected_sms_action')
+        sms_phishing_definition = request.form.get('sms_phishing_definition')
+        cyber_training_history = request.form.get('cyber_training_history')
+        cyber_training_format = request.form.get('cyber_training_format')
+        cyber_training_timing = request.form.get('cyber_training_timing')
+        training_covered_sms_phishing = request.form.get('training_covered_sms_phishing')
+        training_usefulness = request.form.get('training_usefulness')
 
-        if not age or not scammed or not tech_level or not device or not confidence:
+        required_fields = [
+            smishing_familiarity,
+            security_software_usage,
+            unknown_link_click_frequency,
+            sms_phishing_awareness,
+            sms_phishing_victim,
+            familiar_7726,
+            suspected_sms_action,
+            sms_phishing_definition,
+            cyber_training_history,
+            cyber_training_format,
+            cyber_training_timing,
+            training_covered_sms_phishing,
+            training_usefulness,
+        ]
+
+        if not all(required_fields):
             flash("Please answer all questions.")
             return render_template("preSurvey.html")
 
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.cursor()
             cur.execute("""
-                INSERT INTO pre_survey (username, age, scammed, tech_level, device, confidence)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO pre_survey (
+                    username,
+                    age,
+                    scammed,
+                    tech_level,
+                    device,
+                    gender_identity,
+                    education_level,
+                    employment_status,
+                    household_income,
+                    primary_language,
+                    country_region,
+                    prior_cyber_training,
+                    confidence,
+                    smishing_familiarity, security_software_usage, unknown_link_click_frequency,
+                    sms_phishing_awareness, sms_phishing_victim, familiar_7726,
+                    suspected_sms_action, sms_phishing_definition, cyber_training_history,
+                    cyber_training_format, cyber_training_timing,
+                    training_covered_sms_phishing, training_usefulness
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(username) DO UPDATE SET
                     age=excluded.age,
                     scammed=excluded.scammed,
                     tech_level=excluded.tech_level,
                     device=excluded.device,
+                    gender_identity=excluded.gender_identity,
+                    education_level=excluded.education_level,
+                    employment_status=excluded.employment_status,
+                    household_income=excluded.household_income,
+                    primary_language=excluded.primary_language,
+                    country_region=excluded.country_region,
+                    prior_cyber_training=excluded.prior_cyber_training,
                     confidence=excluded.confidence,
+                    smishing_familiarity=excluded.smishing_familiarity,
+                    security_software_usage=excluded.security_software_usage,
+                    unknown_link_click_frequency=excluded.unknown_link_click_frequency,
+                    sms_phishing_awareness=excluded.sms_phishing_awareness,
+                    sms_phishing_victim=excluded.sms_phishing_victim,
+                    familiar_7726=excluded.familiar_7726,
+                    suspected_sms_action=excluded.suspected_sms_action,
+                    sms_phishing_definition=excluded.sms_phishing_definition,
+                    cyber_training_history=excluded.cyber_training_history,
+                    cyber_training_format=excluded.cyber_training_format,
+                    cyber_training_timing=excluded.cyber_training_timing,
+                    training_covered_sms_phishing=excluded.training_covered_sms_phishing,
+                    training_usefulness=excluded.training_usefulness,
                     completed_timestamp=CURRENT_TIMESTAMP
-            """, (username, age, scammed, tech_level, device, int(confidence)))
+            """, (
+                username,
+                demographics.get('age'),
+                demographics.get('scammed'),
+                demographics.get('tech_level'),
+                demographics.get('device'),
+                demographics.get('gender_identity'),
+                demographics.get('education_level'),
+                demographics.get('employment_status'),
+                demographics.get('household_income'),
+                demographics.get('primary_language'),
+                demographics.get('country_region'),
+                demographics.get('prior_cyber_training'),
+                int(demographics.get('confidence', 0)),
+                smishing_familiarity,
+                security_software_usage,
+                unknown_link_click_frequency,
+                sms_phishing_awareness,
+                sms_phishing_victim,
+                familiar_7726,
+                suspected_sms_action,
+                sms_phishing_definition,
+                cyber_training_history,
+                cyber_training_format,
+                cyber_training_timing,
+                training_covered_sms_phishing,
+                training_usefulness,
+            ))
             conn.commit()
 
+        session.pop('pre_survey_demographics', None)
+
+        flash('Thanks! Your information is saved. Start any module from the dashboard.', 'success')
         return redirect('/dashboard')
 
     # GET loads the form
     return render_template("preSurvey.html")
+
+
+@app.route('/pre_survey_demographics', methods=['GET', 'POST'])
+def pre_survey_demographics():
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
+        if cur.fetchone():
+            return redirect('/dashboard')
+
+    if request.method == 'POST':
+        age = request.form.get('age')
+        scammed = request.form.get('scammed')
+        tech_level = request.form.get('tech_level')
+        device = request.form.get('device')
+        gender_identity = request.form.get('gender_identity')
+        education_level = request.form.get('education_level')
+        employment_status = request.form.get('employment_status')
+        household_income = request.form.get('household_income')
+        primary_language = request.form.get('primary_language')
+        country_region = request.form.get('country_region')
+        prior_cyber_training = request.form.get('prior_cyber_training')
+        confidence = request.form.get('confidence')
+
+        required_fields = [
+            age,
+            scammed,
+            tech_level,
+            device,
+            gender_identity,
+            education_level,
+            employment_status,
+            household_income,
+            primary_language,
+            country_region,
+            prior_cyber_training,
+            confidence,
+        ]
+
+        if not all(required_fields):
+            flash("Please answer all questions.")
+            return render_template("preSurveyDemographics.html")
+
+        session['pre_survey_demographics'] = {
+            'age': age,
+            'scammed': scammed,
+            'tech_level': tech_level,
+            'device': device,
+            'gender_identity': gender_identity,
+            'education_level': education_level,
+            'employment_status': employment_status,
+            'household_income': household_income,
+            'primary_language': primary_language,
+            'country_region': country_region,
+            'prior_cyber_training': prior_cyber_training,
+            'confidence': confidence,
+        }
+        return redirect('/pre_survey')
+
+    return render_template("preSurveyDemographics.html")
 
 
 
@@ -191,12 +702,39 @@ def dashboard():
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
         cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
-        done = cur.fetchone() is not None
+        pre_survey_done = cur.fetchone() is not None
 
-    if not done:
+    if not pre_survey_done:
         return redirect('/pre_survey')
 
-    return render_template("dashboard.html")
+    module_assessment_status = _build_module_assessment_status(username)
+    all_module_assessments_complete = (
+        bool(module_assessment_status)
+        and all(item["pre_complete"] and item["post_complete"] for item in module_assessment_status)
+    )
+
+    if all_module_assessments_complete:
+        assessment_cta_url = url_for('post_survey')
+        assessment_cta_title = "Post-Survey"
+        assessment_cta_button_label = "Take Post-Survey"
+        assessment_cta_description = "You have completed all module assessments. Finish with the post-survey."
+        assessment_cta_hero_label = "Open Post-Survey"
+    else:
+        assessment_cta_url = url_for('module_assessments')
+        assessment_cta_title = "Assessments"
+        assessment_cta_button_label = "Module assessments"
+        assessment_cta_description = "Each module includes a quick check-in before and after training to help track your progress."
+        assessment_cta_hero_label = "Open Module Assessments"
+
+    return render_template(
+        "dashboard.html",
+        module_assessment_status=module_assessment_status,
+        assessment_cta_url=assessment_cta_url,
+        assessment_cta_title=assessment_cta_title,
+        assessment_cta_button_label=assessment_cta_button_label,
+        assessment_cta_description=assessment_cta_description,
+        assessment_cta_hero_label=assessment_cta_hero_label,
+    )
 
 @app.route('/post_survey', methods=['GET', 'POST'])
 def post_survey():
@@ -205,29 +743,60 @@ def post_survey():
         return redirect('/login')
 
     if request.method == 'POST':
-        confidence_rating = request.form.get('confidence_rating')
-        perceived_usefulness = request.form.get('perceived_usefulness')
-        behavior_change = request.form.get('behavior_change')
-        recommendation_likelihood = request.form.get('recommendation_likelihood')
-        learning_rating = request.form.get('learning_rating')
+        post_smishing_familiarity_change = request.form.get('post_smishing_familiarity_change')
+        post_confidence_change = request.form.get('post_confidence_change')
+        post_better_recognition = request.form.get('post_better_recognition')
+        post_content_difficulty = request.form.get('post_content_difficulty')
+        post_phishing_awareness = request.form.get('post_phishing_awareness')
+        post_verify_plan = request.form.get('post_verify_plan')
+        post_security_app_intent = request.form.get('post_security_app_intent')
+        post_update_intent = request.form.get('post_update_intent')
+        post_unknown_link_caution = request.form.get('post_unknown_link_caution')
+        post_info_sharing_comfort = request.form.get('post_info_sharing_comfort')
 
-        if not all([confidence_rating, perceived_usefulness, behavior_change,
-                    recommendation_likelihood, learning_rating]):
+        if not all([
+            post_smishing_familiarity_change,
+            post_confidence_change,
+            post_better_recognition,
+            post_content_difficulty,
+            post_phishing_awareness,
+            post_verify_plan,
+            post_security_app_intent,
+            post_update_intent,
+            post_unknown_link_caution,
+            post_info_sharing_comfort,
+        ]):
             flash("Please answer all questions.")
             return render_template("postSurvey.html")
 
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.cursor()
             cur.execute("""
-                INSERT INTO post_survey (username, confidence_rating, perceived_usefulness,
-                    behavior_change, recommendation_likelihood, learning_rating)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO post_survey (
+                    username,
+                    post_smishing_familiarity_change,
+                    post_confidence_change,
+                    post_better_recognition,
+                    post_content_difficulty,
+                    post_phishing_awareness,
+                    post_verify_plan,
+                    post_security_app_intent,
+                    post_update_intent,
+                    post_unknown_link_caution,
+                    post_info_sharing_comfort
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (username,
-                  int(confidence_rating),
-                  int(perceived_usefulness),
-                  behavior_change,
-                  int(recommendation_likelihood),
-                  int(learning_rating)))
+                  post_smishing_familiarity_change,
+                  post_confidence_change,
+                  post_better_recognition,
+                  post_content_difficulty,
+                  post_phishing_awareness,
+                  post_verify_plan,
+                  post_security_app_intent,
+                  post_update_intent,
+                  post_unknown_link_caution,
+                  post_info_sharing_comfort))
             conn.commit()
 
         return redirect('/dashboard')
@@ -263,16 +832,125 @@ def download_database():
 
 @app.route('/module1')
 def module1():
-    return render_template("desktopPage.html")
+    username = session.get('username')
+    pretest_redirect = _require_module_pretest('desktop')
+    if pretest_redirect:
+        return pretest_redirect
+
+    posttest_context = _build_module_posttest_context(username, 'desktop')
+    return render_template("desktopPage.html", **posttest_context)
 
 
 @app.route('/module2')
 def module2():
-    return render_template("MobilePage.html")
+    username = session.get('username')
+    pretest_redirect = _require_module_pretest('mobile')
+    if pretest_redirect:
+        return pretest_redirect
+
+    posttest_context = _build_module_posttest_context(username, 'mobile')
+    return render_template("MobilePage.html", **posttest_context)
 
 @app.route('/phone_roleplay')
 def phone_roleplay():
-    return render_template("phoneRoleplay.html")
+    username = session.get('username')
+    pretest_redirect = _require_module_pretest('phone')
+    if pretest_redirect:
+        return pretest_redirect
+
+    posttest_context = _build_module_posttest_context(username, 'phone')
+    return render_template("phoneRoleplay.html", **posttest_context)
+
+
+@app.route('/module_assessments')
+def module_assessments():
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    module_status = _build_module_assessment_status(username)
+    return render_template('moduleAssessments.html', modules=module_status)
+
+
+@app.route('/module_assessment/<module_name>/<phase>', methods=['GET', 'POST'])
+def module_assessment(module_name, phase):
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    if module_name not in MODULE_ROUTE_MAP or phase not in ('pre', 'post'):
+        return redirect('/dashboard')
+
+    variant = _get_or_create_module_variant(username, module_name)
+    _ensure_module_question_assignments(username, module_name)
+
+    if phase == 'post' and not _is_module_phase_complete(username, module_name, 'pre'):
+        flash('Please complete the pre-test first.', 'info')
+        return redirect(url_for('module_assessment', module_name=module_name, phase='pre'))
+
+    if phase == 'post' and not _is_module_training_complete(username, module_name):
+        flash('Please finish the module training before taking the post-test.', 'info')
+        return _get_module_redirect(module_name)
+
+    if _is_module_phase_complete(username, module_name, phase):
+        flash('You have already completed this assessment.', 'info')
+        if phase == 'pre':
+            return _get_module_redirect(module_name)
+        return redirect('/dashboard')
+
+    questions = _get_module_phase_questions(username, module_name, phase)
+    if not questions:
+        flash('Assessment setup failed. Please try again.', 'error')
+        return redirect('/dashboard')
+
+    if request.method == 'POST':
+        responses = []
+        for question in questions:
+            selected = request.form.get(f"q_{question['id']}")
+            if selected not in question['options']:
+                flash('Please answer all questions before submitting.', 'error')
+                return render_template(
+                    'moduleAssessment.html',
+                    module_name=module_name,
+                    module_label=MODULE_LABELS.get(module_name, module_name.title()),
+                    variant=variant,
+                    phase=phase,
+                    questions=questions,
+                )
+            responses.append((
+                username,
+                module_name,
+                phase,
+                question['id'],
+                selected,
+                int(selected == question['correct']),
+            ))
+
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.executemany(
+                '''INSERT INTO module_assessment_results
+                   (username, module_name, phase, question_id, selected_option, is_correct)
+                   VALUES (?, ?, ?, ?, ?, ?)''',
+                responses,
+            )
+            conn.commit()
+
+        if phase == 'pre':
+            flash('Pre-test complete. You can now start this module.', 'success')
+            return _get_module_redirect(module_name)
+
+        flash('Post-test submitted. Great work!', 'success')
+        return redirect('/dashboard')
+
+    return render_template(
+        'moduleAssessment.html',
+        module_name=module_name,
+        module_label=MODULE_LABELS.get(module_name, module_name.title()),
+        variant=variant,
+        phase=phase,
+        questions=questions,
+    )
 
 
 @app.route('/logout')
@@ -669,7 +1347,7 @@ def finish_phone_roleplay_session():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT started_at FROM phone_roleplay_sessions
+            SELECT username, started_at FROM phone_roleplay_sessions
             WHERE id = ?
         """, (session_id,))
         row = cursor.fetchone()
@@ -677,7 +1355,8 @@ def finish_phone_roleplay_session():
         if not row:
             return jsonify({"success": False, "error": "Session not found"}), 404
 
-        started_at = datetime.fromisoformat(row[0])
+        session_username = row[0]
+        started_at = datetime.fromisoformat(row[1])
         ended_dt = datetime.fromisoformat(ended_at)
         total_time_seconds = (ended_dt - started_at).total_seconds()
 
@@ -707,6 +1386,9 @@ def finish_phone_roleplay_session():
         ))
 
         conn.commit()
+
+    if session_username:
+        update_module_progress(session_username, "phone_roleplay")
 
     return jsonify({
         "success": True,

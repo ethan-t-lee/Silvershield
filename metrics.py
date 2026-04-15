@@ -160,14 +160,17 @@ def update_module_progress(username, module_name, scenarios_completed=None):
         cursor = conn.cursor()
         
         cursor.execute("""
-            SELECT scenarios_completed FROM module_progress
+            SELECT scenarios_completed, total_scenarios FROM module_progress
             WHERE username = ? AND module_name = ?
         """, (username, module_name))
         
         row = cursor.fetchone()
         
         if row:
-            new_count = row[0] + 1 if scenarios_completed is None else scenarios_completed
+            current_completed = row[0] or 0
+            total_scenarios = row[1] or 5
+            requested_count = (current_completed + 1) if scenarios_completed is None else scenarios_completed
+            new_count = min(max(0, requested_count), total_scenarios)
             cursor.execute("""
                 UPDATE module_progress
                 SET scenarios_completed = ?, last_accessed = CURRENT_TIMESTAMP
@@ -237,9 +240,9 @@ def get_module_progress(username):
             modules = [
                 {
                     "module_name": row[0],
-                    "completed": row[1],
+                    "completed": min(row[1], row[2]),
                     "total": row[2],
-                    "completion_percentage": row[3],
+                    "completion_percentage": min(row[3], 100.0),
                     "last_accessed": row[4]
                 }
                 for row in cursor.fetchall()
@@ -306,6 +309,36 @@ def get_survey_comparison(username):
     try:
         with _connect() as conn:
             cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT module_name,
+                       ROUND(AVG(CASE WHEN phase = 'pre' THEN is_correct END) * 100.0, 1) AS pre_score,
+                       ROUND(AVG(CASE WHEN phase = 'post' THEN is_correct END) * 100.0, 1) AS post_score,
+                       SUM(CASE WHEN phase = 'pre' THEN 1 ELSE 0 END) AS pre_count,
+                       SUM(CASE WHEN phase = 'post' THEN 1 ELSE 0 END) AS post_count
+                FROM module_assessment_results
+                WHERE username = ?
+                GROUP BY module_name
+                ORDER BY module_name
+            """, (username,))
+            module_rows = cursor.fetchall()
+
+            module_assessments = []
+            for row in module_rows:
+                pre_score = row[1]
+                post_score = row[2]
+                score_change = None
+                if pre_score is not None and post_score is not None:
+                    score_change = round(post_score - pre_score, 1)
+
+                module_assessments.append({
+                    "module_name": row[0],
+                    "pre_score": pre_score,
+                    "post_score": post_score,
+                    "pre_count": row[3],
+                    "post_count": row[4],
+                    "score_change": score_change,
+                })
             
             # Get pre-survey
             cursor.execute("""
@@ -355,7 +388,8 @@ def get_survey_comparison(username):
                 "success": True,
                 "pre_survey": pre_survey,
                 "post_survey": post_survey,
-                "confidence_change": confidence_change
+                "confidence_change": confidence_change,
+                "module_assessments": module_assessments,
             }
     except Exception as e:
         print(f"Error fetching survey comparison: {e}")

@@ -68,3 +68,31 @@ def test_update_module_progress_tracks_completion(monkeypatch, tmp_path):
     assert result["modules"][0]["module_name"] == "module1"
     assert result["modules"][0]["completed"] == 1
     assert result["modules"][0]["total"] == 5
+
+
+def test_update_module_progress_caps_at_total(monkeypatch, tmp_path):
+    db_path = str(tmp_path / "module_progress_cap_test.db")
+    monkeypatch.setattr(database, "DB_PATH", db_path)
+    monkeypatch.setattr(metrics, "DB_PATH", db_path)
+
+    database.init_database()
+
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            """
+            INSERT INTO users (username, email, phone, address, password_hash)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ("carol", "carol@example.com", "1112223333", "789 Pine Rd", "hashed"),
+        )
+        conn.commit()
+
+    for _ in range(10):
+        metrics.update_module_progress("carol", "module1")
+
+    result = metrics.get_module_progress("carol")
+
+    assert result["success"] is True
+    assert result["modules"][0]["completed"] == 5
+    assert result["modules"][0]["total"] == 5
+    assert result["modules"][0]["completion_percentage"] == 100.0

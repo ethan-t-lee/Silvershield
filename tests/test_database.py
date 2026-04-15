@@ -26,6 +26,9 @@ def test_init_database_creates_expected_tables(monkeypatch, tmp_path):
         "phone_roleplay_sessions",
         "phone_roleplay_events",
         "phone_roleplay_results",
+        "module_assessment_enrollments",
+        "module_assessment_assignments",
+        "module_assessment_results",
     }
 
     assert expected_tables.issubset(tables)

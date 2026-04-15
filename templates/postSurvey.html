@@ -29,54 +29,97 @@
       {% endwith %}
 
       <form method="POST">
-
-        <label>How confident do you feel about spotting scams now?</label>
-        <select name="confidence_rating" required>
-          <option value="">Select</option>
-          <option value="1">1 (Not confident)</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5 (Very confident)</option>
-        </select>
-
-        <label>How useful did you find this training platform?</label>
-        <select name="perceived_usefulness" required>
-          <option value="">Select</option>
-          <option value="1">1 (Not useful)</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5 (Very useful)</option>
-        </select>
-
-        <label>Do you feel your online safety behavior has changed after this training?</label>
-        <select name="behavior_change" required>
+        <label>After participating in our research/education session, how has your familiarity with the term "smishing" changed?</label>
+        <select name="post_smishing_familiarity_change" required>
           <option value="">Select</option>
           <option value="No change">No change</option>
-          <option value="Slightly changed">Slightly changed</option>
-          <option value="Moderately changed">Moderately changed</option>
-          <option value="Significantly changed">Significantly changed</option>
+          <option value="Slightly more familiar">Slightly more familiar</option>
+          <option value="Moderately more familiar">Moderately more familiar</option>
+          <option value="Significantly more familiar">Significantly more familiar</option>
+          <option value="Extremely familiar">Extremely familiar</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
         </select>
 
-        <label>How likely are you to recommend this training to others?</label>
-        <select name="recommendation_likelihood" required>
+        <label>How has your confidence in identifying potentially harmful messages (smishing, scams) changed after our session?</label>
+        <select name="post_confidence_change" required>
           <option value="">Select</option>
-          <option value="1">1 (Not likely)</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5 (Very likely)</option>
+          <option value="No change">No change</option>
+          <option value="Slightly more confident">Slightly more confident</option>
+          <option value="Moderately more confident">Moderately more confident</option>
+          <option value="Significantly more confident">Significantly more confident</option>
+          <option value="Extremely confident">Extremely confident</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
         </select>
 
-        <label>How much do you feel you learned from this training?</label>
-        <select name="learning_rating" required>
+        <label>Do you believe you are now better equipped to recognize a smishing attempt than before the session?</label>
+        <select name="post_better_recognition" required>
           <option value="">Select</option>
-          <option value="1">1 (Nothing)</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5 (A lot)</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>How easy or difficult did you find it to follow the content and instructions provided during the session and while completing this survey?</label>
+        <select name="post_content_difficulty" required>
+          <option value="">Select</option>
+          <option value="Very difficult">Very difficult</option>
+          <option value="Difficult">Difficult</option>
+          <option value="Neutral">Neutral</option>
+          <option value="Easy">Easy</option>
+          <option value="Very easy">Very easy</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>Do you feel more aware of the various forms phishing can take (email, phone call, social media) after our session?</label>
+        <select name="post_phishing_awareness" required>
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>Post-education, do you plan to use any specific techniques to verify the legitimacy of links or information received through messages?</label>
+        <select name="post_verify_plan" required>
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>Are you considering using any security software or apps on your phone because of the information provided during the session?</label>
+        <select name="post_security_app_intent" required>
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>Has the session influenced your intentions regarding how often you will update your phone's operating system and apps?</label>
+        <select name="post_update_intent" required>
+          <option value="">Select</option>
+          <option value="More likely">More likely</option>
+          <option value="No change">No change</option>
+          <option value="Less likely">Less likely</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>Based on the session's information, would you now be more cautious about clicking on links in text messages from unknown numbers?</label>
+        <select name="post_unknown_link_caution" required>
+          <option value="">Select</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
+        </select>
+
+        <label>After the session, how has your comfort level with sharing your personal information (address, phone number, etc.) through text messages changed?</label>
+        <select name="post_info_sharing_comfort" required>
+          <option value="">Select</option>
+          <option value="Less comfortable">Less comfortable</option>
+          <option value="Slightly less comfortable">Slightly less comfortable</option>
+          <option value="No change">No change</option>
+          <option value="Slightly more comfortable">Slightly more comfortable</option>
+          <option value="Very comfortable">Very comfortable</option>
+          <option value="Prefer not to answer">Prefer not to answer</option>
         </select>
 
         <button type="submit">Submit</button>
