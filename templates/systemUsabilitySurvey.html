@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>System Usability Survey</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f6f7fb; margin:0; }
+    .wrap { max-width: 760px; margin: 40px auto; padding: 0 16px; }
+    .card { background:white; border-radius:16px; padding:24px; box-shadow:0 10px 24px rgba(0,0,0,.08); }
+    h1 { margin:0 0 8px; font-size:28px; }
+    p { margin:0 0 16px; color:#444; }
+    label { display:block; font-weight:600; margin-top:18px; margin-bottom:8px; }
+    select { width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; font-size:16px; }
+    button { margin-top:24px; width:100%; padding:14px; border:none; border-radius:12px; font-size:18px; background:#2563eb; color:white; cursor:pointer; }
+    .err { color:#b91c1c; font-weight:600; margin: 10px 0; }
+    .scale { font-size:14px; color:#64748b; margin-bottom:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>System Usability Survey</h1>
+      <p>Please rate your experience with the training system using the same usability questions used in the Amplify flow.</p>
+      <p class="scale">Scale: 1 = Strongly disagree, 5 = Strongly agree</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="err">{{ messages[0] }}</div>
+        {% endif %}
+      {% endwith %}
+
+      {% set questions = [
+        "I think that I would like to use this system frequently.",
+        "I found the system unnecessarily complex.",
+        "I thought the system was easy to use.",
+        "I think that I would need the support of a technical person to be able to use this system.",
+        "I found the various functions in this system were well integrated.",
+        "I thought there was too much inconsistency in this system.",
+        "I would imagine that most people would learn to use this system very quickly.",
+        "I found the system very cumbersome to use.",
+        "I felt very confident using the system.",
+        "I needed to learn a lot of things before I could get going with this system."
+      ] %}
+
+      <form method="POST">
+        {% for question in questions %}
+          <label>{{ loop.index }}. {{ question }}</label>
+          <select name="sus_q{{ loop.index }}" required>
+            <option value="">Select</option>
+            <option value="1">1 - Strongly disagree</option>
+            <option value="2">2 - Disagree</option>
+            <option value="3">3 - Neutral</option>
+            <option value="4">4 - Agree</option>
+            <option value="5">5 - Strongly agree</option>
+          </select>
+        {% endfor %}
+
+        <button type="submit">Submit Final Survey</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

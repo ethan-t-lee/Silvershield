@@ -1,3 +1,4 @@
+import importlib
 import sqlite3
 from werkzeug.security import check_password_hash
 
@@ -19,6 +20,7 @@ def test_init_database_creates_expected_tables(monkeypatch, tmp_path):
         "users",
         "pre_survey",
         "post_survey",
+        "system_usability_survey",
         "scenario_attempts",
         "performance_summary",
         "module_progress",
@@ -29,9 +31,25 @@ def test_init_database_creates_expected_tables(monkeypatch, tmp_path):
         "module_assessment_enrollments",
         "module_assessment_assignments",
         "module_assessment_results",
+        "module_assessment_scores",
     }
 
     assert expected_tables.issubset(tables)
+
+
+def test_init_database_honors_environment_db_path(monkeypatch, tmp_path):
+    env_db_path = str(tmp_path / "env_database_test.db")
+    monkeypatch.setenv("DB_PATH", env_db_path)
+
+    reloaded_database = importlib.reload(database)
+    reloaded_database.init_database()
+
+    with sqlite3.connect(env_db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'pre_survey'")
+        row = cursor.fetchone()
+
+    assert row is not None
 
 
 def test_init_database_seeds_default_test_user(monkeypatch, tmp_path):

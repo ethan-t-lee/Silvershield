@@ -46,8 +46,12 @@
 
 <div class="phone-header">
     <span class="time">3:09</span>
-     <span class="camera">O</span>
-     <span class="icons">SIG WIFI BAT</span>
+     <span class="camera"></span>
+     <span class="icons">
+          <span class="status-icon signal-icon" aria-hidden="true"></span>
+          <span class="status-icon wifi-icon" aria-hidden="true"></span>
+          <span class="status-icon battery-icon" aria-hidden="true"></span>
+     </span>
 </div>
 
 
@@ -121,7 +125,52 @@ window.mobileLabels = {
      end: {{ _("End")|tojson }},
      speaker: {{ _("Speaker")|tojson }},
      reportScamCall: {{ _("Report Scam Call")|tojson }},
-     looksSafe: {{ _("Looks Safe")|tojson }}
+     looksSafe: {{ _("Looks Safe")|tojson }},
+     searchInMail: {{ _("Search in mail")|tojson }},
+     primaryInbox: {{ _("Primary Inbox")|tojson }},
+     oneNew: {{ _("1 new")|tojson }},
+     loadingEmail: {{ _("Loading email...")|tojson }},
+     bankAlerts: {{ _("Bank Alerts")|tojson }},
+     todayTime: {{ _("Today 12:04 PM")|tojson }},
+     sayRealOrFake: {{ _("Say 'real' or 'fake'.")|tojson }},
+     all: {{ _("All")|tojson }},
+     news: {{ _("News")|tojson }},
+     images: {{ _("Images")|tojson }},
+     textMessage: {{ _("Text Message")|tojson }},
+     smsPlaceholder: {{ _("SMS content goes here...")|tojson }},
+     iMessage: {{ _("iMessage")|tojson }},
+     searchOrTypeWebAddress: {{ _("Search or type web address")|tojson }},
+     go: {{ _("Go")|tojson }},
+     results: {{ _("Results")|tojson }},
+     searchTopicInspect: {{ _("Search a topic, open a result, and inspect the site before choosing REAL or FAKE.")|tojson }},
+     googleFooter: {{ _("Google © 2025")|tojson }},
+     audioCall: {{ _("Audio Call")|tojson }},
+     unknownCaller: {{ _("Unknown Caller")|tojson }},
+     callTranscriptPlaceholder: {{ _("Call transcript will appear here...")|tojson }},
+     loadingScenario: {{ _("Loading scenario...")|tojson }},
+     errorLoadingScenario: {{ _("Error loading scenario.")|tojson }},
+     level: {{ _("Level")|tojson }},
+     loadingSearchResults: {{ _("Loading search results...")|tojson }},
+     errorLoadingSearchResults: {{ _("Error loading search results.")|tojson }},
+     loadingWebsite: {{ _("Loading website...")|tojson }},
+     errorLoadingWebsite: {{ _("Error loading website.")|tojson }},
+     unableToOpenResult: {{ _("Unable to open that result. Please try another one.")|tojson }},
+     inspectWebsiteCarefully: {{ _("Inspect the website carefully, then choose REAL or FAKE.")|tojson }},
+     showingResultsFor: {{ _("Showing results for")|tojson }},
+     openSiteInspect: {{ _("Open a site and inspect it before answering.")|tojson }},
+     about: {{ _("About")|tojson }},
+     resultsWord: {{ _("results")|tojson }},
+     seconds: {{ _("seconds")|tojson }},
+     sponsored: {{ _("Sponsored")|tojson }},
+     sponsoredResult: {{ _("Sponsored result")|tojson }},
+     result: {{ _("Result")|tojson }},
+     nextPage: {{ _("Next >")|tojson }},
+     searchingFor: {{ _("Searching for")|tojson }},
+     loadingSelectedWebsite: {{ _("Loading the selected website...")|tojson }},
+     openResultFirst: {{ _("Open a search result and inspect the site before answering.")|tojson }},
+     currentDifficulty: {{ _("Current difficulty")|tojson }},
+     errorAnalyzingResponse: {{ _("Error analyzing response.")|tojson }},
+     serverErrorAnalyzingChoice: {{ _("Server error analyzing choice.")|tojson }}
 };
 </script>
 <script src="{{ url_for('static', filename='tts.js') }}"></script>

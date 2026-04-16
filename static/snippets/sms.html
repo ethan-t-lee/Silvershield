@@ -1,7 +1,7 @@
 <div class="sms-app ios-messages-view">
 
     <div class="ios-messages-header">
-        <button class="back-button ios-nav-back" onclick="backToApps()">← Back</button>
+        <button class="back-button ios-nav-back mobile-nav-btn" onclick="backToApps()"><span class="ui-icon arrow-left-icon" aria-hidden="true"></span><span class="btn-label">Back</span></button>
 
         <div class="ios-contact-center">
             <div id="smsAvatar" class="ios-contact-avatar">B</div>
@@ -11,7 +11,7 @@
             </div>
         </div>
 
-        <div class="ios-info-icon" aria-hidden="true">ⓘ</div>
+        <div class="ios-info-icon" aria-hidden="true"><span class="ui-icon info-circle-icon"></span></div>
     </div>
 
     <div class="ios-message-thread flip-thread">
@@ -25,15 +25,16 @@
     </div>
 
     <div class="ios-compose-strip" aria-hidden="true">
+        <span class="compose-leading"><span class="ui-icon plus-icon"></span></span>
         <span class="compose-pill">iMessage</span>
-        <span class="compose-plus">＋</span>
+        <span class="compose-trailing"><span class="ui-icon app-store-icon"></span></span>
     </div>
 
     <div class="actions">
-        <button id="readAloudMobile" class="tts-btn">Read Aloud</button>
-        <button id="voiceAnswerBtn" class="tts-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">Speak</button>
-        <button id="markSafe" class="safe-btn">Real</button>
-        <button id="markScam" class="scam-btn">Fake</button>
+        <button id="readAloudMobile" class="tts-btn"><span class="btn-icon speaker-icon" aria-hidden="true"></span><span class="btn-label">Read Aloud</span></button>
+        <button id="voiceAnswerBtn" class="tts-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;"><span class="btn-icon mic-icon" aria-hidden="true"></span><span class="btn-label">Speak</span></button>
+        <button id="markSafe" class="safe-btn"><span class="btn-label">Real</span></button>
+        <button id="markScam" class="scam-btn"><span class="btn-label">Fake</span></button>
     </div>
 
     <div id="feedback" class="feedback"></div>

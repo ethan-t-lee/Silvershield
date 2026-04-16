@@ -1,9 +1,12 @@
+(() => {
 /*************************
       Email Functions
 **************************/
 let lastGeneratedEmail = "";
 let lastEmailExpectedLabel = "";
 let emailLoadTime = null;
+const desktopLabels = globalThis.desktopLabels || {};
+const desktopLabel = (key, fallback) => desktopLabels[key] || fallback;
 
 document.addEventListener("DOMContentLoaded", () => {
     const emailIcon = document.querySelector(".icon.email");
@@ -19,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     {
         // Stop any playing audio when loading a new email
         if (window.stopTTS) try { window.stopTTS(); } catch (e) {}
-        emailContent.textContent = "Generating email...";
+        emailContent.textContent = desktopLabel("generatingEmail", "Generating email...");
         rfContainer.style.display = "none";
 
         try
@@ -56,14 +59,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             else
             {
-                emailContent.innerHTML = '<p style="color:#c00;text-align:center;padding:16px;">Could not generate email — please close and try again.</p>';
+                emailContent.innerHTML = `<p style="color:#c00;text-align:center;padding:16px;">${desktopLabel("couldNotGenerateEmail", "Could not generate email — please close and try again.")}</p>`;
             }
 
         }
         catch (err)
         {
             console.error("Email load error:", err);
-            emailContent.textContent = "Server error.";
+            emailContent.textContent = desktopLabel("serverError", "Server error.");
         }
     }
 
@@ -76,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if(!lastGeneratedEmail)
         {
             console.warn("No generated email stored for analysis.");
-            return showNotification(false, "No email loaded to analyze.", "email");
+            return showNotification(false, desktopLabel("noEmailLoadedToAnalyze", "No email loaded to analyze."), "email");
         }
 
         // Calculate time spent on email (in seconds)
@@ -99,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!result.success)
             {
-                return showNotification(false, "Error analyzing response.", "email");
+                return showNotification(false, desktopLabel("errorAnalyzingResponse", "Error analyzing response."), "email");
             }
 
             const correct = result.feedback.correct;
@@ -117,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         catch (err)
         {
             console.error("Email analysis error:", err);
-            showNotification(false, "Server error analyzing response.", "email");
+            showNotification(false, desktopLabel("serverErrorAnalyzingResponse", "Server error analyzing response."), "email");
         }
     }
 
@@ -138,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
         readAloudBtn.dataset.bound = true;
         readAloudBtn.addEventListener('click', async () => {
             if (!lastGeneratedEmail) {
-                return showNotification(false, 'No email loaded to read.', 'email');
+                return showNotification(false, desktopLabel("noEmailLoadedToRead", "No email loaded to read."), 'email');
             }
 
             // Convert HTML to plain text for TTS
@@ -204,3 +207,4 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     );
 });
+})();

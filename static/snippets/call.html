@@ -1,32 +1,37 @@
-<div class="call-app">
+<div class="call-app ios-call-view">
 
     <p id="difficultyLabel" class="difficulty-label"></p>
 
-    <!-- Incoming call-->
-
-    <div class="call-header">
+    <div class="call-header ios-call-header">
         <div class="call-type">Audio Call</div>
-        <div class="call-number" id="call-number">(000) 000-0000</div>
+        <div class="call-avatar" aria-hidden="true"><span class="ui-icon profile-circle-icon"></span></div>
         <div class="call-caller" id="call-caller">Unknown Caller</div>
+        <div class="call-number" id="call-number">(000) 000-0000</div>
     </div>
 
-
-    <!-- fake call buttons -->
-    <div class="call-controls">
-        <button class="call-btn">Mute</button>
-        <button class="call-btn end" onclick="backToApps()">End</button>
-        <button id="readAloudMobile" class="call-btn">Speaker</button>
+    <div class="call-controls ios-call-controls">
+        <button class="call-btn ios-call-btn">
+            <span class="call-control-icon"><span class="btn-icon mute-icon" aria-hidden="true"></span></span>
+            <span class="btn-label">Mute</span>
+        </button>
+        <button class="call-btn ios-call-btn end" onclick="backToApps()">
+            <span class="call-control-icon"><span class="btn-icon end-call-icon" aria-hidden="true"></span></span>
+            <span class="btn-label">End</span>
+        </button>
+        <button id="readAloudMobile" class="call-btn ios-call-btn">
+            <span class="call-control-icon"><span class="btn-icon speaker-icon" aria-hidden="true"></span></span>
+            <span class="btn-label">Speaker</span>
+        </button>
     </div>
 
-    <!-- Transcript -->
-    <div class="call-transcript" id="call-transcript">
+    <div class="call-transcript ios-call-transcript" id="call-transcript">
         Call transcript will appear here...
     </div>
 
-    <div class="actions">
-        <button id="markScam"  class = "btn danger">Report Scam Call</button>
-        <button id="voiceAnswerBtn" class="btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">Speak</button>
-        <button id="markSafe" class="btn safe">Looks Safe</button>
+    <div class="actions ios-call-actions">
+        <button id="markScam" class="btn danger"><span class="btn-label">Report Scam Call</span></button>
+        <button id="voiceAnswerBtn" class="btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;"><span class="btn-icon mic-icon" aria-hidden="true"></span><span class="btn-label">Speak</span></button>
+        <button id="markSafe" class="btn safe"><span class="btn-label">Looks Safe</span></button>
     </div>
 
     <div id="feedback" class="feedback"></div>

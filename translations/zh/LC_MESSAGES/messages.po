@@ -282,3 +282,228 @@ msgstr "的方式进行。"
 
 msgid "Register now"
 msgstr "立即注册"
+
+msgid "Desktop Module"
+msgstr "桌面模块"
+
+msgid "Back to Dashboard"
+msgstr "返回仪表板"
+
+msgid "Compose"
+msgstr "撰写"
+
+msgid "Inbox"
+msgstr "收件箱"
+
+msgid "Starred"
+msgstr "已加星标"
+
+msgid "Sent"
+msgstr "已发送"
+
+msgid "Drafts"
+msgstr "草稿"
+
+msgid "More"
+msgstr "更多"
+
+msgid "Archive"
+msgstr "归档"
+
+msgid "Report spam"
+msgstr "举报垃圾邮件"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Mark unread"
+msgstr "标为未读"
+
+msgid "Say 'real' or 'fake'."
+msgstr "说“真实”或“诈骗”。"
+
+msgid "Cyber Search"
+msgstr "网络搜索"
+
+msgid "New Tab"
+msgstr "新标签页"
+
+msgid "Results"
+msgstr "结果"
+
+msgid "Search Google or type a topic"
+msgstr "搜索 Google 或输入主题"
+
+msgid "Search"
+msgstr "搜索"
+
+msgid "All"
+msgstr "全部"
+
+msgid "News"
+msgstr "新闻"
+
+msgid "Images"
+msgstr "图片"
+
+msgid "Maps"
+msgstr "地图"
+
+msgid "Search a topic, open a result, and inspect the website before deciding if it is real or a scam."
+msgstr "搜索一个主题，打开结果并检查网站，再判断它是真实还是诈骗。"
+
+msgid "Generating email..."
+msgstr "正在生成邮件..."
+
+msgid "Could not generate email — please close and try again."
+msgstr "无法生成邮件，请关闭后重试。"
+
+msgid "Server error."
+msgstr "服务器错误。"
+
+msgid "No email loaded to analyze."
+msgstr "没有可分析的邮件。"
+
+msgid "No email loaded to read."
+msgstr "没有可朗读的邮件。"
+
+msgid "Error analyzing response."
+msgstr "分析响应时出错。"
+
+msgid "Server error analyzing response."
+msgstr "服务器分析响应时出错。"
+
+msgid "Showing simulated Google-style results for"
+msgstr "正在显示模拟的 Google 风格结果："
+
+msgid "Open a result and inspect the site before deciding."
+msgstr "打开一个结果并检查网站后再决定。"
+
+msgid "Searching Google for"
+msgstr "正在 Google 搜索"
+
+msgid "Loading search results..."
+msgstr "正在加载搜索结果..."
+
+msgid "Error loading search results."
+msgstr "加载搜索结果时出错。"
+
+msgid "Loading website..."
+msgstr "正在加载网站..."
+
+msgid "Error loading website."
+msgstr "加载网站时出错。"
+
+msgid "Explore the site content, then decide whether the website is real or a scam."
+msgstr "浏览网站内容后，再判断该网站是真实还是诈骗。"
+
+msgid "Error analyzing website."
+msgstr "分析网站时出错。"
+
+msgid "Server error analyzing website."
+msgstr "服务器分析网站时出错。"
+
+msgid "Sponsored"
+msgstr "赞助内容"
+
+msgid "Search Result"
+msgstr "搜索结果"
+
+msgid "No description provided."
+msgstr "未提供描述。"
+
+msgid "About"
+msgstr "约"
+
+msgid "Website"
+msgstr "网站"
+
+msgid "Ad"
+msgstr "广告"
+
+msgid "Current difficulty"
+msgstr "当前难度"
+
+msgid "Search in mail"
+msgstr "搜索邮件"
+
+msgid "Primary Inbox"
+msgstr "主要收件箱"
+
+msgid "1 new"
+msgstr "1 封新邮件"
+
+msgid "Loading email..."
+msgstr "正在加载邮件..."
+
+msgid "Bank Alerts"
+msgstr "银行提醒"
+
+msgid "Today 12:04 PM"
+msgstr "今天 12:04 PM"
+
+msgid "Text Message"
+msgstr "短信"
+
+msgid "SMS content goes here..."
+msgstr "短信内容显示在这里..."
+
+msgid "iMessage"
+msgstr "iMessage"
+
+msgid "Search or type web address"
+msgstr "搜索或输入网址"
+
+msgid "Go"
+msgstr "前往"
+
+msgid "Google © 2025"
+msgstr "Google © 2025"
+
+msgid "Audio Call"
+msgstr "语音通话"
+
+msgid "Unknown Caller"
+msgstr "未知来电"
+
+msgid "Call transcript will appear here..."
+msgstr "通话记录将显示在这里..."
+
+msgid "Loading scenario..."
+msgstr "正在加载场景..."
+
+msgid "Error loading scenario."
+msgstr "加载场景时出错。"
+
+msgid "Level"
+msgstr "等级"
+
+msgid "Unable to open that result. Please try another one."
+msgstr "无法打开该结果，请尝试其他结果。"
+
+msgid "Inspect the website carefully, then choose REAL or FAKE."
+msgstr "仔细检查网站，然后选择“真实”或“诈骗”。"
+
+msgid "Showing results for"
+msgstr "显示以下搜索结果"
+
+msgid "Open a site and inspect it before answering."
+msgstr "打开网站并检查后再作答。"
+
+msgid "Sponsored result"
+msgstr "赞助结果"
+
+msgid "Result"
+msgstr "结果"
+
+msgid "Next >"
+msgstr "下一页 >"
+
+msgid "Searching for"
+msgstr "正在搜索"
+
+msgid "Open a search result and inspect the site before answering."
+msgstr "在作答前先打开搜索结果并检查网站。"
+
+msgid "Server error analyzing choice."
+msgstr "分析选择时发生服务器错误。"

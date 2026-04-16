@@ -1,7 +1,8 @@
+import os
 import sqlite3
 from werkzeug.security import generate_password_hash
 
-DB_PATH = 'silvershieldDatabase.db'
+DB_PATH = os.getenv('DB_PATH', 'silvershieldDatabase.db')
 TEST_USER_USERNAME = 'testuser'
 TEST_USER_PASSWORD = 'SilverShieldTest!1'
 TEST_USER_EMAIL = 'testuser@silvershield.local'
@@ -221,6 +222,43 @@ def init_database():
         if col_name not in post_survey_cols:
             cursor.execute(f'ALTER TABLE post_survey ADD COLUMN {col_name} {col_type}')
 
+    cursor.execute('''CREATE TABLE IF NOT EXISTS system_usability_survey (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    sus_q1 INTEGER,
+                    sus_q2 INTEGER,
+                    sus_q3 INTEGER,
+                    sus_q4 INTEGER,
+                    sus_q5 INTEGER,
+                    sus_q6 INTEGER,
+                    sus_q7 INTEGER,
+                    sus_q8 INTEGER,
+                    sus_q9 INTEGER,
+                    sus_q10 INTEGER,
+                    sus_score REAL,
+                    completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    usability_cols = _column_names(cursor, 'system_usability_survey')
+    usability_column_defs = {
+        'sus_q1': 'INTEGER',
+        'sus_q2': 'INTEGER',
+        'sus_q3': 'INTEGER',
+        'sus_q4': 'INTEGER',
+        'sus_q5': 'INTEGER',
+        'sus_q6': 'INTEGER',
+        'sus_q7': 'INTEGER',
+        'sus_q8': 'INTEGER',
+        'sus_q9': 'INTEGER',
+        'sus_q10': 'INTEGER',
+        'sus_score': 'REAL',
+    }
+
+    for col_name, col_type in usability_column_defs.items():
+        if col_name not in usability_cols:
+            cursor.execute(f'ALTER TABLE system_usability_survey ADD COLUMN {col_name} {col_type}')
+
     cursor.execute('''CREATE TABLE IF NOT EXISTS performance_summary (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
@@ -332,6 +370,58 @@ def init_database():
                     UNIQUE(username, module_name, phase, question_id),
                     FOREIGN KEY(username) REFERENCES users(username))
     ''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS module_assessment_scores (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    module_name TEXT NOT NULL,
+                    phase TEXT NOT NULL CHECK(phase IN ('pre', 'post')),
+                    variant TEXT NOT NULL CHECK(variant IN ('A', 'B')),
+                    correct_count INTEGER NOT NULL DEFAULT 0,
+                    total_questions INTEGER NOT NULL DEFAULT 0,
+                    score_pct REAL NOT NULL DEFAULT 0,
+                    completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(username, module_name, phase),
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    score_cols = _column_names(cursor, 'module_assessment_scores')
+    score_column_defs = {
+        'variant': "TEXT NOT NULL DEFAULT 'A'",
+        'correct_count': 'INTEGER NOT NULL DEFAULT 0',
+        'total_questions': 'INTEGER NOT NULL DEFAULT 0',
+        'score_pct': 'REAL NOT NULL DEFAULT 0',
+        'completed_timestamp': 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+    }
+
+    for col_name, col_type in score_column_defs.items():
+        if col_name not in score_cols:
+            cursor.execute(f'ALTER TABLE module_assessment_scores ADD COLUMN {col_name} {col_type}')
+
+    cursor.execute('''
+        INSERT INTO module_assessment_scores (
+            username, module_name, phase, variant, correct_count, total_questions, score_pct, completed_timestamp
+        )
+        SELECT
+            r.username,
+            r.module_name,
+            r.phase,
+            COALESCE(e.variant, 'A') AS variant,
+            SUM(CASE WHEN r.is_correct = 1 THEN 1 ELSE 0 END) AS correct_count,
+            COUNT(*) AS total_questions,
+            ROUND((100.0 * SUM(CASE WHEN r.is_correct = 1 THEN 1 ELSE 0 END)) / COUNT(*), 2) AS score_pct,
+            MAX(r.submitted_at) AS completed_timestamp
+        FROM module_assessment_results r
+        LEFT JOIN module_assessment_enrollments e
+            ON e.username = r.username AND e.module_name = r.module_name
+        GROUP BY r.username, r.module_name, r.phase
+        ON CONFLICT(username, module_name, phase) DO UPDATE SET
+            variant = excluded.variant,
+            correct_count = excluded.correct_count,
+            total_questions = excluded.total_questions,
+            score_pct = excluded.score_pct,
+            completed_timestamp = excluded.completed_timestamp
+    ''')
     
     cursor.execute('''CREATE INDEX IF NOT EXISTS idx_attempts_username_time
                     ON scenario_attempts(username, start_time DESC)
@@ -350,6 +440,9 @@ def init_database():
     ''')
     cursor.execute('''CREATE INDEX IF NOT EXISTS idx_module_assessment_results
                     ON module_assessment_results(username, module_name, phase)
+    ''')
+    cursor.execute('''CREATE INDEX IF NOT EXISTS idx_module_assessment_scores
+                    ON module_assessment_scores(username, module_name, phase, variant)
     ''')
 
     connect.commit()

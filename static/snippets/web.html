@@ -1,18 +1,18 @@
 <div class="web-view chrome-mobile-view">
 
     <div class="chrome-mobile-topbar">
-        <button class="back-btn" onclick="backToApps()">← Back</button>
+        <button class="back-btn mobile-nav-btn" onclick="backToApps()"><span class="ui-icon arrow-left-icon" aria-hidden="true"></span><span class="btn-label">Back</span></button>
         <span class="web-browser-title">Chrome</span>
         <div class="chrome-mobile-top-icons" aria-hidden="true">
-            <span>▢</span>
-            <span>⋮</span>
+            <span class="ui-icon tabs-icon"></span>
+            <span class="ui-icon more-vert-icon"></span>
         </div>
     </div>
 
     <div class="search-bar mobile-search-bar chrome-mobile-search-shell">
-        <span class="chrome-mobile-lock" aria-hidden="true">🔒</span>
+        <span class="chrome-mobile-lock ui-icon lock-icon" aria-hidden="true"></span>
         <input type="text" id="fakeSearchInput" class="search-input" value="bank account security tips" placeholder="Search or type web address">
-        <button id="mobileSearchBtn" class="search-submit-btn">Go</button>
+        <button id="mobileSearchBtn" class="search-submit-btn"><span class="ui-icon search-icon search-submit-icon" aria-hidden="true"></span><span class="btn-label">Go</span></button>
     </div>
 
     <div class="chrome-mobile-chip-row" aria-hidden="true">
@@ -31,10 +31,10 @@
     <div id="pagination"></div>
 
     <div id="webActions" class="web-actions" style="display:none;">
-        <button id="readAloudMobile" class="tts-btn">Read Aloud</button>
-        <button id="voiceAnswerBtn" class="tts-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;">Speak</button>
-        <button id="markSafe" class="safe-btn">Real</button>
-        <button id="markScam" class="scam-btn">Fake</button>
+        <button id="readAloudMobile" class="tts-btn"><span class="btn-icon speaker-icon" aria-hidden="true"></span><span class="btn-label">Read Aloud</span></button>
+        <button id="voiceAnswerBtn" class="tts-btn voice-answer-btn" title="Say &lsquo;real&rsquo; or &lsquo;fake&rsquo;"><span class="btn-icon mic-icon" aria-hidden="true"></span><span class="btn-label">Speak</span></button>
+        <button id="markSafe" class="safe-btn"><span class="btn-label">Real</span></button>
+        <button id="markScam" class="scam-btn"><span class="btn-label">Fake</span></button>
     </div>
 
     <div class="fake-footer chrome-mobile-footer">Google © 2025</div>

@@ -319,6 +319,25 @@ def _get_module_phase_questions(username, module_name, phase):
     return [question_map[qid] for qid in question_ids if qid in question_map]
 
 
+def _persist_module_assessment_score(cur, username, module_name, phase, variant, responses):
+    total_questions = len(responses)
+    correct_count = sum(int(response[-1]) for response in responses)
+    score_pct = round((correct_count / total_questions) * 100, 2) if total_questions else 0.0
+
+    cur.execute(
+        '''INSERT INTO module_assessment_scores
+           (username, module_name, phase, variant, correct_count, total_questions, score_pct)
+           VALUES (?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(username, module_name, phase) DO UPDATE SET
+               variant = excluded.variant,
+               correct_count = excluded.correct_count,
+               total_questions = excluded.total_questions,
+               score_pct = excluded.score_pct,
+               completed_timestamp = CURRENT_TIMESTAMP''',
+        (username, module_name, phase, variant, correct_count, total_questions, score_pct),
+    )
+
+
 def _build_module_assessment_status(username):
     status = []
     for module_name, route_name in MODULE_ROUTE_MAP.items():
@@ -404,6 +423,14 @@ def _build_module_posttest_context(username, module_name):
         "post_test_url": post_test_url,
         "back_to_dashboard_url": back_to_dashboard_url,
     }
+
+
+def _has_completed_survey(username, table_name):
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute(f"SELECT 1 FROM {table_name} WHERE username = ? LIMIT 1", (username,))
+        return cur.fetchone() is not None
+
 
 babel = Babel(app, locale_selector=select_locale)
 
@@ -712,13 +739,27 @@ def dashboard():
         bool(module_assessment_status)
         and all(item["pre_complete"] and item["post_complete"] for item in module_assessment_status)
     )
+    post_survey_done = _has_completed_survey(username, 'post_survey')
+    usability_survey_done = _has_completed_survey(username, 'system_usability_survey')
 
-    if all_module_assessments_complete:
+    if all_module_assessments_complete and not post_survey_done:
         assessment_cta_url = url_for('post_survey')
         assessment_cta_title = "Post-Survey"
         assessment_cta_button_label = "Take Post-Survey"
         assessment_cta_description = "You have completed all module assessments. Finish with the post-survey."
         assessment_cta_hero_label = "Open Post-Survey"
+    elif all_module_assessments_complete and not usability_survey_done:
+        assessment_cta_url = url_for('system_usability_survey')
+        assessment_cta_title = "System Usability Survey"
+        assessment_cta_button_label = "Take Usability Survey"
+        assessment_cta_description = "One final Amplify-style usability questionnaire remains after the post-survey."
+        assessment_cta_hero_label = "Open Usability Survey"
+    elif all_module_assessments_complete:
+        assessment_cta_url = url_for('dashboard')
+        assessment_cta_title = "Training Complete"
+        assessment_cta_button_label = "Review Dashboard"
+        assessment_cta_description = "You have completed the post-survey and the system usability survey."
+        assessment_cta_hero_label = "All Final Steps Complete"
     else:
         assessment_cta_url = url_for('module_assessments')
         assessment_cta_title = "Assessments"
@@ -741,6 +782,11 @@ def post_survey():
     username = session.get('username')
     if not username:
         return redirect('/login')
+
+    if _has_completed_survey(username, 'post_survey'):
+        if _has_completed_survey(username, 'system_usability_survey'):
+            return redirect('/dashboard')
+        return redirect('/system_usability_survey')
 
     if request.method == 'POST':
         post_smishing_familiarity_change = request.form.get('post_smishing_familiarity_change')
@@ -771,6 +817,7 @@ def post_survey():
 
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.cursor()
+            cur.execute("DELETE FROM post_survey WHERE username = ?", (username,))
             cur.execute("""
                 INSERT INTO post_survey (
                     username,
@@ -799,9 +846,63 @@ def post_survey():
                   post_info_sharing_comfort))
             conn.commit()
 
-        return redirect('/dashboard')
+        flash('Post-survey saved. Please complete the final usability survey.', 'success')
+        return redirect('/system_usability_survey')
 
     return render_template("postSurvey.html")
+
+
+@app.route('/system_usability_survey', methods=['GET', 'POST'])
+def system_usability_survey():
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    if not _has_completed_survey(username, 'post_survey'):
+        flash('Please complete the post-survey first.', 'info')
+        return redirect('/post_survey')
+
+    if _has_completed_survey(username, 'system_usability_survey'):
+        return redirect('/dashboard')
+
+    if request.method == 'POST':
+        allowed_values = {'1', '2', '3', '4', '5'}
+        responses = [request.form.get(f'sus_q{i}') for i in range(1, 11)]
+
+        if not all(response in allowed_values for response in responses):
+            flash('Please answer all questions.')
+            return render_template('systemUsabilitySurvey.html')
+
+        numeric = [int(response) for response in responses]
+        sus_score = (
+            (numeric[0] - 1)
+            + (5 - numeric[1])
+            + (numeric[2] - 1)
+            + (5 - numeric[3])
+            + (numeric[4] - 1)
+            + (5 - numeric[5])
+            + (numeric[6] - 1)
+            + (5 - numeric[7])
+            + (numeric[8] - 1)
+            + (5 - numeric[9])
+        ) * 2.5
+
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM system_usability_survey WHERE username = ?", (username,))
+            cur.execute(
+                '''INSERT INTO system_usability_survey (
+                       username, sus_q1, sus_q2, sus_q3, sus_q4, sus_q5,
+                       sus_q6, sus_q7, sus_q8, sus_q9, sus_q10, sus_score
+                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                (username, *numeric, sus_score),
+            )
+            conn.commit()
+
+        flash('Thanks! You have completed the full training flow.', 'success')
+        return redirect('/dashboard')
+
+    return render_template('systemUsabilitySurvey.html')
 
 
 @app.route("/reset_presurvey")
@@ -934,6 +1035,7 @@ def module_assessment(module_name, phase):
                    VALUES (?, ?, ?, ?, ?, ?)''',
                 responses,
             )
+            _persist_module_assessment_score(cur, username, module_name, phase, variant, responses)
             conn.commit()
 
         if phase == 'pre':
