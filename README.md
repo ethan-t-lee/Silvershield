@@ -56,15 +56,6 @@ python app.py
 
 Note: this project currently uses SQLite, so database contents may reset on free hosting after redeploys or restarts.
 
-### Temporary database download route
-For short-term debugging, you can set `DB_DOWNLOAD_TOKEN` and visit:
-
-```text
-https://your-render-url/admin/download-db?token=your-token-here
-```
-
-Remove or unset this token after downloading the file.
-
 ## Automated Testing
 
 Run the test suite locally with:

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, flash, session, redirect, url_for, send_file, abort
+from flask import Flask, render_template, request, jsonify, flash, session, redirect, url_for
 import os
 import sqlite3
 import random
@@ -21,7 +21,6 @@ load_dotenv()
 # Read runtime secrets from environment (.env locally, Render env vars in deployment)
 GROQ_KEY = os.getenv("GROQ_KEY")
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-me")
-DB_DOWNLOAD_TOKEN = os.getenv("DB_DOWNLOAD_TOKEN")
 
 # Database path (can be overridden in deployment)
 DB_PATH = os.getenv("DB_PATH", "silvershieldDatabase.db")
@@ -912,23 +911,6 @@ def reset_presurvey():
         cur.execute("DROP TABLE IF EXISTS pre_survey")
         conn.commit()
     return "pre_survey table dropped. Restart the server now."
-
-
-@app.route('/admin/download-db', methods=['GET'])
-def download_database():
-    token = request.args.get('token', '')
-
-    if not DB_DOWNLOAD_TOKEN or token != DB_DOWNLOAD_TOKEN:
-        abort(403)
-
-    if not os.path.exists(DB_PATH):
-        return jsonify({"success": False, "error": "Database file not found"}), 404
-
-    return send_file(
-        DB_PATH,
-        as_attachment=True,
-        download_name=os.path.basename(DB_PATH)
-    )
 
 
 @app.route('/module1')
