@@ -149,6 +149,7 @@ def init_database():
                     country_region TEXT,
                     prior_cyber_training TEXT,
                     confidence INTEGER,
+                    response_json TEXT,
                     completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(username) REFERENCES users(username))
     ''')
@@ -175,6 +176,7 @@ def init_database():
         'cyber_training_timing': 'TEXT',
         'training_covered_sms_phishing': 'TEXT',
         'training_usefulness': 'TEXT',
+        'response_json': 'TEXT',
     }
 
     for col_name, col_type in pre_survey_column_defs.items():
@@ -199,6 +201,7 @@ def init_database():
                     post_update_intent TEXT,
                     post_unknown_link_caution TEXT,
                     post_info_sharing_comfort TEXT,
+                    response_json TEXT,
                     completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(username) REFERENCES users(username))
     ''')
@@ -215,11 +218,49 @@ def init_database():
         'post_update_intent': 'TEXT',
         'post_unknown_link_caution': 'TEXT',
         'post_info_sharing_comfort': 'TEXT',
+        'response_json': 'TEXT',
     }
 
     for col_name, col_type in post_survey_column_defs.items():
         if col_name not in post_survey_cols:
             cursor.execute(f'ALTER TABLE post_survey ADD COLUMN {col_name} {col_type}')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS system_usability_survey (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    sus_q1 INTEGER,
+                    sus_q2 INTEGER,
+                    sus_q3 INTEGER,
+                    sus_q4 INTEGER,
+                    sus_q5 INTEGER,
+                    sus_q6 INTEGER,
+                    sus_q7 INTEGER,
+                    sus_q8 INTEGER,
+                    sus_q9 INTEGER,
+                    sus_q10 INTEGER,
+                    sus_score REAL,
+                    completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    usability_cols = _column_names(cursor, 'system_usability_survey')
+    usability_column_defs = {
+        'sus_q1': 'INTEGER',
+        'sus_q2': 'INTEGER',
+        'sus_q3': 'INTEGER',
+        'sus_q4': 'INTEGER',
+        'sus_q5': 'INTEGER',
+        'sus_q6': 'INTEGER',
+        'sus_q7': 'INTEGER',
+        'sus_q8': 'INTEGER',
+        'sus_q9': 'INTEGER',
+        'sus_q10': 'INTEGER',
+        'sus_score': 'REAL',
+    }
+
+    for col_name, col_type in usability_column_defs.items():
+        if col_name not in usability_cols:
+            cursor.execute(f'ALTER TABLE system_usability_survey ADD COLUMN {col_name} {col_type}')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS performance_summary (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -331,6 +372,96 @@ def init_database():
                     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(username, module_name, phase, question_id),
                     FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS module_assessment_scores (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    module_name TEXT NOT NULL,
+                    phase TEXT NOT NULL CHECK(phase IN ('pre', 'post')),
+                    variant TEXT NOT NULL CHECK(variant IN ('A', 'B')),
+                    correct_count INTEGER NOT NULL DEFAULT 0,
+                    total_questions INTEGER NOT NULL DEFAULT 0,
+                    score_pct REAL NOT NULL DEFAULT 0,
+                    completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(username, module_name, phase),
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS user_consents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    consent_type TEXT NOT NULL,
+                    granted BOOLEAN NOT NULL,
+                    consent_text TEXT,
+                    consent_details TEXT,
+                    recorded_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(username, consent_type),
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS survey_question_assignments (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    survey_phase TEXT NOT NULL CHECK(survey_phase IN ('pre', 'post')),
+                    section_id TEXT NOT NULL,
+                    subsection_id TEXT,
+                    question_id TEXT NOT NULL,
+                    display_order INTEGER NOT NULL DEFAULT 0,
+                    assigned_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(username, survey_phase, section_id, subsection_id, question_id),
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS survey_responses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    survey_phase TEXT NOT NULL CHECK(survey_phase IN ('pre', 'post')),
+                    section_id TEXT NOT NULL,
+                    subsection_id TEXT,
+                    question_id TEXT NOT NULL,
+                    response_value TEXT,
+                    submitted_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(username, survey_phase, question_id),
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    score_cols = _column_names(cursor, 'module_assessment_scores')
+    score_column_defs = {
+        'variant': "TEXT NOT NULL DEFAULT 'A'",
+        'correct_count': 'INTEGER NOT NULL DEFAULT 0',
+        'total_questions': 'INTEGER NOT NULL DEFAULT 0',
+        'score_pct': 'REAL NOT NULL DEFAULT 0',
+        'completed_timestamp': 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+    }
+
+    for col_name, col_type in score_column_defs.items():
+        if col_name not in score_cols:
+            cursor.execute(f'ALTER TABLE module_assessment_scores ADD COLUMN {col_name} {col_type}')
+
+    cursor.execute('''
+        INSERT INTO module_assessment_scores (
+            username, module_name, phase, variant, correct_count, total_questions, score_pct, completed_timestamp
+        )
+        SELECT
+            r.username,
+            r.module_name,
+            r.phase,
+            COALESCE(e.variant, 'A') AS variant,
+            SUM(CASE WHEN r.is_correct = 1 THEN 1 ELSE 0 END) AS correct_count,
+            COUNT(*) AS total_questions,
+            ROUND((100.0 * SUM(CASE WHEN r.is_correct = 1 THEN 1 ELSE 0 END)) / COUNT(*), 2) AS score_pct,
+            MAX(r.submitted_at) AS completed_timestamp
+        FROM module_assessment_results r
+        LEFT JOIN module_assessment_enrollments e
+            ON e.username = r.username AND e.module_name = r.module_name
+        GROUP BY r.username, r.module_name, r.phase
+        ON CONFLICT(username, module_name, phase) DO UPDATE SET
+            variant = excluded.variant,
+            correct_count = excluded.correct_count,
+            total_questions = excluded.total_questions,
+            score_pct = excluded.score_pct,
+            completed_timestamp = excluded.completed_timestamp
     ''')
     
     cursor.execute('''CREATE INDEX IF NOT EXISTS idx_attempts_username_time

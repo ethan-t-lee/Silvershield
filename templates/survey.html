@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ survey.title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='landingStyle.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <style>
+    :root {
+      --page-bg: linear-gradient(180deg, #f4f7fb 0%, #eef4ff 100%);
+      --card-bg: #ffffff;
+      --ink: #141f35;
+      --muted: #53627d;
+      --accent: #17305d;
+      --accent-strong: #24559a;
+      --accent-soft: #e6efff;
+      --danger: #9f2d2d;
+      --border: rgba(20, 31, 53, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--page-bg);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 10rem 18px 4rem;
+    }
+    .surveyIntro {
+      margin-bottom: 18px;
+      padding: 1.5rem;
+      border-radius: 22px;
+      background: linear-gradient(140deg, #17305d 0%, #24559a 100%);
+      color: #ffffff;
+      box-shadow: 0 18px 40px rgba(20, 31, 53, 0.08);
+    }
+    .surveyIntro p {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.55;
+      color: #ffffff;
+    }
+    .flash {
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #fff4f4;
+      color: var(--danger);
+      border: 1px solid #f3c8c8;
+      font-weight: 600;
+    }
+    form {
+      display: grid;
+      gap: 18px;
+    }
+    .sectionCard {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 1.5rem;
+      box-shadow: 0 18px 40px rgba(20, 31, 53, 0.08);
+    }
+    .sectionCard p,
+    .sectionCard label,
+    .sectionCard span {
+      color: var(--ink);
+    }
+    .sectionNote {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .subsection {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+    .questionBlock {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 16px;
+      background: #f7f9fc;
+      border: 1px solid rgba(20, 31, 53, 0.06);
+    }
+    .questionText {
+      margin: 0 0 12px;
+      font-weight: 700;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .choiceList {
+      display: grid;
+      gap: 10px;
+    }
+    .choiceItem {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      line-height: 1.45;
+    }
+    .scaleList {
+      display: grid;
+      gap: 8px;
+    }
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+    input[type="radio"],
+    input[type="checkbox"] {
+      accent-color: var(--accent-strong);
+      margin-top: 0.2rem;
+    }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    .consentBox {
+      background: #ffffff;
+      border: 1px solid var(--border);
+    }
+    .consentPrompt {
+      margin: 0 0 12px;
+      font-weight: 700;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .submitRow {
+      display: flex;
+      justify-content: flex-end;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 14px 22px;
+      font: inherit;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(140deg, #17305d 0%, #24559a 100%);
+      cursor: pointer;
+    }
+    @media (max-width: 720px) {
+      .wrap {
+        padding: 8.25rem 14px 34px;
+      }
+      .sectionCard {
+        padding: 18px;
+      }
+      .submitRow {
+        justify-content: stretch;
+      }
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loginBanner">
+    <h1>SilverShield</h1>
+
+    <div class="loginRegisterButtons">
+      <div class="languageDropdown">
+        <button class="dropbtn">{{ _('Language') }}</button>
+        <div class="dropdownContent">
+          <a href="{{ url_for('set_language', lang='en') }}">English</a>
+          <a href="{{ url_for('set_language', lang='es') }}">Español</a>
+          <a href="{{ url_for('set_language', lang='zh') }}">中文</a>
+        </div>
+      </div>
+
+      <button class="loginButton">
+        <a href="{{ url_for('logout') }}">{{ _('Logout') }}</a>
+      </button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section class="surveyIntro">
+      {% if survey.description %}
+      <p>{{ survey.description }}</p>
+      {% endif %}
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% set category, message = messages[0] %}
+        <div class="flash">{{ message }}</div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      {% if survey.consent %}
+      <section class="sectionCard consentBox">
+        <p class="sectionNote">{{ survey.consent.details }}</p>
+        <p class="consentPrompt">{{ survey.consent.prompt }}</p>
+        <div class="choiceList">
+          <label class="choiceItem">
+            <input type="radio" name="consent_response" value="yes" required>
+            <span>{{ survey.consent.acceptLabel }}</span>
+          </label>
+          <label class="choiceItem">
+            <input type="radio" name="consent_response" value="no" required>
+            <span>{{ survey.consent.declineLabel }}</span>
+          </label>
+        </div>
+      </section>
+      {% endif %}
+
+      {% for section in survey.sections %}
+      <section class="sectionCard">
+        {% if section.instructions %}
+        <p class="sectionNote">{{ section.instructions }}</p>
+        {% endif %}
+
+        {% for question in section.questions %}
+          <div class="questionBlock">
+            <p class="questionText">{{ question.text }}</p>
+            {% if question.type == 'numeric' %}
+              <input type="number" name="{{ question.fieldName }}" {% if question.required %}required{% endif %}>
+            {% elif question.type == 'openText' %}
+              <textarea name="{{ question.fieldName }}" {% if question.required %}required{% endif %}></textarea>
+            {% elif question.type == 'multiChoice' %}
+              <div class="choiceList">
+                {% for option in question.options %}
+                <label class="choiceItem">
+                  <input type="checkbox" name="{{ question.fieldName }}" value="{{ option }}">
+                  <span>{{ option }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            {% elif question.scale %}
+              <div class="scaleList">
+                {% for label in question.scale.labels %}
+                <label class="choiceItem">
+                  <input type="radio" name="{{ question.fieldName }}" value="{{ loop.index }}" {% if question.required %}required{% endif %}>
+                  <span>{{ loop.index }}. {{ label }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="choiceList">
+                {% for option in question.options %}
+                <label class="choiceItem">
+                  <input type="radio" name="{{ question.fieldName }}" value="{{ option }}" {% if question.required %}required{% endif %}>
+                  <span>{{ option }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        {% for subsection in section.subsections %}
+        <div class="subsection">
+          {% for question in subsection.questions %}
+          <div class="questionBlock">
+            <p class="questionText">{{ question.text }}</p>
+            {% if question.type == 'openText' %}
+              <textarea name="{{ question.fieldName }}" {% if question.required %}required{% endif %}></textarea>
+            {% elif question.type == 'multiChoice' %}
+              <div class="choiceList">
+                {% for option in question.options %}
+                <label class="choiceItem">
+                  <input type="checkbox" name="{{ question.fieldName }}" value="{{ option }}">
+                  <span>{{ option }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            {% elif question.scale %}
+              <div class="scaleList">
+                {% for label in question.scale.labels %}
+                <label class="choiceItem">
+                  <input type="radio" name="{{ question.fieldName }}" value="{{ loop.index }}" {% if question.required %}required{% endif %}>
+                  <span>{{ loop.index }}. {{ label }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="choiceList">
+                {% for option in question.options %}
+                <label class="choiceItem">
+                  <input type="radio" name="{{ question.fieldName }}" value="{{ option }}" {% if question.required %}required{% endif %}>
+                  <span>{{ option }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </section>
+      {% endfor %}
+
+      <div class="submitRow">
+        <button type="submit">Submit Survey</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

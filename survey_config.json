@@ -1,0 +1,1101 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "title": "Silver Shield Survey Instrument",
+    "knowledgeSelectionStrategy": "subsection-balanced",
+    "knowledgePairingRule": "post uses different questions from the same subsection shown in pre"
+  },
+  "consent": {
+    "required": true,
+    "type": "boolean",
+    "prompt": "Do you agree to the collection of your survey responses, module progress, and training analytics for research and system-improvement purposes?",
+    "details": "Silver Shield records survey responses, module completion data, assessment outcomes, and interaction timing so the team can evaluate training effectiveness and improve accessibility. Responses are stored with your account for research reporting and platform analysis.",
+    "acceptLabel": "Yes, I consent",
+    "declineLabel": "No, I do not consent"
+  },
+  "preTrainingSurvey": {
+    "title": "Pre-Training Survey",
+    "description": "Complete this survey before starting the training modules.",
+    "sections": [
+      {
+        "sectionId": "S1",
+        "title": "Demographics and Technology Background",
+        "type": "categorical",
+        "questions": [
+          {
+            "questionId": "D1",
+            "type": "numeric",
+            "text": "What is your age?"
+          },
+          {
+            "questionId": "D2",
+            "type": "singleChoice",
+            "text": "What is your biological sex (as assigned at birth)?",
+            "options": [
+              "Female",
+              "Male",
+              "Prefer not to answer"
+            ]
+          },
+          {
+            "questionId": "D3",
+            "type": "singleChoice",
+            "text": "What is the highest level of education you have completed?",
+            "options": [
+              "Less than high school",
+              "High school / GED",
+              "Some college",
+              "Bachelor's degree",
+              "Graduate degree"
+            ]
+          },
+          {
+            "questionId": "D4",
+            "type": "singleChoice",
+            "text": "What is your primary language at home?",
+            "options": [
+              "English",
+              "Spanish",
+              "Chinese",
+              "Hindi",
+              "Other"
+            ]
+          },
+          {
+            "questionId": "D5",
+            "type": "singleChoice",
+            "text": "How often do you use the internet in a typical week?",
+            "options": [
+              "Never",
+              "Less than 1 hour",
+              "1-5 hours",
+              "6-15 hours",
+              "16 or more hours"
+            ]
+          },
+          {
+            "questionId": "D6",
+            "type": "multiChoice",
+            "text": "Which devices do you use regularly?",
+            "options": [
+              "Desktop/Laptop",
+              "Smartphone",
+              "Tablet",
+              "Smart TV",
+              "None"
+            ]
+          }
+        ]
+      },
+      {
+        "sectionId": "S2",
+        "title": "Technology Proficiency",
+        "type": "likert",
+        "scale": {
+          "min": 1,
+          "max": 5,
+          "labels": [
+            "Not at all able",
+            "Slightly able",
+            "Moderately able",
+            "Very able",
+            "Completely able"
+          ]
+        },
+        "questions": [
+          {
+            "questionId": "T1",
+            "text": "Send and receive emails with attachments."
+          },
+          {
+            "questionId": "T2",
+            "text": "Use a web browser to search for information online."
+          },
+          {
+            "questionId": "T3",
+            "text": "Recognize and avoid suspicious pop-up windows or advertisements."
+          },
+          {
+            "questionId": "T4",
+            "text": "Use online banking, shopping, or healthcare portals."
+          },
+          {
+            "questionId": "T5",
+            "text": "Update passwords or security settings on an account."
+          },
+          {
+            "questionId": "T6",
+            "text": "Install or update software or apps on your device."
+          }
+        ]
+      },
+      {
+        "sectionId": "S3",
+        "title": "Cybersecurity Knowledge Test",
+        "type": "knowledge",
+        "instructions": "Read each scenario and select the safest response.",
+        "subsections": [
+          {
+            "subsectionId": "PHISHING_EMAIL_1",
+            "topic": "Phishing Email",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K1",
+                "type": "singleChoice",
+                "text": "You receive an email from 'PayPal-Security@paypa1.com' saying your account has been locked and you must click a link to verify your information within 24 hours. What should you do?",
+                "options": [
+                  "Click the link immediately to protect your account.",
+                  "Reply to the email to ask if it is real.",
+                  "Do not click. Go directly to PayPal's website by typing the address yourself.",
+                  "Forward the email to friends to warn them."
+                ],
+                "correctAnswer": "Do not click. Go directly to PayPal's website by typing the address yourself."
+              },
+              {
+                "questionId": "K2",
+                "type": "singleChoice",
+                "text": "You receive an email from your bank saying 'Unusual activity detected. Verify your account now or it will be suspended.' The email contains a Verify Now button. What is the safest action?",
+                "options": [
+                  "Click the button because the bank needs to confirm your identity.",
+                  "Delete the email and call your bank directly using the number on your card or statement.",
+                  "Reply with your account number to verify.",
+                  "Click the button only if the email looks professional."
+                ],
+                "correctAnswer": "Delete the email and call your bank directly using the number on your card or statement."
+              }
+            ]
+          },
+          {
+            "subsectionId": "VISHING",
+            "topic": "Vishing / Phone Scam",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K3",
+                "type": "singleChoice",
+                "text": "You receive a phone call from someone claiming to be from the IRS, saying you owe back taxes and will be arrested if you do not pay using gift cards right now. What is the most likely explanation?",
+                "options": [
+                  "This is a legitimate IRS enforcement action.",
+                  "This is a scam because government agencies do not demand immediate payment by gift card.",
+                  "You should pay to avoid legal trouble.",
+                  "Ask for a callback number and return the call."
+                ],
+                "correctAnswer": "This is a scam because government agencies do not demand immediate payment by gift card."
+              },
+              {
+                "questionId": "K4",
+                "type": "singleChoice",
+                "text": "A caller says they are from Microsoft tech support and that your computer has been sending error messages to their servers. They ask you to install a program so they can fix it remotely. What should you do?",
+                "options": [
+                  "Allow it because Microsoft monitors your computer for errors.",
+                  "Install the program since tech support needs remote access.",
+                  "Hang up because Microsoft does not make unsolicited calls about computer problems.",
+                  "Give them your computer password so they can log in."
+                ],
+                "correctAnswer": "Hang up because Microsoft does not make unsolicited calls about computer problems."
+              }
+            ]
+          },
+          {
+            "subsectionId": "SOCIAL_ENGINEERING",
+            "topic": "Social Engineering",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K5",
+                "type": "singleChoice",
+                "text": "A new online friend you met on Facebook, who you have never met in person, says they are stuck overseas on a business trip and urgently need you to wire $500. What should you do?",
+                "options": [
+                  "Send the money because they seem trustworthy after chatting.",
+                  "Refuse because this matches the pattern of a romance scam.",
+                  "Send a small amount to test if they are real.",
+                  "Ask for a photo before sending money."
+                ],
+                "correctAnswer": "Refuse because this matches the pattern of a romance scam."
+              },
+              {
+                "questionId": "K6",
+                "type": "singleChoice",
+                "text": "You receive a call from someone saying 'Grandma, it is me. I am in jail after a car accident and need you to wire $2,000 for bail. Please do not tell Mom and Dad.' What should you do?",
+                "options": [
+                  "Wire the money immediately.",
+                  "Hang up and call your grandchild directly on their known phone number to verify.",
+                  "Ask for the jail phone number and call the officer.",
+                  "Wire half the amount and wait to confirm."
+                ],
+                "correctAnswer": "Hang up and call your grandchild directly on their known phone number to verify."
+              }
+            ]
+          },
+          {
+            "subsectionId": "PASSWORD_SECURITY",
+            "topic": "Password Security",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K7",
+                "type": "singleChoice",
+                "text": "Which of the following is the most secure password practice?",
+                "options": [
+                  "Use your birthdate followed by your pet's name.",
+                  "Use the same strong password on all accounts.",
+                  "Use a unique, long passphrase for each account and store it in a password manager.",
+                  "Write your passwords in a notebook kept near your computer."
+                ],
+                "correctAnswer": "Use a unique, long passphrase for each account and store it in a password manager."
+              },
+              {
+                "questionId": "K8",
+                "type": "singleChoice",
+                "text": "You get a message saying one of your online accounts may have been part of a data breach. What is the most important first step?",
+                "options": [
+                  "Ignore it because these messages are usually scams.",
+                  "Change your password for that account immediately and update any reused passwords elsewhere.",
+                  "Wait a few days to see if anything suspicious happens.",
+                  "Call the company and ask them to reset everything for you."
+                ],
+                "correctAnswer": "Change your password for that account immediately and update any reused passwords elsewhere."
+              }
+            ]
+          },
+          {
+            "subsectionId": "RED_FLAGS",
+            "topic": "Red Flag Recognition",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K9",
+                "type": "singleChoice",
+                "text": "Which email characteristic is the strongest warning sign of a phishing attempt?",
+                "options": [
+                  "The email uses your first name in the greeting.",
+                  "The email creates extreme urgency and asks you to click a link to verify your identity within 24 hours.",
+                  "The email arrived at night.",
+                  "The email includes a company logo."
+                ],
+                "correctAnswer": "The email creates extreme urgency and asks you to click a link to verify your identity within 24 hours."
+              },
+              {
+                "questionId": "K10",
+                "type": "singleChoice",
+                "text": "You visit a website and notice the address starts with http:// instead of https://. What does this mean?",
+                "options": [
+                  "The site is faster and more reliable.",
+                  "The site does not use encryption, so your information may not be secure.",
+                  "It is a government website and therefore safe.",
+                  "The extra s does not make a difference for safety."
+                ],
+                "correctAnswer": "The site does not use encryption, so your information may not be secure."
+              }
+            ]
+          },
+          {
+            "subsectionId": "PRIZE_SCAMS",
+            "topic": "Lottery / Prize Scam",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K11",
+                "type": "singleChoice",
+                "text": "You receive a letter saying you have won $50,000 in a sweepstakes you never entered. To claim your prize, you must first pay a $200 processing fee. What should you do?",
+                "options": [
+                  "Pay the fee because the prize is worth more than $200.",
+                  "Do not pay because legitimate prizes never require an upfront fee.",
+                  "Pay half and negotiate the rest.",
+                  "Ask a neighbor if the company sounds familiar."
+                ],
+                "correctAnswer": "Do not pay because legitimate prizes never require an upfront fee."
+              },
+              {
+                "questionId": "K12",
+                "type": "singleChoice",
+                "text": "Someone calls to say you have won a free vacation but need your credit card number to hold your reservation. What is the safest response?",
+                "options": [
+                  "Provide the number because it is only to hold the booking.",
+                  "Decline and hang up because legitimate prizes do not require card details upfront.",
+                  "Give them a card with a low limit to minimize risk.",
+                  "Ask them to email the details first."
+                ],
+                "correctAnswer": "Decline and hang up because legitimate prizes do not require card details upfront."
+              }
+            ]
+          },
+          {
+            "subsectionId": "ONLINE_SAFETY",
+            "topic": "Online Safety",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K13",
+                "type": "singleChoice",
+                "text": "You are at a coffee shop and want to check your bank account on the free public Wi-Fi. What is the safest approach?",
+                "options": [
+                  "Connect and check your account because the coffee shop is trusted.",
+                  "Avoid logging into your bank on public Wi-Fi and use your phone's mobile data instead.",
+                  "Log in quickly so hackers do not have time to intercept.",
+                  "Only check your balance, not transactions."
+                ],
+                "correctAnswer": "Avoid logging into your bank on public Wi-Fi and use your phone's mobile data instead."
+              },
+              {
+                "questionId": "K14",
+                "type": "singleChoice",
+                "text": "A pop-up appears on your computer warning that your device is infected with viruses and asks you to call a support number immediately. What should you do?",
+                "options": [
+                  "Call the number right away.",
+                  "Close the pop-up because this is likely a scareware scam.",
+                  "Click the pop-up to learn more.",
+                  "Restart your computer and then call the number."
+                ],
+                "correctAnswer": "Close the pop-up because this is likely a scareware scam."
+              }
+            ]
+          },
+          {
+            "subsectionId": "IDENTITY_THEFT",
+            "topic": "Identity Theft",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K15",
+                "type": "singleChoice",
+                "text": "You receive a call from someone who already knows your name, address, and the last four digits of your Social Security number. They ask for the remaining digits to verify your Medicare record. What should you do?",
+                "options": [
+                  "Give them the digits because they already know so much.",
+                  "Refuse and hang up because real agencies do not call for your full Social Security number.",
+                  "Give them the digits but ask for mailed confirmation.",
+                  "Ask them to call back tomorrow."
+                ],
+                "correctAnswer": "Refuse and hang up because real agencies do not call for your full Social Security number."
+              },
+              {
+                "questionId": "K16",
+                "type": "singleChoice",
+                "text": "You notice charges on your credit card statement for purchases you did not make. What should you do first?",
+                "options": [
+                  "Wait a month to see if it resolves itself.",
+                  "Contact your credit card company immediately to report the fraudulent charges and request a new card.",
+                  "Pay the charges to avoid late fees, then dispute later.",
+                  "Cancel your credit card online without contacting the company."
+                ],
+                "correctAnswer": "Contact your credit card company immediately to report the fraudulent charges and request a new card."
+              }
+            ]
+          },
+          {
+            "subsectionId": "SAFE_BROWSING",
+            "topic": "Safe Browsing / Downloads",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K17",
+                "type": "singleChoice",
+                "text": "A website asks you to download a free PDF reader plugin to view an important document. You did not expect this prompt. What should you do?",
+                "options": [
+                  "Download it because PDF readers are harmless.",
+                  "Do not download unexpected software. Close the page and access the document another way.",
+                  "Download it only if the website looks professional.",
+                  "Call a family member to download it for you."
+                ],
+                "correctAnswer": "Do not download unexpected software. Close the page and access the document another way."
+              },
+              {
+                "questionId": "K18",
+                "type": "singleChoice",
+                "text": "You receive a text message from an unknown number saying your package could not be delivered and asking you to click a link to reschedule. You are not expecting a package. What should you do?",
+                "options": [
+                  "Click the link because it might be a gift.",
+                  "Do not click the link because this is likely a smishing scam. Delete the message.",
+                  "Reply to ask who sent the package.",
+                  "Click the link only if it looks like a delivery company website."
+                ],
+                "correctAnswer": "Do not click the link because this is likely a smishing scam. Delete the message."
+              }
+            ]
+          },
+          {
+            "subsectionId": "ACCOUNT_SECURITY",
+            "topic": "Account Security",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K19",
+                "type": "singleChoice",
+                "text": "Which statement best explains why two-factor authentication makes your accounts more secure?",
+                "options": [
+                  "It makes your password twice as long.",
+                  "It requires a second form of verification, so a stolen password alone is not enough to log in.",
+                  "It automatically logs you out after 10 minutes.",
+                  "It encrypts all your emails."
+                ],
+                "correctAnswer": "It requires a second form of verification, so a stolen password alone is not enough to log in."
+              },
+              {
+                "questionId": "K20",
+                "type": "singleChoice",
+                "text": "You see a QR code on a public flyer at your local pharmacy offering a free health screening. Before scanning it, what is a smart precaution?",
+                "options": [
+                  "Scan it immediately because public QR codes are always safe.",
+                  "Verify the flyer is officially from the pharmacy before scanning because scammers sometimes place fake QR codes.",
+                  "Only scan it if your phone is fully charged.",
+                  "Scan it but do not enter personal information."
+                ],
+                "correctAnswer": "Verify the flyer is officially from the pharmacy before scanning because scammers sometimes place fake QR codes."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sectionId": "S4",
+        "title": "Cybersecurity Self-Efficacy",
+        "type": "likert",
+        "scale": {
+          "min": 1,
+          "max": 7,
+          "labels": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Neutral",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        "questions": [
+          {
+            "questionId": "SE1",
+            "text": "I can identify a phishing email."
+          },
+          {
+            "questionId": "SE2",
+            "text": "I can protect my personal information online."
+          },
+          {
+            "questionId": "SE3",
+            "text": "I can recognize common scam tactics."
+          },
+          {
+            "questionId": "SE4",
+            "text": "I know what to do if I think an account has been compromised."
+          },
+          {
+            "questionId": "SE5",
+            "text": "I can teach others safe online behavior."
+          },
+          {
+            "questionId": "SE6",
+            "text": "I can handle cybersecurity threats confidently."
+          }
+        ]
+      },
+      {
+        "sectionId": "S5",
+        "title": "Behavioral Intention",
+        "type": "likert",
+        "scale": {
+          "min": 1,
+          "max": 5,
+          "labels": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        "questions": [
+          {
+            "questionId": "BI1",
+            "text": "I intend to verify the sender before clicking links in messages."
+          },
+          {
+            "questionId": "BI2",
+            "text": "I intend to update passwords and security settings regularly."
+          },
+          {
+            "questionId": "BI3",
+            "text": "I intend to hang up on suspicious callers and verify independently."
+          },
+          {
+            "questionId": "BI4",
+            "text": "I intend to share scam-prevention knowledge with others."
+          },
+          {
+            "questionId": "BI5",
+            "text": "I intend to enable two-factor authentication when available."
+          }
+        ]
+      }
+    ]
+  },
+  "postTrainingSurvey": {
+    "title": "Post-Training Survey",
+    "description": "Complete this survey after you finish all training modules.",
+    "sections": [
+      {
+        "sectionId": "S3",
+        "title": "Cybersecurity Knowledge Test",
+        "type": "knowledge",
+        "instructions": "Read each scenario and select the safest response.",
+        "subsections": [
+          {
+            "subsectionId": "PHISHING_EMAIL_1",
+            "topic": "Phishing Email",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K1",
+                "type": "singleChoice",
+                "text": "You receive an email from 'PayPal-Security@paypa1.com' saying your account has been locked and you must click a link to verify your information within 24 hours. What should you do?",
+                "options": [
+                  "Click the link immediately to protect your account.",
+                  "Reply to the email to ask if it is real.",
+                  "Do not click. Go directly to PayPal's website by typing the address yourself.",
+                  "Forward the email to friends to warn them."
+                ],
+                "correctAnswer": "Do not click. Go directly to PayPal's website by typing the address yourself."
+              },
+              {
+                "questionId": "K2",
+                "type": "singleChoice",
+                "text": "You receive an email from your bank saying 'Unusual activity detected. Verify your account now or it will be suspended.' The email contains a Verify Now button. What is the safest action?",
+                "options": [
+                  "Click the button because the bank needs to confirm your identity.",
+                  "Delete the email and call your bank directly using the number on your card or statement.",
+                  "Reply with your account number to verify.",
+                  "Click the button only if the email looks professional."
+                ],
+                "correctAnswer": "Delete the email and call your bank directly using the number on your card or statement."
+              }
+            ]
+          },
+          {
+            "subsectionId": "VISHING",
+            "topic": "Vishing / Phone Scam",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K3",
+                "type": "singleChoice",
+                "text": "You receive a phone call from someone claiming to be from the IRS, saying you owe back taxes and will be arrested if you do not pay using gift cards right now. What is the most likely explanation?",
+                "options": [
+                  "This is a legitimate IRS enforcement action.",
+                  "This is a scam because government agencies do not demand immediate payment by gift card.",
+                  "You should pay to avoid legal trouble.",
+                  "Ask for a callback number and return the call."
+                ],
+                "correctAnswer": "This is a scam because government agencies do not demand immediate payment by gift card."
+              },
+              {
+                "questionId": "K4",
+                "type": "singleChoice",
+                "text": "A caller says they are from Microsoft tech support and that your computer has been sending error messages to their servers. They ask you to install a program so they can fix it remotely. What should you do?",
+                "options": [
+                  "Allow it because Microsoft monitors your computer for errors.",
+                  "Install the program since tech support needs remote access.",
+                  "Hang up because Microsoft does not make unsolicited calls about computer problems.",
+                  "Give them your computer password so they can log in."
+                ],
+                "correctAnswer": "Hang up because Microsoft does not make unsolicited calls about computer problems."
+              }
+            ]
+          },
+          {
+            "subsectionId": "SOCIAL_ENGINEERING",
+            "topic": "Social Engineering",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K5",
+                "type": "singleChoice",
+                "text": "A new online friend you met on Facebook, who you have never met in person, says they are stuck overseas on a business trip and urgently need you to wire $500. What should you do?",
+                "options": [
+                  "Send the money because they seem trustworthy after chatting.",
+                  "Refuse because this matches the pattern of a romance scam.",
+                  "Send a small amount to test if they are real.",
+                  "Ask for a photo before sending money."
+                ],
+                "correctAnswer": "Refuse because this matches the pattern of a romance scam."
+              },
+              {
+                "questionId": "K6",
+                "type": "singleChoice",
+                "text": "You receive a call from someone saying 'Grandma, it is me. I am in jail after a car accident and need you to wire $2,000 for bail. Please do not tell Mom and Dad.' What should you do?",
+                "options": [
+                  "Wire the money immediately.",
+                  "Hang up and call your grandchild directly on their known phone number to verify.",
+                  "Ask for the jail phone number and call the officer.",
+                  "Wire half the amount and wait to confirm."
+                ],
+                "correctAnswer": "Hang up and call your grandchild directly on their known phone number to verify."
+              }
+            ]
+          },
+          {
+            "subsectionId": "PASSWORD_SECURITY",
+            "topic": "Password Security",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K7",
+                "type": "singleChoice",
+                "text": "Which of the following is the most secure password practice?",
+                "options": [
+                  "Use your birthdate followed by your pet's name.",
+                  "Use the same strong password on all accounts.",
+                  "Use a unique, long passphrase for each account and store it in a password manager.",
+                  "Write your passwords in a notebook kept near your computer."
+                ],
+                "correctAnswer": "Use a unique, long passphrase for each account and store it in a password manager."
+              },
+              {
+                "questionId": "K8",
+                "type": "singleChoice",
+                "text": "You get a message saying one of your online accounts may have been part of a data breach. What is the most important first step?",
+                "options": [
+                  "Ignore it because these messages are usually scams.",
+                  "Change your password for that account immediately and update any reused passwords elsewhere.",
+                  "Wait a few days to see if anything suspicious happens.",
+                  "Call the company and ask them to reset everything for you."
+                ],
+                "correctAnswer": "Change your password for that account immediately and update any reused passwords elsewhere."
+              }
+            ]
+          },
+          {
+            "subsectionId": "RED_FLAGS",
+            "topic": "Red Flag Recognition",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K9",
+                "type": "singleChoice",
+                "text": "Which email characteristic is the strongest warning sign of a phishing attempt?",
+                "options": [
+                  "The email uses your first name in the greeting.",
+                  "The email creates extreme urgency and asks you to click a link to verify your identity within 24 hours.",
+                  "The email arrived at night.",
+                  "The email includes a company logo."
+                ],
+                "correctAnswer": "The email creates extreme urgency and asks you to click a link to verify your identity within 24 hours."
+              },
+              {
+                "questionId": "K10",
+                "type": "singleChoice",
+                "text": "You visit a website and notice the address starts with http:// instead of https://. What does this mean?",
+                "options": [
+                  "The site is faster and more reliable.",
+                  "The site does not use encryption, so your information may not be secure.",
+                  "It is a government website and therefore safe.",
+                  "The extra s does not make a difference for safety."
+                ],
+                "correctAnswer": "The site does not use encryption, so your information may not be secure."
+              }
+            ]
+          },
+          {
+            "subsectionId": "PRIZE_SCAMS",
+            "topic": "Lottery / Prize Scam",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K11",
+                "type": "singleChoice",
+                "text": "You receive a letter saying you have won $50,000 in a sweepstakes you never entered. To claim your prize, you must first pay a $200 processing fee. What should you do?",
+                "options": [
+                  "Pay the fee because the prize is worth more than $200.",
+                  "Do not pay because legitimate prizes never require an upfront fee.",
+                  "Pay half and negotiate the rest.",
+                  "Ask a neighbor if the company sounds familiar."
+                ],
+                "correctAnswer": "Do not pay because legitimate prizes never require an upfront fee."
+              },
+              {
+                "questionId": "K12",
+                "type": "singleChoice",
+                "text": "Someone calls to say you have won a free vacation but need your credit card number to hold your reservation. What is the safest response?",
+                "options": [
+                  "Provide the number because it is only to hold the booking.",
+                  "Decline and hang up because legitimate prizes do not require card details upfront.",
+                  "Give them a card with a low limit to minimize risk.",
+                  "Ask them to email the details first."
+                ],
+                "correctAnswer": "Decline and hang up because legitimate prizes do not require card details upfront."
+              }
+            ]
+          },
+          {
+            "subsectionId": "ONLINE_SAFETY",
+            "topic": "Online Safety",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K13",
+                "type": "singleChoice",
+                "text": "You are at a coffee shop and want to check your bank account on the free public Wi-Fi. What is the safest approach?",
+                "options": [
+                  "Connect and check your account because the coffee shop is trusted.",
+                  "Avoid logging into your bank on public Wi-Fi and use your phone's mobile data instead.",
+                  "Log in quickly so hackers do not have time to intercept.",
+                  "Only check your balance, not transactions."
+                ],
+                "correctAnswer": "Avoid logging into your bank on public Wi-Fi and use your phone's mobile data instead."
+              },
+              {
+                "questionId": "K14",
+                "type": "singleChoice",
+                "text": "A pop-up appears on your computer warning that your device is infected with viruses and asks you to call a support number immediately. What should you do?",
+                "options": [
+                  "Call the number right away.",
+                  "Close the pop-up because this is likely a scareware scam.",
+                  "Click the pop-up to learn more.",
+                  "Restart your computer and then call the number."
+                ],
+                "correctAnswer": "Close the pop-up because this is likely a scareware scam."
+              }
+            ]
+          },
+          {
+            "subsectionId": "IDENTITY_THEFT",
+            "topic": "Identity Theft",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K15",
+                "type": "singleChoice",
+                "text": "You receive a call from someone who already knows your name, address, and the last four digits of your Social Security number. They ask for the remaining digits to verify your Medicare record. What should you do?",
+                "options": [
+                  "Give them the digits because they already know so much.",
+                  "Refuse and hang up because real agencies do not call for your full Social Security number.",
+                  "Give them the digits but ask for mailed confirmation.",
+                  "Ask them to call back tomorrow."
+                ],
+                "correctAnswer": "Refuse and hang up because real agencies do not call for your full Social Security number."
+              },
+              {
+                "questionId": "K16",
+                "type": "singleChoice",
+                "text": "You notice charges on your credit card statement for purchases you did not make. What should you do first?",
+                "options": [
+                  "Wait a month to see if it resolves itself.",
+                  "Contact your credit card company immediately to report the fraudulent charges and request a new card.",
+                  "Pay the charges to avoid late fees, then dispute later.",
+                  "Cancel your credit card online without contacting the company."
+                ],
+                "correctAnswer": "Contact your credit card company immediately to report the fraudulent charges and request a new card."
+              }
+            ]
+          },
+          {
+            "subsectionId": "SAFE_BROWSING",
+            "topic": "Safe Browsing / Downloads",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K17",
+                "type": "singleChoice",
+                "text": "A website asks you to download a free PDF reader plugin to view an important document. You did not expect this prompt. What should you do?",
+                "options": [
+                  "Download it because PDF readers are harmless.",
+                  "Do not download unexpected software. Close the page and access the document another way.",
+                  "Download it only if the website looks professional.",
+                  "Call a family member to download it for you."
+                ],
+                "correctAnswer": "Do not download unexpected software. Close the page and access the document another way."
+              },
+              {
+                "questionId": "K18",
+                "type": "singleChoice",
+                "text": "You receive a text message from an unknown number saying your package could not be delivered and asking you to click a link to reschedule. You are not expecting a package. What should you do?",
+                "options": [
+                  "Click the link because it might be a gift.",
+                  "Do not click the link because this is likely a smishing scam. Delete the message.",
+                  "Reply to ask who sent the package.",
+                  "Click the link only if it looks like a delivery company website."
+                ],
+                "correctAnswer": "Do not click the link because this is likely a smishing scam. Delete the message."
+              }
+            ]
+          },
+          {
+            "subsectionId": "ACCOUNT_SECURITY",
+            "topic": "Account Security",
+            "questionSelectionCount": 1,
+            "questions": [
+              {
+                "questionId": "K19",
+                "type": "singleChoice",
+                "text": "Which statement best explains why two-factor authentication makes your accounts more secure?",
+                "options": [
+                  "It makes your password twice as long.",
+                  "It requires a second form of verification, so a stolen password alone is not enough to log in.",
+                  "It automatically logs you out after 10 minutes.",
+                  "It encrypts all your emails."
+                ],
+                "correctAnswer": "It requires a second form of verification, so a stolen password alone is not enough to log in."
+              },
+              {
+                "questionId": "K20",
+                "type": "singleChoice",
+                "text": "You see a QR code on a public flyer at your local pharmacy offering a free health screening. Before scanning it, what is a smart precaution?",
+                "options": [
+                  "Scan it immediately because public QR codes are always safe.",
+                  "Verify the flyer is officially from the pharmacy before scanning because scammers sometimes place fake QR codes.",
+                  "Only scan it if your phone is fully charged.",
+                  "Scan it but do not enter personal information."
+                ],
+                "correctAnswer": "Verify the flyer is officially from the pharmacy before scanning because scammers sometimes place fake QR codes."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sectionId": "S4",
+        "title": "Cybersecurity Self-Efficacy",
+        "type": "likert",
+        "scale": {
+          "min": 1,
+          "max": 7,
+          "labels": [
+            "Strongly Disagree",
+            "Disagree",
+            "Somewhat Disagree",
+            "Neutral",
+            "Somewhat Agree",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        "questions": [
+          {
+            "questionId": "SE1",
+            "text": "I can identify a phishing email."
+          },
+          {
+            "questionId": "SE2",
+            "text": "I can protect my personal information online."
+          },
+          {
+            "questionId": "SE3",
+            "text": "I can recognize common scam tactics."
+          },
+          {
+            "questionId": "SE4",
+            "text": "I know what to do if I think an account has been compromised."
+          },
+          {
+            "questionId": "SE5",
+            "text": "I can teach others safe online behavior."
+          },
+          {
+            "questionId": "SE6",
+            "text": "I can handle cybersecurity threats confidently."
+          }
+        ]
+      },
+      {
+        "sectionId": "S5",
+        "title": "Behavioral Intention",
+        "type": "likert",
+        "scale": {
+          "min": 1,
+          "max": 5,
+          "labels": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        "questions": [
+          {
+            "questionId": "BI1",
+            "text": "I intend to verify the sender before clicking links in messages."
+          },
+          {
+            "questionId": "BI2",
+            "text": "I intend to update passwords and security settings regularly."
+          },
+          {
+            "questionId": "BI3",
+            "text": "I intend to hang up on suspicious callers and verify independently."
+          },
+          {
+            "questionId": "BI4",
+            "text": "I intend to share scam-prevention knowledge with others."
+          },
+          {
+            "questionId": "BI5",
+            "text": "I intend to enable two-factor authentication when available."
+          }
+        ]
+      },
+      {
+        "sectionId": "S6",
+        "title": "Technology Acceptance",
+        "type": "likert",
+        "scale": {
+          "min": 1,
+          "max": 5,
+          "labels": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        "subsections": [
+          {
+            "subsectionId": "PU",
+            "topic": "Perceived Usefulness",
+            "questions": [
+              {
+                "questionId": "PU1",
+                "text": "The platform improved my ability to stay safe online."
+              },
+              {
+                "questionId": "PU2",
+                "text": "The training content was relevant to my daily life."
+              },
+              {
+                "questionId": "PU3",
+                "text": "This platform would be useful for other older adults."
+              }
+            ]
+          },
+          {
+            "subsectionId": "EU",
+            "topic": "Ease of Use",
+            "questions": [
+              {
+                "questionId": "EU1",
+                "text": "The platform was easy to use."
+              },
+              {
+                "questionId": "EU2",
+                "text": "The instructions were clear."
+              },
+              {
+                "questionId": "EU3",
+                "text": "I felt comfortable using the platform features."
+              }
+            ]
+          },
+          {
+            "subsectionId": "HM",
+            "topic": "Engagement",
+            "questions": [
+              {
+                "questionId": "HM1",
+                "text": "The training experience was engaging."
+              },
+              {
+                "questionId": "HM2",
+                "text": "I would use a platform like this again."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sectionId": "S7",
+        "title": "Usability and Accessibility",
+        "type": "likert",
+        "scale": {
+          "min": 1,
+          "max": 5,
+          "labels": [
+            "Strongly Disagree",
+            "Disagree",
+            "Neutral",
+            "Agree",
+            "Strongly Agree"
+          ]
+        },
+        "subsections": [
+          {
+            "subsectionId": "SUS",
+            "topic": "System Usability Scale",
+            "questions": [
+              {
+                "questionId": "SUS1",
+                "text": "I would like to use this system frequently."
+              },
+              {
+                "questionId": "SUS2",
+                "text": "I found the system unnecessarily complex.",
+                "reverse": true
+              },
+              {
+                "questionId": "SUS3",
+                "text": "I thought the system was easy to use."
+              },
+              {
+                "questionId": "SUS4",
+                "text": "I think that I would need the support of a technical person to use this system.",
+                "reverse": true
+              },
+              {
+                "questionId": "SUS5",
+                "text": "I found the various functions in this system were well integrated."
+              },
+              {
+                "questionId": "SUS6",
+                "text": "I thought there was too much inconsistency in this system.",
+                "reverse": true
+              },
+              {
+                "questionId": "SUS7",
+                "text": "I would imagine that most people would learn to use this system very quickly."
+              },
+              {
+                "questionId": "SUS8",
+                "text": "I found the system very cumbersome to use.",
+                "reverse": true
+              },
+              {
+                "questionId": "SUS9",
+                "text": "I felt very confident using the system."
+              },
+              {
+                "questionId": "SUS10",
+                "text": "I needed to learn a lot of things before I could get going with this system.",
+                "reverse": true
+              }
+            ]
+          },
+          {
+            "subsectionId": "AC",
+            "topic": "Accessibility Supplement",
+            "questions": [
+              {
+                "questionId": "AC1",
+                "text": "The text was easy to read."
+              },
+              {
+                "questionId": "AC2",
+                "text": "The voice or audio features worked well."
+              },
+              {
+                "questionId": "AC3",
+                "text": "The pacing of the experience was appropriate."
+              },
+              {
+                "questionId": "AC4",
+                "type": "openText",
+                "text": "Describe any accessibility issues you encountered.",
+                "required": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -15,6 +15,7 @@ import time
 from metrics import (log_scenario_attempt, log_critical_indicators, 
                      update_module_progress, get_user_performance, get_module_progress, 
                      get_attempt_history, get_survey_comparison, get_learning_metrics)
+from survey_engine import build_survey_view_model, validate_submission, save_survey_submission
 
 load_dotenv()
 
@@ -405,6 +406,43 @@ def _build_module_posttest_context(username, module_name):
         "back_to_dashboard_url": back_to_dashboard_url,
     }
 
+def _has_completed_survey(username, table_name):
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute(f"SELECT 1 FROM {table_name} WHERE username = ? LIMIT 1", (username,))
+        return cur.fetchone() is not None
+
+
+def _all_module_assessments_complete(username):
+    module_status = _build_module_assessment_status(username)
+    return (
+        bool(module_status)
+        and all(item["pre_complete"] and item["post_complete"] for item in module_status)
+    ), module_status
+
+
+def _all_modules_training_complete(username):
+    module_status = []
+    for module_name in MODULE_ROUTE_MAP:
+        module_status.append({
+            "module_name": module_name,
+            "training_complete": _is_module_training_complete(username, module_name),
+        })
+    return bool(module_status) and all(item["training_complete"] for item in module_status), module_status
+
+
+def _require_pre_survey_completion(username):
+    if _has_completed_survey(username, 'pre_survey'):
+        return None
+    flash('Please complete the pre-training survey before starting modules.', 'info')
+    return redirect('/pre_survey')
+
+
+def _module_back_url(username):
+    all_module_training_complete, _ = _all_modules_training_complete(username)
+    if all_module_training_complete and not _has_completed_survey(username, 'post_survey'):
+        return url_for('post_survey')
+    return url_for('dashboard')
 babel = Babel(app, locale_selector=select_locale)
 
 
@@ -479,141 +517,21 @@ def pre_survey():
     if not username:
         return redirect('/login')
 
-    # If already completed, skip
-    with sqlite3.connect(DB_PATH) as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
-        if cur.fetchone():
-            return redirect('/dashboard')
-
-    demographics = session.get('pre_survey_demographics')
-    if not demographics:
-        return redirect('/pre_survey_demographics')
-
-    # POST block is inside function (indented)
-    if request.method == 'POST':
-        smishing_familiarity = request.form.get('smishing_familiarity')
-        security_software_usage = request.form.get('security_software_usage')
-        unknown_link_click_frequency = request.form.get('unknown_link_click_frequency')
-        sms_phishing_awareness = request.form.get('sms_phishing_awareness')
-        sms_phishing_victim = request.form.get('sms_phishing_victim')
-        familiar_7726 = request.form.get('familiar_7726')
-        suspected_sms_action = request.form.get('suspected_sms_action')
-        sms_phishing_definition = request.form.get('sms_phishing_definition')
-        cyber_training_history = request.form.get('cyber_training_history')
-        cyber_training_format = request.form.get('cyber_training_format')
-        cyber_training_timing = request.form.get('cyber_training_timing')
-        training_covered_sms_phishing = request.form.get('training_covered_sms_phishing')
-        training_usefulness = request.form.get('training_usefulness')
-
-        required_fields = [
-            smishing_familiarity,
-            security_software_usage,
-            unknown_link_click_frequency,
-            sms_phishing_awareness,
-            sms_phishing_victim,
-            familiar_7726,
-            suspected_sms_action,
-            sms_phishing_definition,
-            cyber_training_history,
-            cyber_training_format,
-            cyber_training_timing,
-            training_covered_sms_phishing,
-            training_usefulness,
-        ]
-
-        if not all(required_fields):
-            flash("Please answer all questions.")
-            return render_template("preSurvey.html")
-
-        with sqlite3.connect(DB_PATH) as conn:
-            cur = conn.cursor()
-            cur.execute("""
-                INSERT INTO pre_survey (
-                    username,
-                    age,
-                    scammed,
-                    tech_level,
-                    device,
-                    gender_identity,
-                    education_level,
-                    employment_status,
-                    household_income,
-                    primary_language,
-                    country_region,
-                    prior_cyber_training,
-                    confidence,
-                    smishing_familiarity, security_software_usage, unknown_link_click_frequency,
-                    sms_phishing_awareness, sms_phishing_victim, familiar_7726,
-                    suspected_sms_action, sms_phishing_definition, cyber_training_history,
-                    cyber_training_format, cyber_training_timing,
-                    training_covered_sms_phishing, training_usefulness
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(username) DO UPDATE SET
-                    age=excluded.age,
-                    scammed=excluded.scammed,
-                    tech_level=excluded.tech_level,
-                    device=excluded.device,
-                    gender_identity=excluded.gender_identity,
-                    education_level=excluded.education_level,
-                    employment_status=excluded.employment_status,
-                    household_income=excluded.household_income,
-                    primary_language=excluded.primary_language,
-                    country_region=excluded.country_region,
-                    prior_cyber_training=excluded.prior_cyber_training,
-                    confidence=excluded.confidence,
-                    smishing_familiarity=excluded.smishing_familiarity,
-                    security_software_usage=excluded.security_software_usage,
-                    unknown_link_click_frequency=excluded.unknown_link_click_frequency,
-                    sms_phishing_awareness=excluded.sms_phishing_awareness,
-                    sms_phishing_victim=excluded.sms_phishing_victim,
-                    familiar_7726=excluded.familiar_7726,
-                    suspected_sms_action=excluded.suspected_sms_action,
-                    sms_phishing_definition=excluded.sms_phishing_definition,
-                    cyber_training_history=excluded.cyber_training_history,
-                    cyber_training_format=excluded.cyber_training_format,
-                    cyber_training_timing=excluded.cyber_training_timing,
-                    training_covered_sms_phishing=excluded.training_covered_sms_phishing,
-                    training_usefulness=excluded.training_usefulness,
-                    completed_timestamp=CURRENT_TIMESTAMP
-            """, (
-                username,
-                demographics.get('age'),
-                demographics.get('scammed'),
-                demographics.get('tech_level'),
-                demographics.get('device'),
-                demographics.get('gender_identity'),
-                demographics.get('education_level'),
-                demographics.get('employment_status'),
-                demographics.get('household_income'),
-                demographics.get('primary_language'),
-                demographics.get('country_region'),
-                demographics.get('prior_cyber_training'),
-                int(demographics.get('confidence', 0)),
-                smishing_familiarity,
-                security_software_usage,
-                unknown_link_click_frequency,
-                sms_phishing_awareness,
-                sms_phishing_victim,
-                familiar_7726,
-                suspected_sms_action,
-                sms_phishing_definition,
-                cyber_training_history,
-                cyber_training_format,
-                cyber_training_timing,
-                training_covered_sms_phishing,
-                training_usefulness,
-            ))
-            conn.commit()
-
-        session.pop('pre_survey_demographics', None)
-
-        flash('Thanks! Your information is saved. Start any module from the dashboard.', 'success')
+    if _has_completed_survey(username, 'pre_survey'):
         return redirect('/dashboard')
 
-    # GET loads the form
-    return render_template("preSurvey.html")
+    survey_model = build_survey_view_model(DB_PATH, username, 'pre')
+    if request.method == 'POST':
+        answers, error_message = validate_submission(request.form, survey_model)
+        if error_message:
+            flash(error_message, 'error')
+            return render_template('survey.html', survey=survey_model)
+
+        save_survey_submission(DB_PATH, username, 'pre', survey_model, answers)
+        flash('Pre-training survey saved. You can now begin the training modules.', 'success')
+        return redirect('/dashboard')
+
+    return render_template('survey.html', survey=survey_model)
 
 
 @app.route('/pre_survey_demographics', methods=['GET', 'POST'])
@@ -622,62 +540,7 @@ def pre_survey_demographics():
     if not username:
         return redirect('/login')
 
-    with sqlite3.connect(DB_PATH) as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
-        if cur.fetchone():
-            return redirect('/dashboard')
-
-    if request.method == 'POST':
-        age = request.form.get('age')
-        scammed = request.form.get('scammed')
-        tech_level = request.form.get('tech_level')
-        device = request.form.get('device')
-        gender_identity = request.form.get('gender_identity')
-        education_level = request.form.get('education_level')
-        employment_status = request.form.get('employment_status')
-        household_income = request.form.get('household_income')
-        primary_language = request.form.get('primary_language')
-        country_region = request.form.get('country_region')
-        prior_cyber_training = request.form.get('prior_cyber_training')
-        confidence = request.form.get('confidence')
-
-        required_fields = [
-            age,
-            scammed,
-            tech_level,
-            device,
-            gender_identity,
-            education_level,
-            employment_status,
-            household_income,
-            primary_language,
-            country_region,
-            prior_cyber_training,
-            confidence,
-        ]
-
-        if not all(required_fields):
-            flash("Please answer all questions.")
-            return render_template("preSurveyDemographics.html")
-
-        session['pre_survey_demographics'] = {
-            'age': age,
-            'scammed': scammed,
-            'tech_level': tech_level,
-            'device': device,
-            'gender_identity': gender_identity,
-            'education_level': education_level,
-            'employment_status': employment_status,
-            'household_income': household_income,
-            'primary_language': primary_language,
-            'country_region': country_region,
-            'prior_cyber_training': prior_cyber_training,
-            'confidence': confidence,
-        }
-        return redirect('/pre_survey')
-
-    return render_template("preSurveyDemographics.html")
+    return redirect('/pre_survey')
 
 
 
@@ -707,28 +570,28 @@ def dashboard():
     if not pre_survey_done:
         return redirect('/pre_survey')
 
-    module_assessment_status = _build_module_assessment_status(username)
-    all_module_assessments_complete = (
-        bool(module_assessment_status)
-        and all(item["pre_complete"] and item["post_complete"] for item in module_assessment_status)
-    )
+    all_module_training_complete, module_training_status = _all_modules_training_complete(username)
+    post_survey_done = _has_completed_survey(username, 'post_survey')
 
-    if all_module_assessments_complete:
-        assessment_cta_url = url_for('post_survey')
-        assessment_cta_title = "Post-Survey"
-        assessment_cta_button_label = "Take Post-Survey"
-        assessment_cta_description = "You have completed all module assessments. Finish with the post-survey."
-        assessment_cta_hero_label = "Open Post-Survey"
+    if all_module_training_complete and not post_survey_done:
+        flash('Please complete the post-training survey to finish the training flow.', 'info')
+        return redirect(url_for('post_survey'))
+    elif all_module_training_complete:
+        assessment_cta_url = url_for('dashboard')
+        assessment_cta_title = "Training Complete"
+        assessment_cta_button_label = "Review Dashboard"
+        assessment_cta_description = "You have completed the post-training survey and all training modules."
+        assessment_cta_hero_label = "All Final Steps Complete"
     else:
-        assessment_cta_url = url_for('module_assessments')
-        assessment_cta_title = "Assessments"
-        assessment_cta_button_label = "Module assessments"
-        assessment_cta_description = "Each module includes a quick check-in before and after training to help track your progress."
-        assessment_cta_hero_label = "Open Module Assessments"
+        assessment_cta_url = url_for('module1')
+        assessment_cta_title = "Continue Training"
+        assessment_cta_button_label = "Open Training"
+        assessment_cta_description = "Continue working through the training modules from your dashboard."
+        assessment_cta_hero_label = "Start Module 1"
 
     return render_template(
         "dashboard.html",
-        module_assessment_status=module_assessment_status,
+        module_training_status=module_training_status,
         assessment_cta_url=assessment_cta_url,
         assessment_cta_title=assessment_cta_title,
         assessment_cta_button_label=assessment_cta_button_label,
@@ -742,68 +605,40 @@ def post_survey():
     if not username:
         return redirect('/login')
 
-    if request.method == 'POST':
-        post_smishing_familiarity_change = request.form.get('post_smishing_familiarity_change')
-        post_confidence_change = request.form.get('post_confidence_change')
-        post_better_recognition = request.form.get('post_better_recognition')
-        post_content_difficulty = request.form.get('post_content_difficulty')
-        post_phishing_awareness = request.form.get('post_phishing_awareness')
-        post_verify_plan = request.form.get('post_verify_plan')
-        post_security_app_intent = request.form.get('post_security_app_intent')
-        post_update_intent = request.form.get('post_update_intent')
-        post_unknown_link_caution = request.form.get('post_unknown_link_caution')
-        post_info_sharing_comfort = request.form.get('post_info_sharing_comfort')
-
-        if not all([
-            post_smishing_familiarity_change,
-            post_confidence_change,
-            post_better_recognition,
-            post_content_difficulty,
-            post_phishing_awareness,
-            post_verify_plan,
-            post_security_app_intent,
-            post_update_intent,
-            post_unknown_link_caution,
-            post_info_sharing_comfort,
-        ]):
-            flash("Please answer all questions.")
-            return render_template("postSurvey.html")
-
-        with sqlite3.connect(DB_PATH) as conn:
-            cur = conn.cursor()
-            cur.execute("""
-                INSERT INTO post_survey (
-                    username,
-                    post_smishing_familiarity_change,
-                    post_confidence_change,
-                    post_better_recognition,
-                    post_content_difficulty,
-                    post_phishing_awareness,
-                    post_verify_plan,
-                    post_security_app_intent,
-                    post_update_intent,
-                    post_unknown_link_caution,
-                    post_info_sharing_comfort
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (username,
-                  post_smishing_familiarity_change,
-                  post_confidence_change,
-                  post_better_recognition,
-                  post_content_difficulty,
-                  post_phishing_awareness,
-                  post_verify_plan,
-                  post_security_app_intent,
-                  post_update_intent,
-                  post_unknown_link_caution,
-                  post_info_sharing_comfort))
-            conn.commit()
-
+    if _has_completed_survey(username, 'post_survey'):
         return redirect('/dashboard')
 
-    return render_template("postSurvey.html")
+    all_module_training_complete, _ = _all_modules_training_complete(username)
+    if not all_module_training_complete:
+        flash('Please complete all training modules before taking the post-training survey.', 'info')
+        return redirect('/dashboard')
+
+    survey_model = build_survey_view_model(DB_PATH, username, 'post')
+    if request.method == 'POST':
+        answers, error_message = validate_submission(request.form, survey_model)
+        if error_message:
+            flash(error_message, 'error')
+            return render_template('survey.html', survey=survey_model)
+
+        save_survey_submission(DB_PATH, username, 'post', survey_model, answers)
+        flash('Post-training survey saved. You have completed the full training flow.', 'success')
+        return redirect('/dashboard')
+
+    return render_template('survey.html', survey=survey_model)
 
 
+@app.route('/system_usability_survey', methods=['GET', 'POST'])
+def system_usability_survey():
+    username = session.get('username')
+    if not username:
+        return redirect('/login')
+
+    if not _has_completed_survey(username, 'post_survey'):
+        flash('The usability items are included in the post-training survey.', 'info')
+        return redirect('/post_survey')
+
+    flash('The usability items are included in the post-training survey.', 'info')
+    return redirect('/dashboard')
 @app.route("/reset_presurvey")
 def reset_presurvey():
     with sqlite3.connect(DB_PATH) as conn:
@@ -833,124 +668,46 @@ def download_database():
 @app.route('/module1')
 def module1():
     username = session.get('username')
-    pretest_redirect = _require_module_pretest('desktop')
-    if pretest_redirect:
-        return pretest_redirect
-
-    posttest_context = _build_module_posttest_context(username, 'desktop')
-    return render_template("desktopPage.html", **posttest_context)
+    if not username:
+        return redirect('/login')
+    redirect_response = _require_pre_survey_completion(username)
+    if redirect_response:
+        return redirect_response
+    return render_template("desktopPage.html", back_to_dashboard_url=_module_back_url(username))
 
 
 @app.route('/module2')
 def module2():
     username = session.get('username')
-    pretest_redirect = _require_module_pretest('mobile')
-    if pretest_redirect:
-        return pretest_redirect
-
-    posttest_context = _build_module_posttest_context(username, 'mobile')
-    return render_template("MobilePage.html", **posttest_context)
+    if not username:
+        return redirect('/login')
+    redirect_response = _require_pre_survey_completion(username)
+    if redirect_response:
+        return redirect_response
+    return render_template("MobilePage.html", back_to_dashboard_url=_module_back_url(username))
 
 @app.route('/phone_roleplay')
 def phone_roleplay():
     username = session.get('username')
-    pretest_redirect = _require_module_pretest('phone')
-    if pretest_redirect:
-        return pretest_redirect
-
-    posttest_context = _build_module_posttest_context(username, 'phone')
-    return render_template("phoneRoleplay.html", **posttest_context)
+    if not username:
+        return redirect('/login')
+    redirect_response = _require_pre_survey_completion(username)
+    if redirect_response:
+        return redirect_response
+    return render_template("phoneRoleplay.html", back_to_dashboard_url=_module_back_url(username))
 
 
 @app.route('/module_assessments')
 def module_assessments():
-    username = session.get('username')
-    if not username:
-        return redirect('/login')
-
-    module_status = _build_module_assessment_status(username)
-    return render_template('moduleAssessments.html', modules=module_status)
+    flash('Module pre/post assessments have been removed from this flow.', 'info')
+    return redirect('/dashboard')
 
 
 @app.route('/module_assessment/<module_name>/<phase>', methods=['GET', 'POST'])
 def module_assessment(module_name, phase):
-    username = session.get('username')
-    if not username:
-        return redirect('/login')
 
-    if module_name not in MODULE_ROUTE_MAP or phase not in ('pre', 'post'):
-        return redirect('/dashboard')
-
-    variant = _get_or_create_module_variant(username, module_name)
-    _ensure_module_question_assignments(username, module_name)
-
-    if phase == 'post' and not _is_module_phase_complete(username, module_name, 'pre'):
-        flash('Please complete the pre-test first.', 'info')
-        return redirect(url_for('module_assessment', module_name=module_name, phase='pre'))
-
-    if phase == 'post' and not _is_module_training_complete(username, module_name):
-        flash('Please finish the module training before taking the post-test.', 'info')
-        return _get_module_redirect(module_name)
-
-    if _is_module_phase_complete(username, module_name, phase):
-        flash('You have already completed this assessment.', 'info')
-        if phase == 'pre':
-            return _get_module_redirect(module_name)
-        return redirect('/dashboard')
-
-    questions = _get_module_phase_questions(username, module_name, phase)
-    if not questions:
-        flash('Assessment setup failed. Please try again.', 'error')
-        return redirect('/dashboard')
-
-    if request.method == 'POST':
-        responses = []
-        for question in questions:
-            selected = request.form.get(f"q_{question['id']}")
-            if selected not in question['options']:
-                flash('Please answer all questions before submitting.', 'error')
-                return render_template(
-                    'moduleAssessment.html',
-                    module_name=module_name,
-                    module_label=MODULE_LABELS.get(module_name, module_name.title()),
-                    variant=variant,
-                    phase=phase,
-                    questions=questions,
-                )
-            responses.append((
-                username,
-                module_name,
-                phase,
-                question['id'],
-                selected,
-                int(selected == question['correct']),
-            ))
-
-        with sqlite3.connect(DB_PATH) as conn:
-            cur = conn.cursor()
-            cur.executemany(
-                '''INSERT INTO module_assessment_results
-                   (username, module_name, phase, question_id, selected_option, is_correct)
-                   VALUES (?, ?, ?, ?, ?, ?)''',
-                responses,
-            )
-            conn.commit()
-
-        if phase == 'pre':
-            flash('Pre-test complete. You can now start this module.', 'success')
-            return _get_module_redirect(module_name)
-
-        flash('Post-test submitted. Great work!', 'success')
-        return redirect('/dashboard')
-
-    return render_template(
-        'moduleAssessment.html',
-        module_name=module_name,
-        module_label=MODULE_LABELS.get(module_name, module_name.title()),
-        variant=variant,
-        phase=phase,
-        questions=questions,
-    )
+    flash('Module pre/post assessments have been removed from this flow.', 'info')
+    return redirect('/dashboard')
 
 
 @app.route('/logout')
@@ -1059,7 +816,10 @@ def register():
     address = request.form['address']
 
     success, message = user_registration(username, password, email, phone, address)
-    return jsonify(success=success, message=message)
+    if success:
+        session['username'] = username
+        return jsonify(success=True, message=message, redirect_url=url_for('pre_survey'))
+    return jsonify(success=False, message=message)
 
 
 ################################

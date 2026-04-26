@@ -571,7 +571,7 @@ if(submit)
         if(result.success)
         {
             alert("Registration successful");
-            window.location.href = "/";
+            window.location.href = result.redirect_url || "/";
         }
         else
         {
