@@ -21,6 +21,52 @@ function applyMobileTranslations() {
     const speakerLabel = mobileLabels.speaker || "Speaker";
     const reportScamCallLabel = mobileLabels.reportScamCall || fakeLabel;
     const looksSafeLabel = mobileLabels.looksSafe || realLabel;
+    const gmailLabel = mobileLabels.gmail || "Gmail";
+    const chromeLabel = mobileLabels.chrome || "Chrome";
+
+    const gmailWordmark = document.querySelector(".gmail-mobile-wordmark");
+    if (gmailWordmark) gmailWordmark.textContent = gmailLabel;
+
+    const browserTitle = document.querySelector(".web-browser-title");
+    if (browserTitle) browserTitle.textContent = chromeLabel;
+
+    const mailSearchPill = document.querySelector(".gmail-mobile-search-pill");
+    if (mailSearchPill) mailSearchPill.textContent = mobileLabels.searchInMail || "Search in mail";
+
+    const mailboxLabel = document.querySelector(".gmail-mobile-mailbox");
+    if (mailboxLabel) mailboxLabel.textContent = mobileLabels.primaryInbox || "Primary Inbox";
+
+    const unreadLabel = document.querySelector(".gmail-mobile-unread");
+    if (unreadLabel) unreadLabel.textContent = mobileLabels.oneNew || "1 new";
+
+    const emailLoading = document.getElementById("emailBody");
+    if (emailLoading && /loading email/i.test(emailLoading.textContent || "")) {
+        emailLoading.textContent = mobileLabels.loadingEmail || "Loading email...";
+    }
+
+    const fakeSearchInput = document.getElementById("fakeSearchInput");
+    if (fakeSearchInput) {
+        fakeSearchInput.placeholder = mobileLabels.searchOrTypeAddress || "Search or type web address";
+    }
+
+    const mobileSearchBtn = document.getElementById("mobileSearchBtn");
+    if (mobileSearchBtn) mobileSearchBtn.textContent = mobileLabels.go || "Go";
+
+    const chips = document.querySelectorAll(".chrome-mobile-chip");
+    if (chips[0]) chips[0].textContent = mobileLabels.all || "All";
+    if (chips[1]) chips[1].textContent = mobileLabels.news || "News";
+    if (chips[2]) chips[2].textContent = mobileLabels.images || "Images";
+
+    const backToResultsBtn = document.getElementById("webBackToResults");
+    if (backToResultsBtn) backToResultsBtn.textContent = mobileLabels.results || "Results";
+
+    const webStatusText = document.getElementById("webStatusText");
+    if (webStatusText && /search a topic/i.test(webStatusText.textContent || "")) {
+        webStatusText.textContent = mobileLabels.searchAndInspect || "Search a topic, open a result, and inspect the site before choosing REAL or FAKE.";
+    }
+
+    const chromeFooter = document.querySelector(".chrome-mobile-footer");
+    if (chromeFooter) chromeFooter.textContent = `${mobileLabels.googleFooter || "Google"} © 2025`;
 
     document.querySelectorAll(".back-btn, .back-button").forEach(btn => {
         btn.textContent = `← ${backLabel}`;
@@ -86,6 +132,9 @@ const ScenarioEngine = {
         if (!scenarioBody || !appsGrid) return;
 
         scenarioBody.innerHTML = "<p class='loading'>Loading scenario...</p>";
+        if (mobileLabels.loadingScenario) {
+            scenarioBody.innerHTML = `<p class='loading'>${mobileLabels.loadingScenario}</p>`;
+        }
         appsGrid.style.display = "none";
 
         // Load snippet HTML template
@@ -115,7 +164,7 @@ const ScenarioEngine = {
 
         const data = await res.json();
         if (!data.success) {
-            scenarioBody.innerHTML = "<p>Error loading scenario.</p>";
+            scenarioBody.innerHTML = `<p>${mobileLabels.errorLoadingScenario || "Error loading scenario."}</p>`;
             console.error("Scenario error:", data.error);
             return;
         }
@@ -123,7 +172,7 @@ const ScenarioEngine = {
         currentDifficulty = data.difficulty;
 
         const diffLabel = document.getElementById("difficultyLabel");
-        if (diffLabel) diffLabel.innerText = "Level: " + currentDifficulty;
+        if (diffLabel) diffLabel.innerText = `${mobileLabels.level || "Level"}: ${currentDifficulty}`;
 
         // Record time scenario was displayed
         scenarioLoadTime = Date.now();
@@ -211,7 +260,7 @@ const ScenarioEngine = {
         if (webActions) webActions.style.display = "none";
         if (resultsBtn) resultsBtn.style.display = "none";
         if (statusText) {
-            statusText.textContent = "Search a topic, open a result, and inspect the page before deciding if it is real or a scam.";
+            statusText.textContent = mobileLabels.searchAndInspect || "Search a topic, open a result, and inspect the page before deciding if it is real or a scam.";
         }
 
         if (searchBtn && !searchBtn.dataset.bound) {
@@ -256,8 +305,8 @@ const ScenarioEngine = {
         if (searchInput) searchInput.value = normalizedQuery;
         if (webActions) webActions.style.display = "none";
         if (resultsBtn) resultsBtn.style.display = "none";
-        if (statusText) statusText.textContent = `Searching for “${normalizedQuery}”...`;
-        if (container) container.innerHTML = "<p class='loading'>Loading search results...</p>";
+        if (statusText) statusText.textContent = `${mobileLabels.searchingFor || "Searching for"} “${normalizedQuery}”...`;
+        if (container) container.innerHTML = `<p class='loading'>${mobileLabels.loadingSearchResults || "Loading search results..."}</p>`;
 
         try {
             const response = await fetch("/generate-web", {
@@ -268,7 +317,7 @@ const ScenarioEngine = {
 
             const data = await response.json();
             if (!data.success || !data.web) {
-                throw new Error(data.error || "Search results failed to load.");
+                throw new Error(data.error || mobileLabels.searchResultsFailed || "Search results failed to load.");
             }
 
             currentDifficulty = data.difficulty;
@@ -282,8 +331,8 @@ const ScenarioEngine = {
             }
         } catch (err) {
             console.error("loadWebSearch error:", err);
-            if (container) container.innerHTML = "<p>Error loading search results.</p>";
-            if (statusText) statusText.textContent = "Try a different search or reload the scenario.";
+            if (container) container.innerHTML = `<p>${mobileLabels.errorLoadingSearchResults || "Error loading search results."}</p>`;
+            if (statusText) statusText.textContent = mobileLabels.tryDifferentSearch || "Try a different search or reload the scenario.";
         }
     },
 
@@ -296,8 +345,8 @@ const ScenarioEngine = {
 
         if (!site || !container) return;
 
-        container.innerHTML = "<p class='loading'>Opening website...</p>";
-        if (statusText) statusText.textContent = "Loading the selected website...";
+        container.innerHTML = `<p class='loading'>${mobileLabels.loadingWebsite || "Loading website..."}</p>`;
+        if (statusText) statusText.textContent = mobileLabels.loadingSelectedWebsite || "Loading the selected website...";
 
         try {
             const response = await fetch("/generate-web", {
@@ -325,7 +374,7 @@ const ScenarioEngine = {
             if (resultsBtn) resultsBtn.style.display = "inline-flex";
             if (webActions) webActions.style.display = "grid";
             if (statusText) {
-                statusText.textContent = "Inspect the website carefully, then choose REAL or FAKE.";
+                statusText.textContent = mobileLabels.inspectAndChoose || "Inspect the website carefully, then choose REAL or FAKE.";
             }
 
             container.innerHTML = `
@@ -344,8 +393,8 @@ const ScenarioEngine = {
             }
         } catch (err) {
             console.error("openWebResult error:", err);
-            container.innerHTML = "<p>Error loading website.</p>";
-            if (statusText) statusText.textContent = "Unable to open that result. Please try another one.";
+            container.innerHTML = `<p>${mobileLabels.errorLoadingWebsite || "Error loading website."}</p>`;
+            if (statusText) statusText.textContent = mobileLabels.unableToOpenResult || "Unable to open that result. Please try another one.";
         }
     },
 
@@ -366,14 +415,14 @@ const ScenarioEngine = {
         if (pagination) pagination.innerHTML = "";
         if (searchInput) searchInput.value = currentWebQuery;
         if (statusText) {
-            statusText.textContent = `Showing results for “${currentWebQuery}”. Open a site and inspect it before answering.`;
+            statusText.textContent = `${mobileLabels.showingResultsFor || "Showing results for"} “${currentWebQuery}”. ${mobileLabels.openAndInspectBeforeAnswer || "Open a site and inspect it before answering."}`;
         }
 
         container.innerHTML = "";
 
         const stats = document.createElement("div");
         stats.className = "search-results-stats";
-        stats.textContent = `About ${((sc.results || []).length + (sc.ads || []).length) * 142000} results (0.38 seconds)`;
+        stats.textContent = `${mobileLabels.about || "About"} ${((sc.results || []).length + (sc.ads || []).length) * 142000} results (0.38 ${mobileLabels.seconds || "seconds"})`;
         container.appendChild(stats);
 
         const renderCard = (item, sponsored = false) => {
@@ -382,10 +431,13 @@ const ScenarioEngine = {
             card.className = `search-result ${sponsored ? "sponsored" : ""}`;
             card.innerHTML = `
                 ${sponsored ? '<div class="sponsored-label">Sponsored</div>' : ''}
-                <div class="search-result-title">${item.title}</div>
+                <div class="search-result-title">${item.title || mobileLabels.searchResult || "Search Result"}</div>
                 <div class="search-result-link">${item.url}</div>
-                <div class="search-result-snippet">${item.snippet}</div>
+                <div class="search-result-snippet">${item.snippet || mobileLabels.noDescriptionProvided || "No description provided."}</div>
             `;
+            if (sponsored) {
+                card.querySelector('.sponsored-label').textContent = mobileLabels.sponsored || 'Sponsored';
+            }
             card.onclick = () => this.openWebResult(item);
             container.appendChild(card);
         };
@@ -394,7 +446,7 @@ const ScenarioEngine = {
         (sc.results || []).forEach(result => renderCard(result, false));
 
         if (pagination) {
-            pagination.innerHTML = `<button id="nextPageBtn">${sc.pagination?.next_page_label || "Next >"}</button>`;
+            pagination.innerHTML = `<button id="nextPageBtn">${sc.pagination?.next_page_label || `${mobileLabels.nextPage || "Next"} >`}</button>`;
             const nextPageBtn = document.getElementById("nextPageBtn");
             if (nextPageBtn) {
                 nextPageBtn.onclick = () => this.loadWebSearch(currentWebQuery);
@@ -445,7 +497,7 @@ const ScenarioEngine = {
 
             const smsContactName = document.getElementById("smsContactName");
             const smsAvatar = document.getElementById("smsAvatar");
-            const senderLabel = sc.sender_name || "Bank Alerts";
+            const senderLabel = sc.sender_name || mobileLabels.bankAlerts || "Bank Alerts";
 
             if (smsContactName) smsContactName.innerText = senderLabel;
             if (smsAvatar) smsAvatar.innerText = senderLabel.charAt(0).toUpperCase();
@@ -457,7 +509,7 @@ const ScenarioEngine = {
         // CALL
         if (type === "call") {
             document.getElementById("call-number").innerText = sc.number;
-            document.getElementById("call-caller").innerText = sc.caller_name || "Unknown Caller";
+            document.getElementById("call-caller").innerText = sc.caller_name || mobileLabels.unknownCaller || "Unknown Caller";
             document.getElementById("call-transcript").innerText = sc.transcript;
             currentMessage = sc.transcript;
             return;
@@ -498,7 +550,7 @@ document.addEventListener('visibilitychange', () => {
 async function analyzeChoice(choice) {
     try {
         if (currentType === "web" && !currentExpectedLabel) {
-            alert("Open a search result and inspect the site before answering.");
+            alert(mobileLabels.openSearchResultFirst || "Open a search result and inspect the site before answering.");
             return;
         }
 
@@ -521,13 +573,13 @@ async function analyzeChoice(choice) {
         const data = await response.json();
 
         if (!data.success) {
-            alert("Error analyzing response.");
+            alert(mobileLabels.errorAnalyzingResponse || "Error analyzing response.");
             return;
         }
 
         alert(
             data.feedback.feedback +
-            `\n\n(Current difficulty: ${data.difficulty_now})`
+            `\n\n(${mobileLabels.currentDifficulty || "Current difficulty"}: ${data.difficulty_now})`
         );
 
         // Reload next scenario automatically
@@ -535,7 +587,7 @@ async function analyzeChoice(choice) {
 
     } catch (err) {
         console.error("analyzeChoice() error:", err);
-        alert("Server error analyzing choice.");
+        alert(mobileLabels.serverErrorAnalyzingChoice || "Server error analyzing choice.");
     }
 }
 

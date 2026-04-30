@@ -16,19 +16,8 @@ def _seed_user(db_path, username="alice", password_hash="hashed"):
 def _seed_pre_survey(db_path, username="alice"):
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                username, "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            (username, "25-34", "Both", 4),
         )
         conn.commit()
 
@@ -152,19 +141,8 @@ def test_module_entry_allows_access_after_pre_survey(app_client):
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.commit()
 
@@ -183,19 +161,8 @@ def test_module_assessment_routes_redirect_to_dashboard(app_client):
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.commit()
 
@@ -220,19 +187,8 @@ def test_module_back_button_points_to_dashboard(app_client):
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.commit()
 
@@ -250,19 +206,8 @@ def test_module_back_button_routes_to_post_survey_when_training_complete(app_cli
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.execute(
             """
@@ -329,19 +274,8 @@ def test_dashboard_redirects_to_post_survey_when_all_modules_complete(app_client
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.commit()
 
@@ -456,21 +390,9 @@ def test_dashboard_access_after_pre_survey_complete(app_client):
         session["username"] = "alice"
 
     with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+        conn.execute(
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.commit()
 

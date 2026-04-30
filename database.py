@@ -138,16 +138,7 @@ def init_database():
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT UNIQUE NOT NULL,
                     age TEXT,
-                    scammed TEXT,
-                    tech_level TEXT,
                     device TEXT,
-                    gender_identity TEXT,
-                    education_level TEXT,
-                    employment_status TEXT,
-                    household_income TEXT,
-                    primary_language TEXT,
-                    country_region TEXT,
-                    prior_cyber_training TEXT,
                     confidence INTEGER,
                     response_json TEXT,
                     completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -155,33 +146,8 @@ def init_database():
     ''')
 
     pre_survey_cols = _column_names(cursor, 'pre_survey')
-    pre_survey_column_defs = {
-        'gender_identity': 'TEXT',
-        'education_level': 'TEXT',
-        'employment_status': 'TEXT',
-        'household_income': 'TEXT',
-        'primary_language': 'TEXT',
-        'country_region': 'TEXT',
-        'prior_cyber_training': 'TEXT',
-        'smishing_familiarity': 'TEXT',
-        'security_software_usage': 'TEXT',
-        'unknown_link_click_frequency': 'TEXT',
-        'sms_phishing_awareness': 'TEXT',
-        'sms_phishing_victim': 'TEXT',
-        'familiar_7726': 'TEXT',
-        'suspected_sms_action': 'TEXT',
-        'sms_phishing_definition': 'TEXT',
-        'cyber_training_history': 'TEXT',
-        'cyber_training_format': 'TEXT',
-        'cyber_training_timing': 'TEXT',
-        'training_covered_sms_phishing': 'TEXT',
-        'training_usefulness': 'TEXT',
-        'response_json': 'TEXT',
-    }
-
-    for col_name, col_type in pre_survey_column_defs.items():
-        if col_name not in pre_survey_cols:
-            cursor.execute(f'ALTER TABLE pre_survey ADD COLUMN {col_name} {col_type}')
+    if 'response_json' not in pre_survey_cols:
+        cursor.execute('ALTER TABLE pre_survey ADD COLUMN response_json TEXT')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS post_survey (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -191,39 +157,10 @@ def init_database():
                     behavior_change TEXT,
                     recommendation_likelihood INTEGER,
                     learning_rating INTEGER,
-                    post_smishing_familiarity_change TEXT,
-                    post_confidence_change TEXT,
-                    post_better_recognition TEXT,
-                    post_content_difficulty TEXT,
-                    post_phishing_awareness TEXT,
-                    post_verify_plan TEXT,
-                    post_security_app_intent TEXT,
-                    post_update_intent TEXT,
-                    post_unknown_link_caution TEXT,
-                    post_info_sharing_comfort TEXT,
                     response_json TEXT,
                     completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(username) REFERENCES users(username))
     ''')
-
-    post_survey_cols = _column_names(cursor, 'post_survey')
-    post_survey_column_defs = {
-        'post_smishing_familiarity_change': 'TEXT',
-        'post_confidence_change': 'TEXT',
-        'post_better_recognition': 'TEXT',
-        'post_content_difficulty': 'TEXT',
-        'post_phishing_awareness': 'TEXT',
-        'post_verify_plan': 'TEXT',
-        'post_security_app_intent': 'TEXT',
-        'post_update_intent': 'TEXT',
-        'post_unknown_link_caution': 'TEXT',
-        'post_info_sharing_comfort': 'TEXT',
-        'response_json': 'TEXT',
-    }
-
-    for col_name, col_type in post_survey_column_defs.items():
-        if col_name not in post_survey_cols:
-            cursor.execute(f'ALTER TABLE post_survey ADD COLUMN {col_name} {col_type}')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS system_usability_survey (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -290,6 +227,10 @@ def init_database():
                     last_accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(username, module_name),
                     FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+    cursor.execute('''UPDATE module_progress
+                    SET total_scenarios = 5
+                    WHERE total_scenarios IS NULL OR total_scenarios <> 5
     ''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS critical_indicators (

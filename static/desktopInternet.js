@@ -9,6 +9,7 @@ let websiteLoadTime = null;
 let currentInternetSpeechText = "";
 let currentInternetQuery = "security alerts";
 let cachedDesktopResults = [];
+const desktopInternetLabels = globalThis.desktopLabels || {};
 
 const internetContent = document.getElementById("internetContent");
 const internetButtons = document.getElementById("internetButtons");
@@ -33,8 +34,9 @@ function htmlToPlainText(html) {
 }
 
 function getDesktopSearchQuery() {
-    const typedValue = (addressBar?.value || currentInternetQuery || "security alerts").trim();
-    return typedValue || "security alerts";
+    const defaultQuery = desktopInternetLabels.defaultSearchQuery || "security alerts";
+    const typedValue = (addressBar?.value || currentInternetQuery || defaultQuery).trim();
+    return typedValue || defaultQuery;
 }
 
 function setDesktopInternetState({ view = "results", inputValue = currentInternetQuery, metaText = "" } = {}) {
@@ -66,14 +68,14 @@ function renderDesktopSearchResults(results, query) {
     setDesktopInternetState({
         view: "results",
         inputValue: currentInternetQuery,
-        metaText: `Showing simulated Google-style results for “${currentInternetQuery}”. Open a result and inspect the site before deciding.`
+        metaText: `${desktopInternetLabels.showingResultsFor || "Showing simulated Google-style results for"} “${currentInternetQuery}”. ${desktopInternetLabels.openAndInspect || "Open a result and inspect the site before deciding."}`
     });
 
     internetContent.innerHTML = "";
 
     const stats = document.createElement("div");
     stats.className = "google-results-stats";
-    stats.textContent = `About ${(results.length || 1) * 184230} results (0.41 seconds)`;
+    stats.textContent = `${desktopInternetLabels.aboutResults || "About"} ${(results.length || 1) * 184230} results (0.41 ${desktopInternetLabels.secondsSuffix || "seconds"})`;
     internetContent.appendChild(stats);
 
     (results || []).forEach(site => {
@@ -86,7 +88,7 @@ function renderDesktopSearchResults(results, query) {
 
         const favicon = document.createElement("span");
         favicon.className = "search-result-favicon";
-        favicon.textContent = site.is_sponsored ? "Ad" : "🌐";
+        favicon.textContent = site.is_sponsored ? (desktopInternetLabels.adLabel || "Ad") : "🌐";
 
         const meta = document.createElement("div");
         meta.className = "search-result-meta";
@@ -100,7 +102,7 @@ function renderDesktopSearchResults(results, query) {
         if (site.is_sponsored) {
             const sponsored = document.createElement("div");
             sponsored.className = "sponsored-label";
-            sponsored.textContent = "Sponsored";
+            sponsored.textContent = desktopInternetLabels.sponsored || "Sponsored";
             meta.appendChild(sponsored);
         }
 
@@ -144,9 +146,9 @@ async function generateDesktopFakeSites(query = getDesktopSearchQuery()) {
     setDesktopInternetState({
         view: "results",
         inputValue: currentInternetQuery,
-        metaText: `Searching Google for “${currentInternetQuery}”...`
+        metaText: `${desktopInternetLabels.searchingGoogleFor || "Searching Google for"} “${currentInternetQuery}”...`
     });
-    internetContent.innerHTML = "<p>Loading search results...</p>";
+    internetContent.innerHTML = `<p>${desktopInternetLabels.loadingSearchResults || "Loading search results..."}</p>`;
 
     try {
         const response = await fetch("/api/generate_sites", {
@@ -158,14 +160,14 @@ async function generateDesktopFakeSites(query = getDesktopSearchQuery()) {
         const data = await response.json();
 
         if (!data.success || !data.results) {
-            internetContent.innerHTML = "<p>Error loading search results.</p>";
+            internetContent.innerHTML = `<p>${desktopInternetLabels.errorLoadingSearchResults || "Error loading search results."}</p>`;
             return;
         }
 
         renderDesktopSearchResults(data.results, data.query || currentInternetQuery);
     } catch (err) {
         console.error(err);
-        internetContent.innerHTML = "<p>Error loading search results.</p>";
+        internetContent.innerHTML = `<p>${desktopInternetLabels.errorLoadingSearchResults || "Error loading search results."}</p>`;
     }
 }
 
@@ -173,11 +175,11 @@ async function generateDesktopFakeSites(query = getDesktopSearchQuery()) {
    Open a Website (Open Mode)
 ======================================== */
 async function openDesktopWebsite(site) {
-    const title = site?.title || "Website";
+    const title = site?.title || (desktopInternetLabels.website || "Website");
     const url = site?.url || "https://example.com";
     const type = site?.site_type || "legit";
 
-    internetContent.innerHTML = "<p>Loading website...</p>";
+    internetContent.innerHTML = `<p>${desktopInternetLabels.loadingWebsite || "Loading website..."}</p>`;
     stopCurrentTTS();
 
     try {
@@ -196,7 +198,7 @@ async function openDesktopWebsite(site) {
         const data = await response.json();
 
         if (!data.success) {
-            internetContent.innerHTML = "<p>Error loading website.</p>";
+            internetContent.innerHTML = `<p>${desktopInternetLabels.errorLoadingWebsite || "Error loading website."}</p>`;
             return;
         }
 
@@ -208,7 +210,7 @@ async function openDesktopWebsite(site) {
         setDesktopInternetState({
             view: "site",
             inputValue: url,
-            metaText: "Explore the site content, then decide whether the website is real or a scam."
+            metaText: desktopInternetLabels.inspectThenDecide || "Explore the site content, then decide whether the website is real or a scam."
         });
 
         internetContent.innerHTML = `
@@ -229,7 +231,7 @@ async function openDesktopWebsite(site) {
         }
     } catch (err) {
         console.error(err);
-        internetContent.innerHTML = "<p>Error loading website.</p>";
+        internetContent.innerHTML = `<p>${desktopInternetLabels.errorLoadingWebsite || "Error loading website."}</p>`;
     }
 }
 
@@ -240,7 +242,7 @@ async function analyzeDesktopWebsite(choice) {
     stopCurrentTTS();
 
     if (!currentWebsiteHTML || !currentWebsiteType) {
-        showNotification(false, "Open a search result first, then inspect the site.", "internet");
+        showNotification(false, desktopInternetLabels.openResultFirst || "Open a search result first, then inspect the site.", "internet");
         return;
     }
 
@@ -261,12 +263,12 @@ async function analyzeDesktopWebsite(choice) {
         const data = await response.json();
 
         if (!data.success) {
-            showNotification(false, "Error analyzing website.", "internet");
+            showNotification(false, desktopInternetLabels.errorAnalyzingWebsite || "Error analyzing website.", "internet");
             return;
         }
 
         const fb = data.feedback;
-        const message = `${fb.explanation} (Difficulty: ${data.difficulty_now})`;
+        const message = `${fb.explanation} (${desktopInternetLabels.difficultyLabel || "Difficulty"}: ${data.difficulty_now})`;
         showNotification(fb.correct, message, "internet");
 
         if (cachedDesktopResults && cachedDesktopResults.length) {
@@ -276,7 +278,7 @@ async function analyzeDesktopWebsite(choice) {
         }
     } catch (err) {
         console.error(err);
-        showNotification(false, "Server error analyzing website.", "internet");
+        showNotification(false, desktopInternetLabels.serverErrorAnalyzingWebsite || "Server error analyzing website.", "internet");
     }
 }
 

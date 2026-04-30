@@ -12,6 +12,7 @@ from flask_babel import Babel, gettext, get_locale, _
 import json
 from datetime import datetime, timezone
 import time
+from urllib.parse import urlparse
 from metrics import (log_scenario_attempt, log_critical_indicators, 
                      update_module_progress, get_user_performance, get_module_progress, 
                      get_attempt_history, get_survey_comparison, get_learning_metrics)
@@ -76,6 +77,8 @@ MODULE_PROGRESS_REQUIREMENTS = {
     "mobile": ["email_mobile", "sms_mobile", "call_mobile", "web_mobile"],
     "phone": ["phone_roleplay"],
 }
+
+REQUIRED_ATTEMPTS_PER_SIMULATION = 5
 
 MODULE_ASSESSMENT_QUESTION_BANKS = {
     "desktop": [
@@ -331,7 +334,7 @@ def _build_module_assessment_status(username):
         post_available = pre_complete and training_complete
         status.append({
             "module_name": module_name,
-            "module_label": MODULE_LABELS.get(module_name, module_name.title()),
+            "module_label": _(MODULE_LABELS.get(module_name, module_name.title())),
             "variant": variant,
             "pre_complete": pre_complete,
             "post_complete": post_complete,
@@ -353,14 +356,14 @@ def _require_module_pretest(module_name):
         cur = conn.cursor()
         cur.execute("SELECT 1 FROM pre_survey WHERE username = ?", (username,))
         if not cur.fetchone():
-            flash('Please complete the pre-survey first.', 'info')
+            flash(_('Please complete the pre-survey first.'), 'info')
             return redirect('/pre_survey')
 
     _ensure_module_question_assignments(username, module_name)
     if _is_module_phase_complete(username, module_name, 'pre'):
         return None
 
-    flash('Please complete the module pre-test first.', 'info')
+    flash(_('Please complete the module pre-test first.'), 'info')
     return redirect(url_for('module_assessment', module_name=module_name, phase='pre'))
 
 
@@ -374,7 +377,7 @@ def _is_module_training_complete(username, module_name):
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
         cur.execute(
-            f'''SELECT module_name, scenarios_completed, total_scenarios
+            f'''SELECT module_name, scenarios_completed
                 FROM module_progress
                 WHERE username = ? AND module_name IN ({placeholders})''',
             params,
@@ -387,10 +390,17 @@ def _is_module_training_complete(username, module_name):
         if not row:
             return False
         completed = row[1] or 0
-        total = row[2] or 0
-        if total <= 0 or completed < total:
+        if completed < REQUIRED_ATTEMPTS_PER_SIMULATION:
             return False
     return True
+
+
+def _next_incomplete_training_target(username):
+    for module_name, route_name in MODULE_ROUTE_MAP.items():
+        if not _is_module_training_complete(username, module_name):
+            return route_name, _(MODULE_LABELS.get(module_name, module_name.title()))
+    fallback_route = next(iter(MODULE_ROUTE_MAP.values()), 'dashboard')
+    return fallback_route, _("Training")
 
 
 def _build_module_posttest_context(username, module_name):
@@ -434,12 +444,12 @@ def _all_modules_training_complete(username):
 def _require_pre_survey_completion(username):
     if _has_completed_survey(username, 'pre_survey'):
         return None
-    flash('Please complete the pre-training survey before starting modules.', 'info')
+    flash(_('Please complete the pre-training survey before starting modules.'), 'info')
     return redirect('/pre_survey')
 
 
 def _module_back_url(username):
-    all_module_training_complete, _ = _all_modules_training_complete(username)
+    all_module_training_complete, module_training_status = _all_modules_training_complete(username)
     if all_module_training_complete and not _has_completed_survey(username, 'post_survey'):
         return url_for('post_survey')
     return url_for('dashboard')
@@ -452,11 +462,24 @@ def inject_template_helpers():
 
 # Homepage route
 
+# Validate redirects to avoid open redirects from untrusted `next` params.
+def _is_safe_redirect_target(target_url):
+    if not target_url:
+        return False
+    parsed_target = urlparse(target_url)
+    if parsed_target.scheme or parsed_target.netloc:
+        return False
+    return target_url.startswith('/')
+
+
 # Language switch route
 @app.route('/set_language/<lang>')
 def set_language(lang):
     if lang in ('en', 'es', 'zh'):
         session['lang'] = lang
+    next_url = request.args.get('next', '').strip()
+    if _is_safe_redirect_target(next_url):
+        return redirect(next_url)
     return redirect(request.referrer or url_for('home'))
 
 # Register multimodal blueprint (text-to-speech) if available
@@ -528,7 +551,7 @@ def pre_survey():
             return render_template('survey.html', survey=survey_model)
 
         save_survey_submission(DB_PATH, username, 'pre', survey_model, answers)
-        flash('Pre-training survey saved. You can now begin the training modules.', 'success')
+        flash(_('Pre-training survey saved. You can now begin the training modules.'), 'success')
         return redirect('/dashboard')
 
     return render_template('survey.html', survey=survey_model)
@@ -574,20 +597,24 @@ def dashboard():
     post_survey_done = _has_completed_survey(username, 'post_survey')
 
     if all_module_training_complete and not post_survey_done:
-        flash('Please complete the post-training survey to finish the training flow.', 'info')
+        flash(_('Please complete the post-training survey to finish the training flow.'), 'info')
         return redirect(url_for('post_survey'))
     elif all_module_training_complete:
         assessment_cta_url = url_for('dashboard')
-        assessment_cta_title = "Training Complete"
-        assessment_cta_button_label = "Review Dashboard"
-        assessment_cta_description = "You have completed the post-training survey and all training modules."
-        assessment_cta_hero_label = "All Final Steps Complete"
+        assessment_cta_title = _("Training Complete")
+        assessment_cta_button_label = _("Review Dashboard")
+        assessment_cta_description = _("You have completed the post-training survey and all training modules.")
+        assessment_cta_hero_label = _("All Final Steps Complete")
     else:
-        assessment_cta_url = url_for('module1')
-        assessment_cta_title = "Continue Training"
-        assessment_cta_button_label = "Open Training"
-        assessment_cta_description = "Continue working through the training modules from your dashboard."
-        assessment_cta_hero_label = "Start Module 1"
+        next_route, next_module_label = _next_incomplete_training_target(username)
+        assessment_cta_url = url_for(next_route)
+        assessment_cta_title = _("Continue %(module)s", module=next_module_label)
+        assessment_cta_button_label = _("Continue %(module)s", module=next_module_label)
+        assessment_cta_description = _(
+            "Each simulation requires %(attempts)s attempts. Continue where you left off.",
+            attempts=REQUIRED_ATTEMPTS_PER_SIMULATION,
+        )
+        assessment_cta_hero_label = _("Continue %(module)s", module=next_module_label)
 
     return render_template(
         "dashboard.html",
@@ -608,9 +635,9 @@ def post_survey():
     if _has_completed_survey(username, 'post_survey'):
         return redirect('/dashboard')
 
-    all_module_training_complete, _ = _all_modules_training_complete(username)
+    all_module_training_complete, module_training_status = _all_modules_training_complete(username)
     if not all_module_training_complete:
-        flash('Please complete all training modules before taking the post-training survey.', 'info')
+        flash(_('Please complete all training modules before taking the post-training survey.'), 'info')
         return redirect('/dashboard')
 
     survey_model = build_survey_view_model(DB_PATH, username, 'post')
@@ -621,7 +648,7 @@ def post_survey():
             return render_template('survey.html', survey=survey_model)
 
         save_survey_submission(DB_PATH, username, 'post', survey_model, answers)
-        flash('Post-training survey saved. You have completed the full training flow.', 'success')
+        flash(_('Post-training survey saved. You have completed the full training flow.'), 'success')
         return redirect('/dashboard')
 
     return render_template('survey.html', survey=survey_model)
@@ -634,10 +661,10 @@ def system_usability_survey():
         return redirect('/login')
 
     if not _has_completed_survey(username, 'post_survey'):
-        flash('The usability items are included in the post-training survey.', 'info')
+        flash(_('The usability items are included in the post-training survey.'), 'info')
         return redirect('/post_survey')
 
-    flash('The usability items are included in the post-training survey.', 'info')
+    flash(_('The usability items are included in the post-training survey.'), 'info')
     return redirect('/dashboard')
 @app.route("/reset_presurvey")
 def reset_presurvey():
@@ -712,8 +739,11 @@ def module_assessment(module_name, phase):
 
 @app.route('/logout')
 def logout():
+    lang = session.get('lang')
     session.clear()
-    flash('You have been logged out.', 'info')
+    if lang in ('en', 'es', 'zh'):
+        session['lang'] = lang
+    flash(_('You have been logged out.'), 'info')
     return redirect('/login')
 
 

@@ -4,11 +4,16 @@ import os
 import random
 import sqlite3
 from functools import lru_cache
+from flask_babel import gettext as _, get_locale
 
 
 SURVEY_CONFIG_PATH = os.getenv(
     "SURVEY_CONFIG_PATH",
     os.path.join(os.path.dirname(__file__), "survey_config.json"),
+)
+SURVEY_TRANSLATIONS_PATH = os.getenv(
+    "SURVEY_TRANSLATIONS_PATH",
+    os.path.join(os.path.dirname(__file__), "survey_translations.json"),
 )
 
 SURVEY_PHASE_KEYS = {
@@ -20,6 +25,42 @@ SELF_EFFICACY_IDS = ["SE1", "SE2", "SE3", "SE4", "SE5", "SE6"]
 USEFULNESS_IDS = ["PU1", "PU2", "PU3"]
 ENGAGEMENT_IDS = ["HM1", "HM2"]
 SUS_IDS = [f"SUS{i}" for i in range(1, 11)]
+
+
+@lru_cache(maxsize=1)
+def load_survey_translations():
+    if not os.path.exists(SURVEY_TRANSLATIONS_PATH):
+        return {}
+    try:
+        with open(SURVEY_TRANSLATIONS_PATH, "r", encoding="utf-8") as translations_file:
+            data = json.load(translations_file)
+            return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _active_survey_language():
+    locale = str(get_locale() or "en").lower()
+    if locale.startswith("es"):
+        return "es"
+    if locale.startswith("zh"):
+        return "zh"
+    return "en"
+
+
+def _translate_survey_text(text):
+    if text is None or not isinstance(text, str):
+        return text
+    language = _active_survey_language()
+    if language != "en":
+        translations = load_survey_translations().get(language, {})
+        translated = translations.get(text)
+        if translated:
+            return translated
+        translated = translations.get(text.strip())
+        if translated:
+            return translated
+    return _(text)
 
 
 @lru_cache(maxsize=1)
@@ -133,11 +174,20 @@ def _decorate_question(question, inherited_scale=None, subsection=None):
     decorated = dict(question)
     question_type = decorated.get("type") or ("singleChoice" if decorated.get("options") else "singleChoice")
     decorated["type"] = question_type
-    decorated["scale"] = decorated.get("scale") or inherited_scale
+    scale = decorated.get("scale") or inherited_scale
+    if isinstance(scale, dict):
+        scale = {
+            **scale,
+            "labels": [_translate_survey_text(label) for label in scale.get("labels", [])],
+        }
+    decorated["scale"] = scale
+    decorated["text"] = _translate_survey_text(decorated.get("text", ""))
+    if isinstance(decorated.get("options"), list):
+        decorated["options"] = [_translate_survey_text(option) for option in decorated["options"]]
     decorated["required"] = decorated.get("required", True)
     decorated["fieldName"] = decorated["questionId"]
     decorated["subsectionId"] = subsection.get("subsectionId") if subsection else None
-    decorated["subsectionTopic"] = subsection.get("topic") if subsection else None
+    decorated["subsectionTopic"] = _translate_survey_text(subsection.get("topic")) if subsection else None
     return decorated
 
 
@@ -164,9 +214,9 @@ def build_survey_view_model(db_path, username, phase):
         for section in survey.get("sections", []):
             section_view = {
                 "sectionId": section["sectionId"],
-                "title": section.get("title", section["sectionId"]),
+                "title": _translate_survey_text(section.get("title", section["sectionId"])),
                 "type": section.get("type", "categorical"),
-                "instructions": section.get("instructions"),
+                "instructions": _translate_survey_text(section.get("instructions")) if section.get("instructions") else None,
                 "questions": [],
                 "subsections": [],
             }
@@ -191,7 +241,7 @@ def build_survey_view_model(db_path, username, phase):
                     section_view["subsections"].append(
                         {
                             "subsectionId": subsection["subsectionId"],
-                            "topic": subsection.get("topic"),
+                            "topic": _translate_survey_text(subsection.get("topic")) if subsection.get("topic") else None,
                             "questions": [
                                 question_map[question_id]
                                 for question_id in assigned_ids
@@ -203,7 +253,7 @@ def build_survey_view_model(db_path, username, phase):
                 for subsection in section.get("subsections", []):
                     subsection_view = {
                         "subsectionId": subsection["subsectionId"],
-                        "topic": subsection.get("topic"),
+                        "topic": _translate_survey_text(subsection.get("topic")) if subsection.get("topic") else None,
                         "questions": [
                             _decorate_question(
                                 question,
@@ -224,10 +274,22 @@ def build_survey_view_model(db_path, username, phase):
 
     return {
         "phase": phase,
-        "title": survey.get("title", f"{phase.title()} Survey"),
-        "description": survey.get("description"),
+        "title": _translate_survey_text(survey.get("title", f"{phase.title()} Survey")),
+        "description": _translate_survey_text(survey.get("description")) if survey.get("description") else None,
         "sections": sections,
-        "consent": get_consent_config() if phase == "pre" else None,
+        "consent": _translate_consent(get_consent_config()) if phase == "pre" else None,
+    }
+
+
+def _translate_consent(consent):
+    if not consent:
+        return None
+    return {
+        **consent,
+        "prompt": _translate_survey_text(consent.get("prompt", "")),
+        "details": _translate_survey_text(consent.get("details", "")),
+        "acceptLabel": _translate_survey_text(consent.get("acceptLabel", "")),
+        "declineLabel": _translate_survey_text(consent.get("declineLabel", "")),
     }
 
 
@@ -258,18 +320,18 @@ def validate_submission(form_data, survey_model):
         consent_value = (form_data.get("consent_response") or "").strip().lower()
         answers["consent_response"] = consent_value
         if consent_value not in {"yes", "no"}:
-            return None, "Please record your analytics consent choice before continuing."
+            return None, _("Please record your analytics consent choice before continuing.")
         if consent_config.get("required") and consent_value != "yes":
-            return None, "Consent is required before Silver Shield can collect survey and analytics data."
+            return None, _("Consent is required before Silver Shield can collect survey and analytics data.")
 
     for question in _iter_questions(survey_model["sections"]):
         answer = _coerce_answer(form_data, question)
         if question["type"] == "multiChoice":
             if question.get("required", True) and not answer:
-                validation_error = "Please answer every required survey question before continuing."
+                validation_error = _("Please answer every required survey question before continuing.")
                 break
         elif question.get("required", True) and answer == "":
-            validation_error = "Please answer every required survey question before continuing."
+            validation_error = _("Please answer every required survey question before continuing.")
             break
         answers[question["questionId"]] = answer
 
