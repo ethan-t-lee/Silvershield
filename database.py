@@ -1,8 +1,7 @@
-import os
 import sqlite3
 from werkzeug.security import generate_password_hash
 
-DB_PATH = os.getenv('DB_PATH', 'silvershieldDatabase.db')
+DB_PATH = 'silvershieldDatabase.db'
 TEST_USER_USERNAME = 'testuser'
 TEST_USER_PASSWORD = 'SilverShieldTest!1'
 TEST_USER_EMAIL = 'testuser@silvershield.local'
@@ -139,48 +138,16 @@ def init_database():
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT UNIQUE NOT NULL,
                     age TEXT,
-                    scammed TEXT,
-                    tech_level TEXT,
                     device TEXT,
-                    gender_identity TEXT,
-                    education_level TEXT,
-                    employment_status TEXT,
-                    household_income TEXT,
-                    primary_language TEXT,
-                    country_region TEXT,
-                    prior_cyber_training TEXT,
                     confidence INTEGER,
+                    response_json TEXT,
                     completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(username) REFERENCES users(username))
     ''')
 
     pre_survey_cols = _column_names(cursor, 'pre_survey')
-    pre_survey_column_defs = {
-        'gender_identity': 'TEXT',
-        'education_level': 'TEXT',
-        'employment_status': 'TEXT',
-        'household_income': 'TEXT',
-        'primary_language': 'TEXT',
-        'country_region': 'TEXT',
-        'prior_cyber_training': 'TEXT',
-        'smishing_familiarity': 'TEXT',
-        'security_software_usage': 'TEXT',
-        'unknown_link_click_frequency': 'TEXT',
-        'sms_phishing_awareness': 'TEXT',
-        'sms_phishing_victim': 'TEXT',
-        'familiar_7726': 'TEXT',
-        'suspected_sms_action': 'TEXT',
-        'sms_phishing_definition': 'TEXT',
-        'cyber_training_history': 'TEXT',
-        'cyber_training_format': 'TEXT',
-        'cyber_training_timing': 'TEXT',
-        'training_covered_sms_phishing': 'TEXT',
-        'training_usefulness': 'TEXT',
-    }
-
-    for col_name, col_type in pre_survey_column_defs.items():
-        if col_name not in pre_survey_cols:
-            cursor.execute(f'ALTER TABLE pre_survey ADD COLUMN {col_name} {col_type}')
+    if 'response_json' not in pre_survey_cols:
+        cursor.execute('ALTER TABLE pre_survey ADD COLUMN response_json TEXT')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS post_survey (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -190,37 +157,10 @@ def init_database():
                     behavior_change TEXT,
                     recommendation_likelihood INTEGER,
                     learning_rating INTEGER,
-                    post_smishing_familiarity_change TEXT,
-                    post_confidence_change TEXT,
-                    post_better_recognition TEXT,
-                    post_content_difficulty TEXT,
-                    post_phishing_awareness TEXT,
-                    post_verify_plan TEXT,
-                    post_security_app_intent TEXT,
-                    post_update_intent TEXT,
-                    post_unknown_link_caution TEXT,
-                    post_info_sharing_comfort TEXT,
+                    response_json TEXT,
                     completed_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(username) REFERENCES users(username))
     ''')
-
-    post_survey_cols = _column_names(cursor, 'post_survey')
-    post_survey_column_defs = {
-        'post_smishing_familiarity_change': 'TEXT',
-        'post_confidence_change': 'TEXT',
-        'post_better_recognition': 'TEXT',
-        'post_content_difficulty': 'TEXT',
-        'post_phishing_awareness': 'TEXT',
-        'post_verify_plan': 'TEXT',
-        'post_security_app_intent': 'TEXT',
-        'post_update_intent': 'TEXT',
-        'post_unknown_link_caution': 'TEXT',
-        'post_info_sharing_comfort': 'TEXT',
-    }
-
-    for col_name, col_type in post_survey_column_defs.items():
-        if col_name not in post_survey_cols:
-            cursor.execute(f'ALTER TABLE post_survey ADD COLUMN {col_name} {col_type}')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS system_usability_survey (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -287,6 +227,10 @@ def init_database():
                     last_accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(username, module_name),
                     FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+    cursor.execute('''UPDATE module_progress
+                    SET total_scenarios = 5
+                    WHERE total_scenarios IS NULL OR total_scenarios <> 5
     ''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS critical_indicators (
@@ -385,6 +329,44 @@ def init_database():
                     FOREIGN KEY(username) REFERENCES users(username))
     ''')
 
+    cursor.execute('''CREATE TABLE IF NOT EXISTS user_consents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    consent_type TEXT NOT NULL,
+                    granted BOOLEAN NOT NULL,
+                    consent_text TEXT,
+                    consent_details TEXT,
+                    recorded_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(username, consent_type),
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS survey_question_assignments (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    survey_phase TEXT NOT NULL CHECK(survey_phase IN ('pre', 'post')),
+                    section_id TEXT NOT NULL,
+                    subsection_id TEXT,
+                    question_id TEXT NOT NULL,
+                    display_order INTEGER NOT NULL DEFAULT 0,
+                    assigned_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(username, survey_phase, section_id, subsection_id, question_id),
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS survey_responses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    survey_phase TEXT NOT NULL CHECK(survey_phase IN ('pre', 'post')),
+                    section_id TEXT NOT NULL,
+                    subsection_id TEXT,
+                    question_id TEXT NOT NULL,
+                    response_value TEXT,
+                    submitted_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(username, survey_phase, question_id),
+                    FOREIGN KEY(username) REFERENCES users(username))
+    ''')
+
     score_cols = _column_names(cursor, 'module_assessment_scores')
     score_column_defs = {
         'variant': "TEXT NOT NULL DEFAULT 'A'",
@@ -440,9 +422,6 @@ def init_database():
     ''')
     cursor.execute('''CREATE INDEX IF NOT EXISTS idx_module_assessment_results
                     ON module_assessment_results(username, module_name, phase)
-    ''')
-    cursor.execute('''CREATE INDEX IF NOT EXISTS idx_module_assessment_scores
-                    ON module_assessment_scores(username, module_name, phase, variant)
     ''')
 
     connect.commit()

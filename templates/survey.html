@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="{{ get_locale() }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ survey.title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='landingStyle.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <style>
+    :root {
+      --page-bg: linear-gradient(180deg, #f4f7fb 0%, #eef4ff 100%);
+      --card-bg: #ffffff;
+      --ink: #141f35;
+      --muted: #53627d;
+      --accent: #17305d;
+      --accent-strong: #24559a;
+      --accent-soft: #e6efff;
+      --danger: #9f2d2d;
+      --border: rgba(20, 31, 53, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--page-bg);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 10rem 18px 4rem;
+    }
+    .surveyIntro {
+      margin-bottom: 18px;
+      padding: 1.5rem;
+      border-radius: 22px;
+      background: linear-gradient(140deg, #17305d 0%, #24559a 100%);
+      color: #ffffff;
+      box-shadow: 0 18px 40px rgba(20, 31, 53, 0.08);
+    }
+    .surveyIntro p {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.55;
+      color: #ffffff;
+    }
+    .flash {
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #fff4f4;
+      color: var(--danger);
+      border: 1px solid #f3c8c8;
+      font-weight: 600;
+    }
+    form {
+      display: grid;
+      gap: 18px;
+    }
+    .sectionCard {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 1.5rem;
+      box-shadow: 0 18px 40px rgba(20, 31, 53, 0.08);
+    }
+    .sectionCard p,
+    .sectionCard label,
+    .sectionCard span {
+      color: var(--ink);
+    }
+    .sectionNote {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .subsection {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+    .questionBlock {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 16px;
+      background: #f7f9fc;
+      border: 1px solid rgba(20, 31, 53, 0.06);
+    }
+    .questionText {
+      margin: 0 0 12px;
+      font-weight: 700;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .choiceList {
+      display: grid;
+      gap: 10px;
+    }
+    .choiceItem {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      line-height: 1.45;
+    }
+    .scaleList {
+      display: grid;
+      gap: 8px;
+    }
+    .likertMatrixScroll {
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .likertMatrix {
+      min-width: 680px;
+      margin-top: 10px;
+    }
+    .likertHeader,
+    .likertRow {
+      display: grid;
+      align-items: center;
+      grid-template-columns: minmax(220px, 1.8fr) repeat(var(--scale-count), minmax(56px, 1fr));
+      column-gap: 8px;
+    }
+    .likertHeader {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+    .likertHeader .likertQuestionCol {
+      text-align: left;
+    }
+    .likertRow {
+      background: #f4f6fa;
+      border: 1px solid rgba(20, 31, 53, 0.06);
+      border-radius: 12px;
+      padding: 12px 10px;
+      margin-top: 8px;
+    }
+    .likertQuestion {
+      font-weight: 600;
+      line-height: 1.35;
+      padding-right: 10px;
+    }
+    .likertRadioCell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .likertRadioCell input[type="radio"] {
+      width: 24px;
+      height: 24px;
+      margin-top: 0;
+      cursor: pointer;
+    }
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+    input[type="radio"],
+    input[type="checkbox"] {
+      accent-color: var(--accent-strong);
+      margin-top: 0.2rem;
+    }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    .consentBox {
+      background: #ffffff;
+      border: 1px solid var(--border);
+    }
+    .consentPrompt {
+      margin: 0 0 12px;
+      font-weight: 700;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .navRow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .navRow button {
+      border: none;
+      border-radius: 999px;
+      padding: 14px 28px;
+      font: inherit;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(140deg, #17305d 0%, #24559a 100%);
+      cursor: pointer;
+    }
+    .navRow button.backBtn {
+      background: #e6efff;
+      color: var(--accent);
+    }
+    .navRow button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .surveyProgress {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .surveyProgressDot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .surveyProgressDot.active {
+      background: var(--accent-strong);
+    }
+    .surveyProgressDot.done {
+      background: #24559a88;
+    }
+    .surveyProgressLabel {
+      margin-left: auto;
+      font-size: 0.85rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .surveyPage { display: none; }
+    .surveyPage.active { display: contents; }
+    @media (max-width: 720px) {
+      .wrap {
+        padding: 8.25rem 14px 34px;
+      }
+      .sectionCard {
+        padding: 18px;
+      }
+      .likertMatrix {
+        min-width: 620px;
+      }
+      .navRow {
+        flex-wrap: wrap;
+      }
+      .navRow button {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loginBanner">
+    <h1>SilverShield</h1>
+
+    <div class="loginRegisterButtons">
+      <div class="languageDropdown">
+        <button class="dropbtn">{{ _('Language') }}</button>
+        <div class="dropdownContent">
+          <a class="langLink" href="{{ url_for('set_language', lang='en', next=request.full_path) }}">English</a>
+          <a class="langLink" href="{{ url_for('set_language', lang='es', next=request.full_path) }}">Español</a>
+          <a class="langLink" href="{{ url_for('set_language', lang='zh', next=request.full_path) }}">中文</a>
+        </div>
+      </div>
+
+      <button class="loginButton">
+        <a href="{{ url_for('logout') }}">{{ _('Logout') }}</a>
+      </button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section class="surveyIntro">
+      {% if survey.description %}
+      <p>{{ survey.description }}</p>
+      {% endif %}
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% set category, message = messages[0] %}
+        <div class="flash">{{ message }}</div>
+      {% endif %}
+    {% endwith %}
+
+    {% set ns = namespace(total_pages=survey.sections|length) %}
+    {% if survey.consent %}{% set ns.total_pages = ns.total_pages + 1 %}{% endif %}
+
+    <div class="surveyProgress" id="surveyProgress">
+      {% for i in range(ns.total_pages) %}
+      <div class="surveyProgressDot {% if i == 0 %}active{% endif %}" id="dot-{{ i }}"></div>
+      {% endfor %}
+      <span class="surveyProgressLabel" id="progressLabel">{{ _('Page') }} 1 {{ _('of') }} {{ ns.total_pages }}</span>
+    </div>
+
+    <form method="POST" id="surveyForm" novalidate>
+      {% set page_index = namespace(value=0) %}
+
+      {% if survey.consent %}
+      <div class="surveyPage active" data-page="{{ page_index.value }}">
+        <section class="sectionCard consentBox">
+          <p class="sectionNote">{{ survey.consent.details }}</p>
+          <p class="consentPrompt">{{ survey.consent.prompt }}</p>
+          <div class="choiceList">
+            <label class="choiceItem">
+              <input type="radio" name="consent_response" value="yes">
+              <span>{{ survey.consent.acceptLabel }}</span>
+            </label>
+            <label class="choiceItem">
+              <input type="radio" name="consent_response" value="no">
+              <span>{{ survey.consent.declineLabel }}</span>
+            </label>
+          </div>
+        </section>
+      </div>
+      {% set page_index.value = page_index.value + 1 %}
+      {% endif %}
+
+      {% for section in survey.sections %}
+      <div class="surveyPage {% if not survey.consent and loop.first %}active{% endif %}" data-page="{{ page_index.value }}">
+        <section class="sectionCard">
+          <h2 style="margin:0 0 12px;font-size:1.1rem;color:var(--accent);">{{ section.title }}</h2>
+          {% if section.instructions %}
+          <p class="sectionNote">{{ section.instructions }}</p>
+          {% endif %}
+
+          {% if section.type == 'likert' and section.questions and section.questions[0].scale %}
+          <div class="likertMatrixScroll">
+            <div class="likertMatrix" style="--scale-count: {{ section.questions[0].scale.labels|length }};">
+              <div class="likertHeader">
+                <div class="likertQuestionCol"></div>
+                {% for label in section.questions[0].scale.labels %}
+                <div title="{{ label }}">{{ loop.index }}</div>
+                {% endfor %}
+              </div>
+              {% for question in section.questions %}
+              <div class="likertRow">
+                <div class="likertQuestion">{{ question.text }}</div>
+                {% for label in question.scale.labels %}
+                <div class="likertRadioCell" title="{{ label }}">
+                  <input
+                    type="radio"
+                    name="{{ question.fieldName }}"
+                    value="{{ loop.index }}"
+                    aria-label="{{ question.text }} - {{ label }}"
+                    {% if question.required %}data-required="true"{% endif %}
+                  >
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% else %}
+            {% for question in section.questions %}
+              <div class="questionBlock">
+                <p class="questionText">{{ question.text }}</p>
+                {% if question.type == 'numeric' %}
+                  <input type="number" name="{{ question.fieldName }}" {% if question.required %}data-required="true"{% endif %}>
+                {% elif question.type == 'openText' %}
+                  <textarea name="{{ question.fieldName }}" {% if question.required %}data-required="true"{% endif %}></textarea>
+                {% elif question.type == 'multiChoice' %}
+                  <div class="choiceList" {% if question.required %}data-required-group="{{ question.fieldName }}"{% endif %}>
+                    {% for option in question.options %}
+                    <label class="choiceItem">
+                      <input type="checkbox" name="{{ question.fieldName }}" value="{{ option }}">
+                      <span>{{ option }}</span>
+                    </label>
+                    {% endfor %}
+                  </div>
+                {% elif question.scale %}
+                  <div class="scaleList">
+                    {% for label in question.scale.labels %}
+                    <label class="choiceItem">
+                      <input type="radio" name="{{ question.fieldName }}" value="{{ loop.index }}" {% if question.required %}data-required="true"{% endif %}>
+                      <span>{{ loop.index }}. {{ label }}</span>
+                    </label>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="choiceList">
+                    {% for option in question.options %}
+                    <label class="choiceItem">
+                      <input type="radio" name="{{ question.fieldName }}" value="{{ option }}" {% if question.required %}data-required="true"{% endif %}>
+                      <span>{{ option }}</span>
+                    </label>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          {% for subsection in section.subsections %}
+          <div class="subsection">
+            {% for question in subsection.questions %}
+            <div class="questionBlock">
+              <p class="questionText">{{ question.text }}</p>
+              {% if question.type == 'openText' %}
+                <textarea name="{{ question.fieldName }}" {% if question.required %}data-required="true"{% endif %}></textarea>
+              {% elif question.type == 'multiChoice' %}
+                <div class="choiceList" {% if question.required %}data-required-group="{{ question.fieldName }}"{% endif %}>
+                  {% for option in question.options %}
+                  <label class="choiceItem">
+                    <input type="checkbox" name="{{ question.fieldName }}" value="{{ option }}">
+                    <span>{{ option }}</span>
+                  </label>
+                  {% endfor %}
+                </div>
+              {% elif question.scale %}
+                <div class="scaleList">
+                  {% for label in question.scale.labels %}
+                  <label class="choiceItem">
+                    <input type="radio" name="{{ question.fieldName }}" value="{{ loop.index }}" {% if question.required %}data-required="true"{% endif %}>
+                    <span>{{ loop.index }}. {{ label }}</span>
+                  </label>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="choiceList">
+                  {% for option in question.options %}
+                  <label class="choiceItem">
+                    <input type="radio" name="{{ question.fieldName }}" value="{{ option }}" {% if question.required %}data-required="true"{% endif %}>
+                    <span>{{ option }}</span>
+                  </label>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </section>
+      </div>
+      {% set page_index.value = page_index.value + 1 %}
+      {% endfor %}
+
+      <div class="navRow" id="navRow">
+        <button type="button" class="backBtn" id="backBtn" onclick="surveyNav(-1)">&#8592; {{ _('Back') }}</button>
+        <button type="button" id="nextBtn" onclick="surveyNav(1)">{{ _('Next') }} &#8594;</button>
+        <button type="submit" id="submitBtn">{{ _('Submit Survey') }}</button>
+      </div>
+    </form>
+
+    <script>
+      const TOTAL_PAGES = {{ ns.total_pages }};
+      const SURVEY_PHASE = {{ survey.phase|tojson }};
+      const DRAFT_KEY = 'surveyDraft:' + SURVEY_PHASE;
+      const I18N_PAGE = {{ _('Page')|tojson }};
+      const I18N_OF = {{ _('of')|tojson }};
+      const I18N_REQUIRED_PAGE = {{ _('Please answer all required questions on this page before continuing.')|tojson }};
+      const I18N_REQUIRED_SUBMIT = {{ _('Please answer all required questions before submitting.')|tojson }};
+      let currentPage = 0;
+
+      function getPages() {
+        return document.querySelectorAll('.surveyPage');
+      }
+
+      function updateNav() {
+        const backBtn = document.getElementById('backBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const label = document.getElementById('progressLabel');
+
+        backBtn.style.display = currentPage === 0 ? 'none' : '';
+        nextBtn.style.display = currentPage === TOTAL_PAGES - 1 ? 'none' : '';
+        submitBtn.style.display = currentPage === TOTAL_PAGES - 1 ? '' : 'none';
+        label.textContent = I18N_PAGE + ' ' + (currentPage + 1) + ' ' + I18N_OF + ' ' + TOTAL_PAGES;
+
+        document.querySelectorAll('.surveyProgressDot').forEach(function(dot, i) {
+          dot.classList.remove('active', 'done');
+          if (i < currentPage) dot.classList.add('done');
+          else if (i === currentPage) dot.classList.add('active');
+        });
+      }
+
+      function validateCurrentPage() {
+        const pages = getPages();
+        const page = pages[currentPage];
+        let valid = true;
+
+        // radio/select required
+        page.querySelectorAll('input[data-required]').forEach(function(input) {
+          if (input.type === 'radio') {
+            const group = page.querySelectorAll('input[name="' + input.name + '"]');
+            const checked = Array.from(group).some(function(r) { return r.checked; });
+            if (!checked) { valid = false; }
+          } else if (input.type === 'number' || input.tagName === 'TEXTAREA') {
+            if (!input.value.trim()) { valid = false; }
+          }
+        });
+
+        // textarea data-required
+        page.querySelectorAll('textarea[data-required]').forEach(function(ta) {
+          if (!ta.value.trim()) { valid = false; }
+        });
+
+        // multiChoice required groups
+        page.querySelectorAll('[data-required-group]').forEach(function(container) {
+          const name = container.getAttribute('data-required-group');
+          const checked = container.querySelectorAll('input[type="checkbox"]:checked');
+          if (checked.length === 0) { valid = false; }
+        });
+
+        return valid;
+      }
+
+      function surveyNav(direction) {
+        if (direction === 1 && !validateCurrentPage()) {
+          alert(I18N_REQUIRED_PAGE);
+          return;
+        }
+
+        const pages = getPages();
+        pages[currentPage].classList.remove('active');
+        currentPage = Math.max(0, Math.min(TOTAL_PAGES - 1, currentPage + direction));
+        pages[currentPage].classList.add('active');
+        updateNav();
+        persistDraft();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function collectDraft() {
+        const form = document.getElementById('surveyForm');
+        const fields = {};
+        form.querySelectorAll('input, textarea, select').forEach(function(el) {
+          if (!el.name) {
+            return;
+          }
+          if (el.type === 'checkbox') {
+            if (!fields[el.name]) {
+              fields[el.name] = [];
+            }
+            if (el.checked) {
+              fields[el.name].push(el.value);
+            }
+            return;
+          }
+          if (el.type === 'radio') {
+            if (el.checked) {
+              fields[el.name] = el.value;
+            }
+            return;
+          }
+          fields[el.name] = el.value;
+        });
+        return {
+          page: currentPage,
+          fields: fields,
+        };
+      }
+
+      function persistDraft() {
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(collectDraft()));
+        } catch (err) {
+          // Ignore storage failures (private mode/quota).
+        }
+      }
+
+      function restoreDraft() {
+        try {
+          const raw = localStorage.getItem(DRAFT_KEY);
+          if (!raw) {
+            return;
+          }
+          const draft = JSON.parse(raw);
+          const fields = draft.fields || {};
+          const form = document.getElementById('surveyForm');
+
+          form.querySelectorAll('input, textarea, select').forEach(function(el) {
+            if (!el.name || !(el.name in fields)) {
+              return;
+            }
+            const value = fields[el.name];
+            if (el.type === 'checkbox') {
+              el.checked = Array.isArray(value) && value.includes(el.value);
+              return;
+            }
+            if (el.type === 'radio') {
+              el.checked = value === el.value;
+              return;
+            }
+            if (typeof value === 'string') {
+              el.value = value;
+            }
+          });
+
+          if (typeof draft.page === 'number') {
+            const pages = getPages();
+            pages.forEach(function(page) { page.classList.remove('active'); });
+            currentPage = Math.max(0, Math.min(TOTAL_PAGES - 1, draft.page));
+            pages[currentPage].classList.add('active');
+          }
+        } catch (err) {
+          // Ignore malformed draft values.
+        }
+      }
+
+      // Intercept form submit to validate last page
+      document.getElementById('surveyForm').addEventListener('submit', function(e) {
+        if (!validateCurrentPage()) {
+          e.preventDefault();
+          alert(I18N_REQUIRED_SUBMIT);
+          return;
+        }
+        persistDraft();
+      });
+
+      document.getElementById('surveyForm').addEventListener('input', persistDraft);
+      document.getElementById('surveyForm').addEventListener('change', persistDraft);
+      document.querySelectorAll('.langLink').forEach(function(link) {
+        link.addEventListener('click', persistDraft);
+      });
+
+      restoreDraft();
+      updateNav();
+    </script>
+  </div>
+</body>
+</html>

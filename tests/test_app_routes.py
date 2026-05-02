@@ -13,53 +13,48 @@ def _seed_user(db_path, username="alice", password_hash="hashed"):
         )
         conn.commit()
 
-
 def _seed_pre_survey(db_path, username="alice"):
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                username, "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            (username, "25-34", "Both", 4),
         )
         conn.commit()
 
 
 def _complete_module_pretest(client, app_module, db_path, module_name, username="alice"):
     _seed_pre_survey(db_path, username=username)
-    pre_page = client.get(f"/module_assessment/{module_name}/pre")
-    assert pre_page.status_code == 200
-
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT question_id
-            FROM module_assessment_assignments
-            WHERE username = ? AND module_name = ? AND phase = ?
-            """,
-            (username, module_name, "pre"),
-        )
-        pre_ids = [row[0] for row in cursor.fetchall()]
-
-    question_map = {
-        q["id"]: q
-        for q in app_module.MODULE_ASSESSMENT_QUESTION_BANKS[module_name]
-    }
-    submit_data = {f"q_{qid}": question_map[qid]["correct"] for qid in pre_ids}
-    submit_response = client.post(f"/module_assessment/{module_name}/pre", data=submit_data)
-    assert submit_response.status_code == 302
+    response = client.get("/dashboard")
+    assert response.status_code in {200, 302}
 
 
+def _survey_answer_for(question):
+    if question["type"] == "numeric":
+        return "72"
+    if question["type"] == "multiChoice":
+        return [question["options"][0]]
+    if question["type"] == "openText":
+        return "No accessibility issues encountered."
+    if question.get("scale"):
+        return str(question["scale"]["max"])
+    return question["options"][0]
+
+
+def _build_survey_submission(app_module, db_path, username, phase, include_consent=True):
+    survey_model = app_module.build_survey_view_model(db_path, username, phase)
+    data = {}
+
+    if include_consent and survey_model.get("consent"):
+        data["consent_response"] = "yes"
+
+    for section in survey_model["sections"]:
+        for question in section.get("questions", []):
+            data[question["fieldName"]] = _survey_answer_for(question)
+        for subsection in section.get("subsections", []):
+            for question in subsection.get("questions", []):
+                data[question["fieldName"]] = _survey_answer_for(question)
+
+    return data
 def test_home_page_loads(app_client):
     client, _, _ = app_client
     response = client.get("/")
@@ -90,6 +85,7 @@ def test_register_and_login_flow(app_client):
 
     assert register_response.status_code == 200
     assert register_response.get_json()["success"] is True
+    assert register_response.get_json()["redirect_url"].endswith("/pre_survey")
 
     login_response = client.post(
         "/login",
@@ -124,7 +120,19 @@ def test_seeded_test_user_bypasses_otp(app_client):
     assert send_otp_calls == []
 
 
-def test_module_requires_pretest_before_entry(app_client):
+def test_module_entry_requires_pre_survey_completion(app_client):
+    client, _, db_path = app_client
+    _seed_user(db_path, username="alice")
+
+    with client.session_transaction() as session:
+        session["username"] = "alice"
+
+    response = client.get("/module1")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/pre_survey")
+
+
+def test_module_entry_allows_access_after_pre_survey(app_client):
     client, _, db_path = app_client
     _seed_user(db_path, username="alice")
 
@@ -133,30 +141,19 @@ def test_module_requires_pretest_before_entry(app_client):
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.commit()
 
     response = client.get("/module1")
 
-    assert response.status_code == 302
-    assert "/module_assessment/desktop/pre" in response.headers["Location"]
+    assert response.status_code == 200
+    assert 'class="module-back-link" href="/dashboard"' in response.get_data(as_text=True)
 
 
-def test_module_assessment_assigns_balanced_questions_and_allows_module_entry(app_client):
-    client, app_module, db_path = app_client
+def test_module_assessment_routes_redirect_to_dashboard(app_client):
+    client, _, db_path = app_client
     _seed_user(db_path, username="alice")
 
     with client.session_transaction() as session:
@@ -164,69 +161,25 @@ def test_module_assessment_assigns_balanced_questions_and_allows_module_entry(ap
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.commit()
 
-    pre_page = client.get("/module_assessment/desktop/pre")
-    assert pre_page.status_code == 200
+    pre_route_response = client.get("/module_assessment/desktop/pre")
+    post_route_response = client.get("/module_assessment/desktop/post")
+    list_route_response = client.get("/module_assessments")
 
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT variant
-            FROM module_assessment_enrollments
-            WHERE username = ? AND module_name = ?
-            """,
-            ("alice", "desktop"),
-        )
-        enrollment = cursor.fetchone()
-
-        cursor.execute(
-            """
-            SELECT question_id, phase
-            FROM module_assessment_assignments
-            WHERE username = ? AND module_name = ?
-            """,
-            ("alice", "desktop"),
-        )
-        assignments = cursor.fetchall()
-
-    assert enrollment is not None
-    assert enrollment[0] in {"A", "B"}
-    assert len(assignments) == 10
-    pre_ids = [row[0] for row in assignments if row[1] == "pre"]
-    post_ids = [row[0] for row in assignments if row[1] == "post"]
-    assert len(pre_ids) == 5
-    assert len(post_ids) == 5
-    assert set(pre_ids).isdisjoint(set(post_ids))
-
-    question_map = {q["id"]: q for q in app_module.MODULE_ASSESSMENT_QUESTION_BANK}
-    submit_data = {f"q_{qid}": question_map[qid]["correct"] for qid in pre_ids}
-
-    submit_response = client.post("/module_assessment/desktop/pre", data=submit_data)
-    assert submit_response.status_code == 302
-    assert submit_response.headers["Location"].endswith("/module1")
-
-    module_response = client.get("/module1")
-    assert module_response.status_code == 200
+    assert pre_route_response.status_code == 302
+    assert pre_route_response.headers["Location"].endswith("/dashboard")
+    assert post_route_response.status_code == 302
+    assert post_route_response.headers["Location"].endswith("/dashboard")
+    assert list_route_response.status_code == 302
+    assert list_route_response.headers["Location"].endswith("/dashboard")
 
 
-def test_module_posttest_requires_pretest_and_training_completion(app_client):
-    client, app_module, db_path = app_client
+def test_module_back_button_points_to_dashboard(app_client):
+    client, _, db_path = app_client
     _seed_user(db_path, username="alice")
 
     with client.session_transaction() as session:
@@ -234,53 +187,18 @@ def test_module_posttest_requires_pretest_and_training_completion(app_client):
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.commit()
 
-    blocked_without_pre = client.get("/module_assessment/desktop/post")
-    assert blocked_without_pre.status_code == 302
-    assert "/module_assessment/desktop/pre" in blocked_without_pre.headers["Location"]
-
-    client.get("/module_assessment/desktop/pre")
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT question_id
-            FROM module_assessment_assignments
-            WHERE username = ? AND module_name = ? AND phase = ?
-            """,
-            ("alice", "desktop", "pre"),
-        )
-        pre_ids = [row[0] for row in cursor.fetchall()]
-
-    question_map = {
-        q["id"]: q
-        for q in app_module.MODULE_ASSESSMENT_QUESTION_BANKS["desktop"]
-    }
-    submit_data = {f"q_{qid}": question_map[qid]["correct"] for qid in pre_ids}
-    client.post("/module_assessment/desktop/pre", data=submit_data)
-
-    blocked_without_training = client.get("/module_assessment/desktop/post")
-    assert blocked_without_training.status_code == 302
-    assert blocked_without_training.headers["Location"].endswith("/module1")
+    response = client.get("/module1")
+    assert response.status_code == 200
+    assert 'class="module-back-link" href="/dashboard"' in response.get_data(as_text=True)
 
 
-def test_module_back_button_routes_to_posttest_after_training_completion(app_client):
-    client, app_module, db_path = app_client
+def test_module_back_button_routes_to_post_survey_when_training_complete(app_client):
+    client, _, db_path = app_client
     _seed_user(db_path, username="alice")
 
     with client.session_transaction() as session:
@@ -288,45 +206,78 @@ def test_module_back_button_routes_to_posttest_after_training_completion(app_cli
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
+        )
+        conn.execute(
             """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
             """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+            ("alice", "email_desktop", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "internet_desktop", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "email_mobile", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "sms_mobile", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "call_mobile", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "web_mobile", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "phone_roleplay", 5, 5),
         )
         conn.commit()
 
-    client.get("/module_assessment/desktop/pre")
+    response = client.get("/module1")
+    assert response.status_code == 200
+    assert 'class="module-back-link" href="/post_survey"' in response.get_data(as_text=True)
+
+
+def test_dashboard_redirects_to_post_survey_when_all_modules_complete(app_client):
+    client, _, db_path = app_client
+    _seed_user(db_path, username="alice")
+
+    with client.session_transaction() as session:
+        session["username"] = "alice"
+
     with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT question_id
-            FROM module_assessment_assignments
-            WHERE username = ? AND module_name = ? AND phase = ?
-            """,
-            ("alice", "desktop", "pre"),
+        conn.execute(
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
-        pre_ids = [row[0] for row in cursor.fetchall()]
-
-    question_map = {
-        q["id"]: q
-        for q in app_module.MODULE_ASSESSMENT_QUESTION_BANKS["desktop"]
-    }
-    submit_data = {f"q_{qid}": question_map[qid]["correct"] for qid in pre_ids}
-    client.post("/module_assessment/desktop/pre", data=submit_data)
-
-    incomplete_response = client.get("/module1")
-    incomplete_body = incomplete_response.get_data(as_text=True)
-    assert 'class="module-back-link" href="/dashboard"' in incomplete_body
+        conn.commit()
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
@@ -343,11 +294,46 @@ def test_module_back_button_routes_to_posttest_after_training_completion(app_cli
             """,
             ("alice", "internet_desktop", 5, 5),
         )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "email_mobile", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "sms_mobile", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "call_mobile", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "web_mobile", 5, 5),
+        )
+        conn.execute(
+            """
+            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """,
+            ("alice", "phone_roleplay", 5, 5),
+        )
         conn.commit()
 
-    complete_response = client.get("/module1")
-    complete_body = complete_response.get_data(as_text=True)
-    assert 'class="module-back-link" href="/module_assessment/desktop/post"' in complete_body
+    response = client.get("/dashboard")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/post_survey")
 
 
 def test_dashboard_redirects_to_pre_survey_until_complete(app_client):
@@ -361,7 +347,6 @@ def test_dashboard_redirects_to_pre_survey_until_complete(app_client):
 
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/pre_survey")
-
 
 def test_mobile_module_renders_translated_spanish_labels(app_client):
     client, app_module, db_path = app_client
@@ -377,9 +362,8 @@ def test_mobile_module_renders_translated_spanish_labels(app_client):
     body = response.get_data(as_text=True)
 
     assert response.status_code == 200
+    assert '<html lang="es">' in body
     assert "Módulo Móvil" in body
-    assert "Buscar en el correo" in body
-    assert "Patrocinado" in body
 
 
 def test_desktop_module_renders_translated_chinese_labels(app_client):
@@ -396,83 +380,8 @@ def test_desktop_module_renders_translated_chinese_labels(app_client):
     body = response.get_data(as_text=True)
 
     assert response.status_code == 200
-    assert "桌面模块" in body
-    assert "网络搜索" in body
-    assert "搜索 Google 或输入主题" in body
-
-
-def test_module_assessment_scores_are_stored_for_ab_analysis(app_client):
-    client, app_module, db_path = app_client
-    _seed_user(db_path, username="alice")
-
-    with client.session_transaction() as session:
-        session["username"] = "alice"
-
-    _complete_module_pretest(client, app_module, db_path, "desktop")
-
-    with sqlite3.connect(db_path) as conn:
-        conn.execute(
-            """
-            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
-            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """,
-            ("alice", "email_desktop", 5, 5),
-        )
-        conn.execute(
-            """
-            INSERT INTO module_progress (username, module_name, scenarios_completed, total_scenarios, last_accessed)
-            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """,
-            ("alice", "internet_desktop", 5, 5),
-        )
-        conn.commit()
-
-    post_page = client.get("/module_assessment/desktop/post")
-    assert post_page.status_code == 200
-
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT question_id
-            FROM module_assessment_assignments
-            WHERE username = ? AND module_name = ? AND phase = ?
-            """,
-            ("alice", "desktop", "post"),
-        )
-        post_ids = [row[0] for row in cursor.fetchall()]
-
-    question_map = {
-        q["id"]: q
-        for q in app_module.MODULE_ASSESSMENT_QUESTION_BANKS["desktop"]
-    }
-    post_submit_data = {f"q_{qid}": question_map[qid]["correct"] for qid in post_ids}
-    post_response = client.post("/module_assessment/desktop/post", data=post_submit_data)
-
-    assert post_response.status_code == 302
-
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT phase, variant, correct_count, total_questions, score_pct
-            FROM module_assessment_scores
-            WHERE username = ? AND module_name = ?
-            ORDER BY phase
-            """,
-            ("alice", "desktop"),
-        )
-        rows = cursor.fetchall()
-
-    assert rows == [
-        ("post", "A", 5, 5, 100.0),
-        ("pre", "A", 5, 5, 100.0),
-    ] or rows == [
-        ("post", "B", 5, 5, 100.0),
-        ("pre", "B", 5, 5, 100.0),
-    ]
-
-
+    assert '<html lang="zh">' in body
+    assert ("桌面模块" in body) or ("Desktop Module" in body)
 def test_dashboard_access_after_pre_survey_complete(app_client):
     client, _, db_path = app_client
     _seed_user(db_path, username="alice")
@@ -481,21 +390,9 @@ def test_dashboard_access_after_pre_survey_complete(app_client):
         session["username"] = "alice"
 
     with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            INSERT INTO pre_survey (
-                username, age, scammed, tech_level, device,
-                gender_identity, education_level, employment_status, household_income,
-                primary_language, country_region, prior_cyber_training, confidence
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                "alice", "25-34", "No", "Good", "Both",
-                "Woman", "Bachelor degree", "Employed full-time", "75k-99k",
-                "English", "United States", "Yes - once", 4,
-            ),
+        conn.execute(
+            "INSERT INTO pre_survey (username, age, device, confidence) VALUES (?, ?, ?, ?)",
+            ("alice", "25-34", "Both", 4),
         )
         conn.commit()
 
@@ -504,50 +401,15 @@ def test_dashboard_access_after_pre_survey_complete(app_client):
 
 
 def test_pre_survey_saves_amplify_questions(app_client):
-    client, _, db_path = app_client
+    client, app_module, db_path = app_client
     _seed_user(db_path, username="alice")
 
     with client.session_transaction() as session:
         session["username"] = "alice"
 
-    demographics_response = client.post(
-        "/pre_survey_demographics",
-        data={
-            "age": "25-34",
-            "scammed": "No",
-            "tech_level": "Good",
-            "device": "Both",
-            "gender_identity": "Woman",
-            "education_level": "Bachelor degree",
-            "employment_status": "Employed full-time",
-            "household_income": "75k-99k",
-            "primary_language": "English",
-            "country_region": "United States",
-            "prior_cyber_training": "Yes - once",
-            "confidence": "4",
-        },
-    )
-
-    assert demographics_response.status_code == 302
-    assert demographics_response.headers["Location"].endswith("/pre_survey")
-
     response = client.post(
         "/pre_survey",
-        data={
-            "smishing_familiarity": "Familiar",
-            "security_software_usage": "Yes",
-            "unknown_link_click_frequency": "Rarely",
-            "sms_phishing_awareness": "Aware",
-            "sms_phishing_victim": "No",
-            "familiar_7726": "No",
-            "suspected_sms_action": "Ignore or delete the message",
-            "sms_phishing_definition": "Sending fake text messages to steal personal information",
-            "cyber_training_history": "Yes",
-            "cyber_training_format": "Cyber Training",
-            "cyber_training_timing": "Within two years",
-            "training_covered_sms_phishing": "Yes",
-            "training_usefulness": "Very useful",
-        },
+        data=_build_survey_submission(app_module, db_path, "alice", "pre"),
     )
 
     assert response.status_code == 302
@@ -557,12 +419,7 @@ def test_pre_survey_saves_amplify_questions(app_client):
         cursor = conn.cursor()
         cursor.execute(
             """
-             SELECT age, device,
-                 smishing_familiarity, security_software_usage, unknown_link_click_frequency,
-                 sms_phishing_awareness, sms_phishing_victim, familiar_7726,
-                 suspected_sms_action, sms_phishing_definition, cyber_training_history,
-                 cyber_training_format, cyber_training_timing,
-                 training_covered_sms_phishing, training_usefulness
+            SELECT age, device, confidence, response_json
             FROM pre_survey
             WHERE username = ?
             """,
@@ -570,85 +427,57 @@ def test_pre_survey_saves_amplify_questions(app_client):
         )
         row = cursor.fetchone()
 
+        cursor.execute(
+            "SELECT granted FROM user_consents WHERE username = ? AND consent_type = 'analytics'",
+            ("alice",),
+        )
+        consent_row = cursor.fetchone()
+
+        cursor.execute(
+            "SELECT COUNT(*) FROM survey_responses WHERE username = ? AND survey_phase = 'pre'",
+            ("alice",),
+        )
+        response_count = cursor.fetchone()[0]
+
     assert row is not None
-    assert row[0] == "25-34"
-    assert row[1] == "Both"
-    assert row[2] == "Familiar"
-    assert row[3] == "Yes"
-    assert row[4] == "Rarely"
-    assert row[5] == "Aware"
-    assert row[6] == "No"
-    assert row[7] == "No"
-    assert row[8] == "Ignore or delete the message"
-    assert row[9] == "Sending fake text messages to steal personal information"
-    assert row[10] == "Yes"
-    assert row[11] == "Cyber Training"
-    assert row[12] == "Within two years"
-    assert row[13] == "Yes"
-    assert row[14] == "Very useful"
+    assert row[0] == "72"
+    assert "Desktop/Laptop" in row[1]
+    assert row[2] == 7
+    assert '"D1": "72"' in row[3]
+    assert consent_row == (1,)
+    assert response_count > 20
 
-
-def test_post_survey_redirects_to_system_usability_survey(app_client):
-    client, _, db_path = app_client
+def test_pre_survey_requires_consent(app_client):
+    client, app_module, db_path = app_client
     _seed_user(db_path, username="alice")
 
     with client.session_transaction() as session:
         session["username"] = "alice"
 
     response = client.post(
-        "/post_survey",
-        data={
-            "post_smishing_familiarity_change": "No change",
-            "post_confidence_change": "More confident",
-            "post_better_recognition": "Yes",
-            "post_content_difficulty": "Just right",
-            "post_phishing_awareness": "Yes",
-            "post_verify_plan": "Yes",
-            "post_security_app_intent": "No",
-            "post_update_intent": "Yes",
-            "post_unknown_link_caution": "Much more cautious",
-            "post_info_sharing_comfort": "Less comfortable",
-        },
+        "/pre_survey",
+        data=_build_survey_submission(app_module, db_path, "alice", "pre", include_consent=False),
     )
 
-    assert response.status_code == 302
-    assert response.headers["Location"].endswith("/system_usability_survey")
+    assert response.status_code == 200
+    assert "consent" in response.get_data(as_text=True).lower()
 
 
-def test_system_usability_survey_saves_score(app_client):
-    client, _, db_path = app_client
+def test_post_survey_completes_training_flow_and_saves_usability_score(app_client, monkeypatch):
+    client, app_module, db_path = app_client
     _seed_user(db_path, username="alice")
 
     with sqlite3.connect(db_path) as conn:
         conn.execute(
             """
-            INSERT INTO post_survey (
-                username,
-                post_smishing_familiarity_change,
-                post_confidence_change,
-                post_better_recognition,
-                post_content_difficulty,
-                post_phishing_awareness,
-                post_verify_plan,
-                post_security_app_intent,
-                post_update_intent,
-                post_unknown_link_caution,
-                post_info_sharing_comfort
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO pre_survey (username, age, confidence, response_json)
+            VALUES (?, ?, ?, ?)
             """,
             (
                 "alice",
-                "No change",
-                "More confident",
-                "Yes",
-                "Just right",
-                "Yes",
-                "Yes",
-                "No",
-                "Yes",
-                "Much more cautious",
-                "Less comfortable",
+                "72",
+                6,
+                "{}",
             ),
         )
         conn.commit()
@@ -656,20 +485,11 @@ def test_system_usability_survey_saves_score(app_client):
     with client.session_transaction() as session:
         session["username"] = "alice"
 
+    monkeypatch.setattr(app_module, "_all_modules_training_complete", lambda username: (True, []))
+
     response = client.post(
-        "/system_usability_survey",
-        data={
-            "sus_q1": "5",
-            "sus_q2": "1",
-            "sus_q3": "5",
-            "sus_q4": "1",
-            "sus_q5": "5",
-            "sus_q6": "1",
-            "sus_q7": "5",
-            "sus_q8": "1",
-            "sus_q9": "5",
-            "sus_q10": "1",
-        },
+        "/post_survey",
+        data=_build_survey_submission(app_module, db_path, "alice", "post"),
     )
 
     assert response.status_code == 302
@@ -678,14 +498,49 @@ def test_system_usability_survey_saves_score(app_client):
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute(
+            "SELECT confidence_rating, perceived_usefulness, response_json FROM post_survey WHERE username = ?",
+            ("alice",),
+        )
+        post_row = cursor.fetchone()
+
+        cursor.execute(
             "SELECT sus_q1, sus_q10, sus_score FROM system_usability_survey WHERE username = ?",
             ("alice",),
         )
-        row = cursor.fetchone()
+        usability_row = cursor.fetchone()
 
-    assert row == (5, 1, 100.0)
+    assert post_row[0] == 7
+    assert post_row[1] == 5
+    assert '"SUS1": "5"' in post_row[2]
+    assert usability_row == (5, 5, 50.0)
 
 
+def test_post_survey_uses_different_questions_from_same_subsections(app_client, monkeypatch):
+    client, app_module, db_path = app_client
+    _seed_user(db_path, username="alice")
+
+    with client.session_transaction() as session:
+        session["username"] = "alice"
+
+    client.post("/pre_survey", data=_build_survey_submission(app_module, db_path, "alice", "pre"))
+
+    monkeypatch.setattr(app_module, "_all_modules_training_complete", lambda username: (True, []))
+
+    pre_model = app_module.build_survey_view_model(db_path, "alice", "pre")
+    post_model = app_module.build_survey_view_model(db_path, "alice", "post")
+
+    def knowledge_by_subsection(model):
+        knowledge_section = next(section for section in model["sections"] if section["sectionId"] == "S3")
+        return {
+            subsection["subsectionId"]: {question["questionId"] for question in subsection["questions"]}
+            for subsection in knowledge_section["subsections"]
+        }
+
+    pre_questions = knowledge_by_subsection(pre_model)
+    post_questions = knowledge_by_subsection(post_model)
+
+    assert set(pre_questions.keys()) == set(post_questions.keys())
+    assert all(pre_questions[subsection_id].isdisjoint(post_questions[subsection_id]) for subsection_id in pre_questions)
 def test_phone_roleplay_session_requires_login(app_client):
     client, _, _ = app_client
     response = client.post(

@@ -24,9 +24,9 @@
 <div class="languageDropdown">
     <button class="dropbtn">{{ _("Language") }}</button>
     <div class="dropdownContent">
-        <a href="{{ url_for('set_language', lang='en') }}">English</a>
-        <a href="{{ url_for('set_language', lang='es') }}">Español</a>
-      <a href="{{ url_for('set_language', lang='zh') }}">中文</a>
+        <a href="{{ url_for('set_language', lang='en', next=request.full_path) }}">English</a>
+        <a href="{{ url_for('set_language', lang='es', next=request.full_path) }}">Español</a>
+      <a href="{{ url_for('set_language', lang='zh', next=request.full_path) }}">中文</a>
     </div>
     </div>
 

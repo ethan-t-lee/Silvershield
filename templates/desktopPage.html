@@ -37,8 +37,8 @@
 
 <!-- Desktop Icons -->
 <div class="desktop">
-    <div class="icon email"></div>
-    <div class="icon internet"></div>
+    <div class="icon email" data-label="{{ _('Gmail') }}"></div>
+    <div class="icon internet" data-label="{{ _('Chrome') }}"></div>
 </div>
 
 
@@ -71,40 +71,37 @@
         <div class="gmail-topbar">
             <div class="gmail-brand">
                 <span class="gmail-menu">☰</span>
-                <span class="gmail-logo-mark" aria-hidden="true"></span>
-                <span class="gmail-logo-text">Gmail</span>
+                <span class="gmail-logo-mark">M</span>
+                <span class="gmail-logo-text">{{ _('Gmail') }}</span>
             </div>
 
             <div class="gmail-searchbar">
-                <input value="in:inbox newer_than:7d" readonly>
+                <input value="{{ _('in:inbox newer_than:7d') }}" readonly>
             </div>
 
             <div class="gmail-top-actions" aria-hidden="true">
-                <span class="top-action-icon help-icon">?</span>
-                <span class="top-action-icon settings-icon"></span>
-                <span class="top-action-avatar profile-icon"></span>
+                <span>?</span>
+                <span>⚙</span>
+                <span>👤</span>
             </div>
         </div>
 
         <div class="gmail-main">
             <aside class="gmail-sidebar" aria-hidden="true">
-                <button class="gmail-compose" type="button">
-                    <span class="gmail-compose-icon"></span>
-                    <span>{{ _("Compose") }}</span>
-                </button>
-                <div class="gmail-nav-item active"><span class="gmail-nav-label"><span class="gmail-nav-icon nav-inbox"></span>{{ _("Inbox") }}</span> <span>18</span></div>
-                <div class="gmail-nav-item"><span class="gmail-nav-label"><span class="gmail-nav-icon nav-star"></span>{{ _("Starred") }}</span></div>
-                <div class="gmail-nav-item"><span class="gmail-nav-label"><span class="gmail-nav-icon nav-sent"></span>{{ _("Sent") }}</span></div>
-                <div class="gmail-nav-item"><span class="gmail-nav-label"><span class="gmail-nav-icon nav-draft"></span>{{ _("Drafts") }}</span></div>
-                <div class="gmail-nav-item"><span class="gmail-nav-label"><span class="gmail-nav-icon nav-more"></span>{{ _("More") }}</span></div>
+                <button class="gmail-compose" type="button">{{ _('Compose') }}</button>
+                <div class="gmail-nav-item active">{{ _('Inbox') }} <span>18</span></div>
+                <div class="gmail-nav-item">{{ _('Starred') }}</div>
+                <div class="gmail-nav-item">{{ _('Sent') }}</div>
+                <div class="gmail-nav-item">{{ _('Drafts') }}</div>
+                <div class="gmail-nav-item">{{ _('More') }}</div>
             </aside>
 
             <section class="gmail-content-shell">
                 <div class="gmail-message-toolbar" aria-hidden="true">
-                    <span class="gmail-toolbar-item"><span class="gmail-toolbar-icon toolbar-archive"></span>{{ _("Archive") }}</span>
-                    <span class="gmail-toolbar-item"><span class="gmail-toolbar-icon toolbar-spam"></span>{{ _("Report spam") }}</span>
-                    <span class="gmail-toolbar-item"><span class="gmail-toolbar-icon toolbar-delete"></span>{{ _("Delete") }}</span>
-                    <span class="gmail-toolbar-item"><span class="gmail-toolbar-icon toolbar-unread"></span>{{ _("Mark unread") }}</span>
+                    <span>{{ _('Archive') }}</span>
+                    <span>{{ _('Report spam') }}</span>
+                    <span>{{ _('Delete') }}</span>
+                    <span>{{ _('Mark unread') }}</span>
                 </div>
 
                 <div class="gmail-reading-pane">
@@ -115,7 +112,7 @@
 
                 <div class="desktop-actions-row">
                     <div class="email-controls" style="display:flex;gap:8px;align-items:center;">
-                        <button id="readAloudBtn" class="rf-btn"><span class="btn-icon speaker-icon" aria-hidden="true"></span>{{ _("Read aloud") }}</button>
+                        <button id="readAloudBtn" class="rf-btn">{{ _("Read aloud") }}</button>
                     </div>
 
                     <div id="emailButtons" class="rf-container" style="display:none;">
@@ -127,8 +124,8 @@
                             {{ _("FAKE") }}
                         </button>
 
-                        <button id="emailVoiceBtn" class="rf-btn voice-answer-btn" title="{{ _("Say 'real' or 'fake'.") }}">
-                            <span class="btn-icon speaker-icon" aria-hidden="true"></span>{{ _("Speak") }}
+                        <button id="emailVoiceBtn" class="rf-btn voice-answer-btn" title="{{ _('Say real or fake') }}">
+                            {{ _('Speak') }}
                         </button>
                     </div>
                 </div>
@@ -163,8 +160,8 @@
     <div class="popup-body chrome-shell">
 
         <div class="chrome-tabs-row" aria-hidden="true">
-            <div class="chrome-tab active">{{ _("Cyber Search") }}</div>
-            <div class="chrome-tab">{{ _("New Tab") }}</div>
+            <div class="chrome-tab active">{{ _('Cyber Search') }}</div>
+            <div class="chrome-tab">{{ _('New Tab') }}</div>
             <div class="chrome-window-actions">— □ ✕</div>
         </div>
 
@@ -176,12 +173,12 @@
             </div>
 
             <div class="browser-bar">
-                <button id="internetBackBtn" class="browser-nav-btn" style="display:none;">← {{ _("Results") }}</button>
+                <button id="internetBackBtn" class="browser-nav-btn" style="display:none;">← {{ _('Results') }}</button>
                 <input
                     id="addressBar"
-                    value="security alerts"
-                    placeholder="{{ _("Search Google or type a topic") }}">
-                <button id="internetSearchBtn" class="browser-search-btn">{{ _("Search") }}</button>
+                    value="{{ _('security alerts') }}"
+                    placeholder="{{ _('Search Google or type a topic') }}">
+                <button id="internetSearchBtn" class="browser-search-btn">{{ _('Search') }}</button>
             </div>
 
             <div class="chrome-toolbar-tools" aria-hidden="true">
@@ -191,14 +188,14 @@
         </div>
 
         <div class="chrome-bookmarks-row" aria-hidden="true">
-            <span class="chrome-chip active">{{ _("All") }}</span>
-            <span class="chrome-chip">{{ _("News") }}</span>
-            <span class="chrome-chip">{{ _("Images") }}</span>
-            <span class="chrome-chip">{{ _("Maps") }}</span>
+            <span class="chrome-chip active">{{ _('All') }}</span>
+            <span class="chrome-chip">{{ _('News') }}</span>
+            <span class="chrome-chip">{{ _('Images') }}</span>
+            <span class="chrome-chip">{{ _('Maps') }}</span>
         </div>
 
         <div id="internetSearchMeta" class="internet-search-meta">
-            {{ _("Search a topic, open a result, and inspect the website before deciding if it is real or a scam.") }}
+            {{ _('Search a topic, open a result, and inspect the website before deciding if it is real or a scam.') }}
         </div>
 
         <div id="internetContent" class="internet-content">
@@ -219,8 +216,8 @@
                     {{ _("FAKE") }}
                 </button>
 
-                <button id="internetVoiceBtn" class="rf-btn voice-answer-btn" title="{{ _("Say 'real' or 'fake'.") }}">
-                    {{ _("Speak") }}
+                <button id="internetVoiceBtn" class="rf-btn voice-answer-btn" title="{{ _('Say real or fake') }}">
+                    {{ _('Speak') }}
                 </button>
             </div>
         </div>
@@ -239,37 +236,38 @@
 </div>
 
 
-<!-- Script Files -->
 <script>
 window.desktopLabels = {
-    generatingEmail: {{ _("Generating email...")|tojson }},
-    couldNotGenerateEmail: {{ _("Could not generate email — please close and try again.")|tojson }},
-    serverError: {{ _("Server error.")|tojson }},
-    noEmailLoadedToAnalyze: {{ _("No email loaded to analyze.")|tojson }},
-    noEmailLoadedToRead: {{ _("No email loaded to read.")|tojson }},
-    errorAnalyzingResponse: {{ _("Error analyzing response.")|tojson }},
-    serverErrorAnalyzingResponse: {{ _("Server error analyzing response.")|tojson }},
-    showingResultsFor: {{ _("Showing simulated Google-style results for")|tojson }},
-    openResultInspect: {{ _("Open a result and inspect the site before deciding.")|tojson }},
-    searchingGoogleFor: {{ _("Searching Google for")|tojson }},
-    loadingSearchResults: {{ _("Loading search results...")|tojson }},
-    errorLoadingSearchResults: {{ _("Error loading search results.")|tojson }},
-    loadingWebsite: {{ _("Loading website...")|tojson }},
-    errorLoadingWebsite: {{ _("Error loading website.")|tojson }},
-    exploreSiteContent: {{ _("Explore the site content, then decide whether the website is real or a scam.")|tojson }},
-    errorAnalyzingWebsite: {{ _("Error analyzing website.")|tojson }},
-    serverErrorAnalyzingWebsite: {{ _("Server error analyzing website.")|tojson }},
-    sponsored: {{ _("Sponsored")|tojson }},
-    searchResult: {{ _("Search Result")|tojson }},
-    noDescriptionProvided: {{ _("No description provided.")|tojson }},
-    about: {{ _("About")|tojson }},
-    resultsWord: {{ _("results")|tojson }},
-    seconds: {{ _("seconds")|tojson }},
-    website: {{ _("Website")|tojson }},
-    ad: {{ _("Ad")|tojson }},
-    currentDifficulty: {{ _("Current difficulty")|tojson }}
+    defaultSearchQuery: {{ _('security alerts')|tojson }},
+    website: {{ _('Website')|tojson }},
+    generatingEmail: {{ _('Generating email...')|tojson }},
+    couldNotGenerateEmail: {{ _('Could not generate email. Please close and try again.')|tojson }},
+    serverError: {{ _('Server error.')|tojson }},
+    noEmailLoadedToAnalyze: {{ _('No email loaded to analyze.')|tojson }},
+    errorAnalyzingResponse: {{ _('Error analyzing response.')|tojson }},
+    serverErrorAnalyzingResponse: {{ _('Server error analyzing response.')|tojson }},
+    noEmailLoadedToRead: {{ _('No email loaded to read.')|tojson }},
+    searchingGoogleFor: {{ _('Searching Google for')|tojson }},
+    loadingSearchResults: {{ _('Loading search results...')|tojson }},
+    errorLoadingSearchResults: {{ _('Error loading search results.')|tojson }},
+    showingResultsFor: {{ _('Showing simulated Google-style results for')|tojson }},
+    openAndInspect: {{ _('Open a result and inspect the site before deciding.')|tojson }},
+    aboutResults: {{ _('About')|tojson }},
+    adLabel: {{ _('Ad')|tojson }},
+    secondsSuffix: {{ _('seconds')|tojson }},
+    sponsored: {{ _('Sponsored')|tojson }},
+    loadingWebsite: {{ _('Loading website...')|tojson }},
+    errorLoadingWebsite: {{ _('Error loading website.')|tojson }},
+    inspectThenDecide: {{ _('Explore the site content, then decide whether the website is real or a scam.')|tojson }},
+    openResultFirst: {{ _('Open a search result first, then inspect the site.')|tojson }},
+    errorAnalyzingWebsite: {{ _('Error analyzing website.')|tojson }},
+    serverErrorAnalyzingWebsite: {{ _('Server error analyzing website.')|tojson }},
+    difficultyLabel: {{ _('Difficulty')|tojson }}
 };
 </script>
+
+
+<!-- Script Files -->
 <script src="{{ url_for('static', filename='tts.js') }}"></script>
 <script src="{{ url_for('static', filename='voiceInput.js') }}"></script>
 <script src="{{ url_for('static', filename='desktopEmail.js') }}"></script>
