@@ -15,6 +15,7 @@ import time
 from datetime import datetime, timedelta
 
 DB_PATH = "silvershieldDatabase.db"
+REQUIRED_ATTEMPTS_PER_SIMULATION = 5
 
 
 def _connect():
@@ -168,20 +169,20 @@ def update_module_progress(username, module_name, scenarios_completed=None):
         
         if row:
             current_completed = row[0] or 0
-            total_scenarios = row[1] or 5
             requested_count = (current_completed + 1) if scenarios_completed is None else scenarios_completed
-            new_count = min(max(0, requested_count), total_scenarios)
+            new_count = min(max(0, requested_count), REQUIRED_ATTEMPTS_PER_SIMULATION)
             cursor.execute("""
                 UPDATE module_progress
-                SET scenarios_completed = ?, last_accessed = CURRENT_TIMESTAMP
+                SET scenarios_completed = ?, total_scenarios = ?, last_accessed = CURRENT_TIMESTAMP
                 WHERE username = ? AND module_name = ?
-            """, (new_count, username, module_name))
+            """, (new_count, REQUIRED_ATTEMPTS_PER_SIMULATION, username, module_name))
         else:
+            initial_count = 1 if scenarios_completed is None else min(max(0, scenarios_completed), REQUIRED_ATTEMPTS_PER_SIMULATION)
             cursor.execute("""
                 INSERT INTO module_progress 
                 (username, module_name, scenarios_completed, total_scenarios, last_accessed)
-                VALUES (?, ?, 1, 5, CURRENT_TIMESTAMP)
-            """, (username, module_name))
+                VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """, (username, module_name, initial_count, REQUIRED_ATTEMPTS_PER_SIMULATION))
         
         conn.commit()
 
@@ -342,7 +343,7 @@ def get_survey_comparison(username):
             
             # Get pre-survey
             cursor.execute("""
-                SELECT age, scammed, tech_level, device, confidence
+                SELECT age, device, confidence
                 FROM pre_survey
                 WHERE username = ?
             """, (username,))
@@ -363,10 +364,8 @@ def get_survey_comparison(username):
             if pre_row:
                 pre_survey = {
                     "age": pre_row[0],
-                    "prior_scam": pre_row[1],
-                    "tech_level": pre_row[2],
-                    "device": pre_row[3],
-                    "confidence": pre_row[4]
+                    "device": pre_row[1],
+                    "confidence": pre_row[2]
                 }
             
             post_survey = None

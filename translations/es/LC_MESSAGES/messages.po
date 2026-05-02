@@ -1167,6 +1167,291 @@ msgstr "Permanecer en la llamada"
 msgid "Give the code because it sounds urgent"
 msgstr "Dar el código porque suena urgente"
 
+msgid "Submit Survey"
+msgstr "Enviar encuesta"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Page"
+msgstr "Página"
+
+msgid "of"
+msgstr "de"
+
+msgid "Please answer all required questions on this page before continuing."
+msgstr "Responda todas las preguntas obligatorias de esta página antes de continuar."
+
+msgid "Please answer all required questions before submitting."
+msgstr "Responda todas las preguntas obligatorias antes de enviar."
+
+msgid "Please complete the pre-survey first."
+msgstr "Complete primero la encuesta previa."
+
+msgid "Please complete the module pre-test first."
+msgstr "Complete primero la preprueba del módulo."
+
+msgid "Please complete the pre-training survey before starting modules."
+msgstr "Complete la encuesta previa al entrenamiento antes de comenzar los módulos."
+
+msgid "Pre-training survey saved. You can now begin the training modules."
+msgstr "Encuesta previa guardada. Ahora puede comenzar los módulos de entrenamiento."
+
+msgid "Please complete the post-training survey to finish the training flow."
+msgstr "Complete la encuesta posterior al entrenamiento para finalizar el flujo de capacitación."
+
+msgid "Training Complete"
+msgstr "Entrenamiento completado"
+
+msgid "Review Dashboard"
+msgstr "Revisar panel"
+
+msgid "You have completed the post-training survey and all training modules."
+msgstr "Ha completado la encuesta posterior al entrenamiento y todos los módulos de capacitación."
+
+msgid "Continue Training"
+msgstr "Continuar entrenamiento"
+
+msgid "Open Training"
+msgstr "Abrir entrenamiento"
+
+msgid "Continue working through the training modules from your dashboard."
+msgstr "Continúe avanzando en los módulos de capacitación desde su panel."
+
+msgid "Start Module 1"
+msgstr "Comenzar módulo 1"
+
+msgid "Please complete all training modules before taking the post-training survey."
+msgstr "Complete todos los módulos de capacitación antes de realizar la encuesta posterior al entrenamiento."
+
+msgid "Post-training survey saved. You have completed the full training flow."
+msgstr "Encuesta posterior al entrenamiento guardada. Ha completado todo el flujo de capacitación."
+
+msgid "The usability items are included in the post-training survey."
+msgstr "Los elementos de usabilidad están incluidos en la encuesta posterior al entrenamiento."
+
+msgid "Please record your analytics consent choice before continuing."
+msgstr "Registre su elección de consentimiento de analítica antes de continuar."
+
+msgid "Consent is required before Silver Shield can collect survey and analytics data."
+msgstr "Se requiere consentimiento antes de que Silver Shield pueda recopilar datos de encuesta y analítica."
+
+msgid "Please answer every required survey question before continuing."
+msgstr "Responda cada pregunta obligatoria de la encuesta antes de continuar."
+
+msgid "Gmail"
+msgstr "Gmail"
+
+msgid "Chrome"
+msgstr "Chrome"
+
+msgid "Compose"
+msgstr "Redactar"
+
+msgid "Inbox"
+msgstr "Bandeja de entrada"
+
+msgid "Starred"
+msgstr "Destacados"
+
+msgid "Sent"
+msgstr "Enviados"
+
+msgid "Drafts"
+msgstr "Borradores"
+
+msgid "More"
+msgstr "Más"
+
+msgid "Archive"
+msgstr "Archivar"
+
+msgid "Report spam"
+msgstr "Reportar spam"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Mark unread"
+msgstr "Marcar como no leído"
+
+msgid "Say real or fake"
+msgstr "Diga real o falso"
+
+msgid "Cyber Search"
+msgstr "Búsqueda cibernética"
+
+msgid "New Tab"
+msgstr "Nueva pestaña"
+
+msgid "Results"
+msgstr "Resultados"
+
+msgid "security alerts"
+msgstr "alertas de seguridad"
+
+msgid "Search Google or type a topic"
+msgstr "Buscar en Google o escribir un tema"
+
+msgid "Search"
+msgstr "Buscar"
+
+msgid "All"
+msgstr "Todo"
+
+msgid "News"
+msgstr "Noticias"
+
+msgid "Images"
+msgstr "Imágenes"
+
+msgid "Maps"
+msgstr "Mapas"
+
+msgid "Search a topic, open a result, and inspect the website before deciding if it is real or a scam."
+msgstr "Busque un tema, abra un resultado e inspeccione el sitio antes de decidir si es real o una estafa."
+
+msgid "Website"
+msgstr "Sitio web"
+
+msgid "Generating email..."
+msgstr "Generando correo..."
+
+msgid "Could not generate email. Please close and try again."
+msgstr "No se pudo generar el correo. Cierre e inténtelo de nuevo."
+
+msgid "No email loaded to analyze."
+msgstr "No hay correo cargado para analizar."
+
+msgid "Error analyzing response."
+msgstr "Error al analizar la respuesta."
+
+msgid "Server error analyzing response."
+msgstr "Error del servidor al analizar la respuesta."
+
+msgid "No email loaded to read."
+msgstr "No hay correo cargado para leer."
+
+msgid "Searching Google for"
+msgstr "Buscando en Google"
+
+msgid "Loading search results..."
+msgstr "Cargando resultados de búsqueda..."
+
+msgid "Error loading search results."
+msgstr "Error al cargar los resultados de búsqueda."
+
+msgid "Showing simulated Google-style results for"
+msgstr "Mostrando resultados simulados estilo Google para"
+
+msgid "Open a result and inspect the site before deciding."
+msgstr "Abra un resultado e inspeccione el sitio antes de decidir."
+
+msgid "About"
+msgstr "Aproximadamente"
+
+msgid "Sponsored"
+msgstr "Patrocinado"
+
+msgid "Loading website..."
+msgstr "Cargando sitio web..."
+
+msgid "Error loading website."
+msgstr "Error al cargar el sitio web."
+
+msgid "Explore the site content, then decide whether the website is real or a scam."
+msgstr "Explore el contenido del sitio y luego decida si el sitio es real o una estafa."
+
+msgid "Open a search result first, then inspect the site."
+msgstr "Abra primero un resultado de búsqueda y luego inspeccione el sitio."
+
+msgid "Error analyzing website."
+msgstr "Error al analizar el sitio web."
+
+msgid "Server error analyzing website."
+msgstr "Error del servidor al analizar el sitio web."
+
+msgid "Difficulty"
+msgstr "Dificultad"
+
+msgid "Search in mail"
+msgstr "Buscar en el correo"
+
+msgid "Primary Inbox"
+msgstr "Bandeja principal"
+
+msgid "1 new"
+msgstr "1 nuevo"
+
+msgid "Loading scenario..."
+msgstr "Cargando escenario..."
+
+msgid "Loading email..."
+msgstr "Cargando correo..."
+
+msgid "Search or type web address"
+msgstr "Buscar o escribir dirección web"
+
+msgid "Go"
+msgstr "Ir"
+
+msgid "Search a topic, open a result, and inspect the site before choosing REAL or FAKE."
+msgstr "Busque un tema, abra un resultado e inspeccione el sitio antes de elegir REAL o FALSO."
+
+msgid "Google"
+msgstr "Google"
+
+msgid "Searching for"
+msgstr "Buscando"
+
+msgid "Search results failed to load."
+msgstr "No se pudieron cargar los resultados de búsqueda."
+
+msgid "Try a different search or reload the scenario."
+msgstr "Pruebe otra búsqueda o recargue el escenario."
+
+msgid "Loading the selected website..."
+msgstr "Cargando el sitio web seleccionado..."
+
+msgid "Inspect the website carefully, then choose REAL or FAKE."
+msgstr "Inspeccione cuidadosamente el sitio y luego elija REAL o FALSO."
+
+msgid "Unable to open that result. Please try another one."
+msgstr "No se pudo abrir ese resultado. Intente con otro."
+
+msgid "Showing results for"
+msgstr "Mostrando resultados para"
+
+msgid "Open a site and inspect it before answering."
+msgstr "Abra un sitio e inspéccionelo antes de responder."
+
+msgid "Search Result"
+msgstr "Resultado de búsqueda"
+
+msgid "No description provided."
+msgstr "No se proporcionó descripción."
+
+msgid "Bank Alerts"
+msgstr "Alertas bancarias"
+
+msgid "Unknown Caller"
+msgstr "Llamante desconocido"
+
+msgid "Error loading scenario."
+msgstr "Error al cargar el escenario."
+
+msgid "Open a search result and inspect the site before answering."
+msgstr "Abra un resultado de búsqueda e inspeccione el sitio antes de responder."
+
+msgid "Current difficulty"
+msgstr "Dificultad actual"
+
+msgid "Server error analyzing choice."
+msgstr "Error del servidor al analizar la elección."
+
+msgid "Ad"
+msgstr "Anuncio"
+
 msgid "Continue the call"
 msgstr "Continuar la llamada"
 

@@ -283,11 +283,119 @@ msgstr "的方式进行。"
 msgid "Register now"
 msgstr "立即注册"
 
-msgid "Desktop Module"
-msgstr "桌面模块"
+msgid "Submit Survey"
+msgstr "提交问卷"
 
-msgid "Back to Dashboard"
-msgstr "返回仪表板"
+msgid "Next"
+msgstr "下一步"
+
+msgid "Page"
+msgstr "第"
+
+msgid "of"
+msgstr "页，共"
+
+msgid "Please answer all required questions on this page before continuing."
+msgstr "继续前请先完成本页所有必答题。"
+
+msgid "Please answer all required questions before submitting."
+msgstr "提交前请先完成所有必答题。"
+
+msgid "Please complete the pre-survey first."
+msgstr "请先完成前测问卷。"
+
+msgid "Please complete the module pre-test first."
+msgstr "请先完成模块前测。"
+
+msgid "Please complete the pre-training survey before starting modules."
+msgstr "开始模块前，请先完成培训前问卷。"
+
+msgid "Pre-training survey saved. You can now begin the training modules."
+msgstr "培训前问卷已保存。现在可以开始训练模块。"
+
+msgid "Please complete the post-training survey to finish the training flow."
+msgstr "请完成培训后问卷以结束本次训练流程。"
+
+msgid "Training Complete"
+msgstr "训练已完成"
+
+msgid "Review Dashboard"
+msgstr "查看仪表板"
+
+msgid "You have completed the post-training survey and all training modules."
+msgstr "您已完成培训后问卷和全部训练模块。"
+
+msgid "Continue Training"
+msgstr "继续训练"
+
+msgid "Open Training"
+msgstr "打开训练"
+
+msgid "Continue working through the training modules from your dashboard."
+msgstr "请从仪表板继续完成训练模块。"
+
+msgid "Start Module 1"
+msgstr "开始模块 1"
+
+msgid "Please complete all training modules before taking the post-training survey."
+msgstr "请先完成所有训练模块，再进行培训后问卷。"
+
+msgid "Post-training survey saved. You have completed the full training flow."
+msgstr "培训后问卷已保存。您已完成完整训练流程。"
+
+msgid "The usability items are included in the post-training survey."
+msgstr "可用性题项已包含在培训后问卷中。"
+
+msgid "Please record your analytics consent choice before continuing."
+msgstr "继续前请先记录您的数据分析同意选择。"
+
+msgid "Consent is required before Silver Shield can collect survey and analytics data."
+msgstr "在 Silver Shield 收集问卷与分析数据之前，必须先获得您的同意。"
+
+msgid "Please answer every required survey question before continuing."
+msgstr "继续前请先回答所有问卷必答题。"
+
+msgid "Silvershield Login"
+msgstr "Silvershield 登录"
+
+msgid "Welcome"
+msgstr "欢迎"
+
+msgid "Please log in to continue."
+msgstr "请登录以继续。"
+
+msgid "Email or Username"
+msgstr "邮箱或用户名"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "Forgot password?"
+msgstr "忘记密码？"
+
+msgid "Create account"
+msgstr "创建账户"
+
+msgid "Verification"
+msgstr "验证"
+
+msgid "Enter OTP sent to your phone:"
+msgstr "请输入发送到您手机的 OTP："
+
+msgid "OTP"
+msgstr "OTP"
+
+msgid "Verify OTP"
+msgstr "验证 OTP"
+
+msgid "You have been logged out."
+msgstr "您已退出登录。"
+
+msgid "Gmail"
+msgstr "Gmail"
+
+msgid "Chrome"
+msgstr "Chrome"
 
 msgid "Compose"
 msgstr "撰写"
@@ -317,10 +425,10 @@ msgid "Delete"
 msgstr "删除"
 
 msgid "Mark unread"
-msgstr "标为未读"
+msgstr "标记为未读"
 
-msgid "Say 'real' or 'fake'."
-msgstr "说“真实”或“诈骗”。"
+msgid "Say real or fake"
+msgstr "请说真实或诈骗"
 
 msgid "Cyber Search"
 msgstr "网络搜索"
@@ -330,6 +438,9 @@ msgstr "新标签页"
 
 msgid "Results"
 msgstr "结果"
+
+msgid "security alerts"
+msgstr "安全提醒"
 
 msgid "Search Google or type a topic"
 msgstr "搜索 Google 或输入主题"
@@ -350,34 +461,28 @@ msgid "Maps"
 msgstr "地图"
 
 msgid "Search a topic, open a result, and inspect the website before deciding if it is real or a scam."
-msgstr "搜索一个主题，打开结果并检查网站，再判断它是真实还是诈骗。"
+msgstr "搜索一个主题，打开结果并检查网站后，再判断其是真实还是诈骗。"
+
+msgid "Website"
+msgstr "网站"
 
 msgid "Generating email..."
 msgstr "正在生成邮件..."
 
-msgid "Could not generate email — please close and try again."
-msgstr "无法生成邮件，请关闭后重试。"
-
-msgid "Server error."
-msgstr "服务器错误。"
+msgid "Could not generate email. Please close and try again."
+msgstr "无法生成邮件。请关闭后重试。"
 
 msgid "No email loaded to analyze."
 msgstr "没有可分析的邮件。"
 
-msgid "No email loaded to read."
-msgstr "没有可朗读的邮件。"
-
 msgid "Error analyzing response."
-msgstr "分析响应时出错。"
+msgstr "分析回答时出错。"
 
 msgid "Server error analyzing response."
-msgstr "服务器分析响应时出错。"
+msgstr "服务器分析回答时出错。"
 
-msgid "Showing simulated Google-style results for"
-msgstr "正在显示模拟的 Google 风格结果："
-
-msgid "Open a result and inspect the site before deciding."
-msgstr "打开一个结果并检查网站后再决定。"
+msgid "No email loaded to read."
+msgstr "没有可朗读的邮件。"
 
 msgid "Searching Google for"
 msgstr "正在 Google 搜索"
@@ -388,6 +493,18 @@ msgstr "正在加载搜索结果..."
 msgid "Error loading search results."
 msgstr "加载搜索结果时出错。"
 
+msgid "Showing simulated Google-style results for"
+msgstr "正在显示模拟 Google 风格结果："
+
+msgid "Open a result and inspect the site before deciding."
+msgstr "先打开结果并检查网站，再做判断。"
+
+msgid "About"
+msgstr "约"
+
+msgid "Sponsored"
+msgstr "赞助"
+
 msgid "Loading website..."
 msgstr "正在加载网站..."
 
@@ -395,7 +512,10 @@ msgid "Error loading website."
 msgstr "加载网站时出错。"
 
 msgid "Explore the site content, then decide whether the website is real or a scam."
-msgstr "浏览网站内容后，再判断该网站是真实还是诈骗。"
+msgstr "先查看网站内容，再判断其是真实网站还是诈骗网站。"
+
+msgid "Open a search result first, then inspect the site."
+msgstr "请先打开搜索结果，再检查网站。"
 
 msgid "Error analyzing website."
 msgstr "分析网站时出错。"
@@ -403,53 +523,23 @@ msgstr "分析网站时出错。"
 msgid "Server error analyzing website."
 msgstr "服务器分析网站时出错。"
 
-msgid "Sponsored"
-msgstr "赞助内容"
-
-msgid "Search Result"
-msgstr "搜索结果"
-
-msgid "No description provided."
-msgstr "未提供描述。"
-
-msgid "About"
-msgstr "约"
-
-msgid "Website"
-msgstr "网站"
-
-msgid "Ad"
-msgstr "广告"
-
-msgid "Current difficulty"
-msgstr "当前难度"
+msgid "Difficulty"
+msgstr "难度"
 
 msgid "Search in mail"
-msgstr "搜索邮件"
+msgstr "在邮件中搜索"
 
 msgid "Primary Inbox"
 msgstr "主要收件箱"
 
 msgid "1 new"
-msgstr "1 封新邮件"
+msgstr "1 条新消息"
+
+msgid "Loading scenario..."
+msgstr "正在加载情景..."
 
 msgid "Loading email..."
 msgstr "正在加载邮件..."
-
-msgid "Bank Alerts"
-msgstr "银行提醒"
-
-msgid "Today 12:04 PM"
-msgstr "今天 12:04 PM"
-
-msgid "Text Message"
-msgstr "短信"
-
-msgid "SMS content goes here..."
-msgstr "短信内容显示在这里..."
-
-msgid "iMessage"
-msgstr "iMessage"
 
 msgid "Search or type web address"
 msgstr "搜索或输入网址"
@@ -457,53 +547,59 @@ msgstr "搜索或输入网址"
 msgid "Go"
 msgstr "前往"
 
-msgid "Google © 2025"
-msgstr "Google © 2025"
+msgid "Search a topic, open a result, and inspect the site before choosing REAL or FAKE."
+msgstr "搜索主题，打开结果并检查网站后，再选择真实或诈骗。"
 
-msgid "Audio Call"
-msgstr "语音通话"
-
-msgid "Unknown Caller"
-msgstr "未知来电"
-
-msgid "Call transcript will appear here..."
-msgstr "通话记录将显示在这里..."
-
-msgid "Loading scenario..."
-msgstr "正在加载场景..."
-
-msgid "Error loading scenario."
-msgstr "加载场景时出错。"
-
-msgid "Level"
-msgstr "等级"
-
-msgid "Unable to open that result. Please try another one."
-msgstr "无法打开该结果，请尝试其他结果。"
-
-msgid "Inspect the website carefully, then choose REAL or FAKE."
-msgstr "仔细检查网站，然后选择“真实”或“诈骗”。"
-
-msgid "Showing results for"
-msgstr "显示以下搜索结果"
-
-msgid "Open a site and inspect it before answering."
-msgstr "打开网站并检查后再作答。"
-
-msgid "Sponsored result"
-msgstr "赞助结果"
-
-msgid "Result"
-msgstr "结果"
-
-msgid "Next >"
-msgstr "下一页 >"
+msgid "Google"
+msgstr "Google"
 
 msgid "Searching for"
 msgstr "正在搜索"
 
+msgid "Search results failed to load."
+msgstr "加载搜索结果失败。"
+
+msgid "Try a different search or reload the scenario."
+msgstr "请尝试其他搜索词或重新加载情景。"
+
+msgid "Loading the selected website..."
+msgstr "正在加载所选网站..."
+
+msgid "Inspect the website carefully, then choose REAL or FAKE."
+msgstr "请仔细检查网站，然后选择真实或诈骗。"
+
+msgid "Unable to open that result. Please try another one."
+msgstr "无法打开该结果，请尝试其他结果。"
+
+msgid "Showing results for"
+msgstr "正在显示结果："
+
+msgid "Open a site and inspect it before answering."
+msgstr "请先打开并检查网站，再作答。"
+
+msgid "Search Result"
+msgstr "搜索结果"
+
+msgid "No description provided."
+msgstr "未提供描述。"
+
+msgid "Bank Alerts"
+msgstr "银行提醒"
+
+msgid "Unknown Caller"
+msgstr "未知来电"
+
+msgid "Error loading scenario."
+msgstr "加载情景时出错。"
+
 msgid "Open a search result and inspect the site before answering."
-msgstr "在作答前先打开搜索结果并检查网站。"
+msgstr "请先打开搜索结果并检查网站后再作答。"
+
+msgid "Current difficulty"
+msgstr "当前难度"
 
 msgid "Server error analyzing choice."
-msgstr "分析选择时发生服务器错误。"
+msgstr "服务器分析选择时出错。"
+
+msgid "Ad"
+msgstr "广告"

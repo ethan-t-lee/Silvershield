@@ -9,140 +9,101 @@ let scenarioLoadTime = null;
 let currentWebQuery = "";
 let currentWebResults = null;
 const mobileLabels = globalThis.mobileLabels || {};
-const mobileLabel = (key, fallback) => mobileLabels[key] || fallback;
 
 function applyMobileTranslations() {
-    const backLabel = mobileLabel("back", "Back");
-    const readAloudLabel = mobileLabel("readAloud", "Read Aloud");
-    const realLabel = mobileLabel("real", "REAL");
-    const fakeLabel = mobileLabel("fake", "FAKE");
-    const speakLabel = mobileLabel("speak", "Speak");
-    const muteLabel = mobileLabel("mute", "Mute");
-    const endLabel = mobileLabel("end", "End");
-    const speakerLabel = mobileLabel("speaker", "Speaker");
-    const reportScamCallLabel = mobileLabel("reportScamCall", fakeLabel);
-    const looksSafeLabel = mobileLabel("looksSafe", realLabel);
+    const backLabel = mobileLabels.back || "Back";
+    const readAloudLabel = mobileLabels.readAloud || "Read Aloud";
+    const realLabel = mobileLabels.real || "REAL";
+    const fakeLabel = mobileLabels.fake || "FAKE";
+    const speakLabel = mobileLabels.speak || "Speak";
+    const muteLabel = mobileLabels.mute || "Mute";
+    const endLabel = mobileLabels.end || "End";
+    const speakerLabel = mobileLabels.speaker || "Speaker";
+    const reportScamCallLabel = mobileLabels.reportScamCall || fakeLabel;
+    const looksSafeLabel = mobileLabels.looksSafe || realLabel;
+    const gmailLabel = mobileLabels.gmail || "Gmail";
+    const chromeLabel = mobileLabels.chrome || "Chrome";
 
-    const setButtonLabel = (button, text) => {
-        if (!button) return;
-        const label = button.querySelector(".btn-label");
-        if (label) {
-            label.textContent = text;
-        } else {
-            button.textContent = text;
-        }
-    };
+    const gmailWordmark = document.querySelector(".gmail-mobile-wordmark");
+    if (gmailWordmark) gmailWordmark.textContent = gmailLabel;
+
+    const browserTitle = document.querySelector(".web-browser-title");
+    if (browserTitle) browserTitle.textContent = chromeLabel;
+
+    const mailSearchPill = document.querySelector(".gmail-mobile-search-pill");
+    if (mailSearchPill) mailSearchPill.textContent = mobileLabels.searchInMail || "Search in mail";
+
+    const mailboxLabel = document.querySelector(".gmail-mobile-mailbox");
+    if (mailboxLabel) mailboxLabel.textContent = mobileLabels.primaryInbox || "Primary Inbox";
+
+    const unreadLabel = document.querySelector(".gmail-mobile-unread");
+    if (unreadLabel) unreadLabel.textContent = mobileLabels.oneNew || "1 new";
+
+    const emailLoading = document.getElementById("emailBody");
+    if (emailLoading && /loading email/i.test(emailLoading.textContent || "")) {
+        emailLoading.textContent = mobileLabels.loadingEmail || "Loading email...";
+    }
+
+    const fakeSearchInput = document.getElementById("fakeSearchInput");
+    if (fakeSearchInput) {
+        fakeSearchInput.placeholder = mobileLabels.searchOrTypeAddress || "Search or type web address";
+    }
+
+    const mobileSearchBtn = document.getElementById("mobileSearchBtn");
+    if (mobileSearchBtn) mobileSearchBtn.textContent = mobileLabels.go || "Go";
+
+    const chips = document.querySelectorAll(".chrome-mobile-chip");
+    if (chips[0]) chips[0].textContent = mobileLabels.all || "All";
+    if (chips[1]) chips[1].textContent = mobileLabels.news || "News";
+    if (chips[2]) chips[2].textContent = mobileLabels.images || "Images";
+
+    const backToResultsBtn = document.getElementById("webBackToResults");
+    if (backToResultsBtn) backToResultsBtn.textContent = mobileLabels.results || "Results";
+
+    const webStatusText = document.getElementById("webStatusText");
+    if (webStatusText && /search a topic/i.test(webStatusText.textContent || "")) {
+        webStatusText.textContent = mobileLabels.searchAndInspect || "Search a topic, open a result, and inspect the site before choosing REAL or FAKE.";
+    }
+
+    const chromeFooter = document.querySelector(".chrome-mobile-footer");
+    if (chromeFooter) chromeFooter.textContent = `${mobileLabels.googleFooter || "Google"} © 2025`;
 
     document.querySelectorAll(".back-btn, .back-button").forEach(btn => {
-        setButtonLabel(btn, backLabel);
+        btn.textContent = `← ${backLabel}`;
     });
 
     const readBtn = document.getElementById("readAloudMobile");
     if (readBtn) {
-        setButtonLabel(readBtn, document.querySelector(".call-app") ? speakerLabel : readAloudLabel);
+        readBtn.textContent = document.querySelector(".call-app") ? speakerLabel : readAloudLabel;
     }
-
-    document.querySelectorAll(".voice-answer-btn").forEach(btn => {
-        btn.title = mobileLabel("sayRealOrFake", "Say 'real' or 'fake'.");
-    });
 
     const safeBtn = document.getElementById("markSafe");
     if (safeBtn) {
-        setButtonLabel(safeBtn, document.querySelector(".call-app") ? looksSafeLabel : realLabel);
+        safeBtn.textContent = document.querySelector(".call-app") ? looksSafeLabel : realLabel;
     }
 
     const scamBtn = document.getElementById("markScam");
     if (scamBtn) {
-        setButtonLabel(scamBtn, document.querySelector(".call-app") ? reportScamCallLabel : fakeLabel);
+        scamBtn.textContent = document.querySelector(".call-app") ? reportScamCallLabel : fakeLabel;
     }
 
     const voiceBtn = document.getElementById("voiceAnswerBtn");
-    if (voiceBtn) setButtonLabel(voiceBtn, speakLabel);
+    if (voiceBtn) voiceBtn.textContent = speakLabel;
 
     const callButtons = document.querySelectorAll(".call-controls .call-btn");
-    if (callButtons[0]) setButtonLabel(callButtons[0], muteLabel);
-    if (callButtons[1]) setButtonLabel(callButtons[1], endLabel);
-
-    const emailSearchPill = document.querySelector(".gmail-mobile-search-pill");
-    if (emailSearchPill) emailSearchPill.textContent = mobileLabel("searchInMail", "Search in mail");
-
-    const mailbox = document.querySelector(".gmail-mobile-mailbox");
-    if (mailbox) mailbox.textContent = mobileLabel("primaryInbox", "Primary Inbox");
-
-    const unread = document.querySelector(".gmail-mobile-unread");
-    if (unread) unread.textContent = mobileLabel("oneNew", "1 new");
-
-    const emailBody = document.getElementById("emailBody");
-    if (emailBody && emailBody.textContent.trim() === "Loading email...") {
-        emailBody.textContent = mobileLabel("loadingEmail", "Loading email...");
-    }
-
-    const smsSubtitle = document.querySelector(".ios-contact-subtitle");
-    if (smsSubtitle) smsSubtitle.textContent = mobileLabel("textMessage", "Text Message");
-
-    const smsContactName = document.getElementById("smsContactName");
-    if (smsContactName && smsContactName.textContent.trim() === "Bank Alerts") {
-        smsContactName.textContent = mobileLabel("bankAlerts", "Bank Alerts");
-    }
-
-    const smsTime = document.getElementById("smsTime");
-    if (smsTime && smsTime.textContent.trim() === "Today 12:04 PM") {
-        smsTime.textContent = mobileLabel("todayTime", "Today 12:04 PM");
-    }
-
-    const smsBody = document.getElementById("smsBody");
-    if (smsBody && smsBody.textContent.trim() === "SMS content goes here...") {
-        smsBody.textContent = mobileLabel("smsPlaceholder", "SMS content goes here...");
-    }
-
-    const composePill = document.querySelector(".compose-pill");
-    if (composePill) composePill.textContent = mobileLabel("iMessage", "iMessage");
-
-    const webInput = document.getElementById("fakeSearchInput");
-    if (webInput) webInput.placeholder = mobileLabel("searchOrTypeWebAddress", "Search or type web address");
-
-    const chips = document.querySelectorAll(".chrome-mobile-chip");
-    if (chips[0]) chips[0].textContent = mobileLabel("all", "All");
-    if (chips[1]) chips[1].textContent = mobileLabel("news", "News");
-    if (chips[2]) chips[2].textContent = mobileLabel("images", "Images");
-
-    const mobileSearchBtn = document.getElementById("mobileSearchBtn");
-    if (mobileSearchBtn) setButtonLabel(mobileSearchBtn, mobileLabel("go", "Go"));
-
-    const resultsBtn = document.getElementById("webBackToResults");
-    if (resultsBtn) resultsBtn.textContent = mobileLabel("results", "Results");
-
-    const webStatus = document.getElementById("webStatusText");
-    if (webStatus && webStatus.textContent.includes("Search a topic")) {
-        webStatus.textContent = mobileLabel("searchTopicInspect", "Search a topic, open a result, and inspect the site before choosing REAL or FAKE.");
-    }
-
-    const footer = document.querySelector(".fake-footer.chrome-mobile-footer");
-    if (footer) footer.textContent = mobileLabel("googleFooter", "Google © 2025");
-
-    const callType = document.querySelector(".call-type");
-    if (callType) callType.textContent = mobileLabel("audioCall", "Audio Call");
-
-    const callCaller = document.getElementById("call-caller");
-    if (callCaller && callCaller.textContent.trim() === "Unknown Caller") {
-        callCaller.textContent = mobileLabel("unknownCaller", "Unknown Caller");
-    }
-
-    const transcript = document.getElementById("call-transcript");
-    if (transcript && transcript.textContent.trim() === "Call transcript will appear here...") {
-        transcript.textContent = mobileLabel("callTranscriptPlaceholder", "Call transcript will appear here...");
-    }
+    if (callButtons[0]) callButtons[0].textContent = muteLabel;
+    if (callButtons[1]) callButtons[1].textContent = endLabel;
 }
 
 function buildWebSpeechText(sc) {
     if (!sc) return "";
 
     const adText = (sc.ads || [])
-        .map(ad => `${ad.title || mobileLabel("sponsoredResult", "Sponsored result")}. ${ad.snippet || ""}`)
+        .map(ad => `${ad.title || "Sponsored result"}. ${ad.snippet || ""}`)
         .join(" ");
 
     const resultText = (sc.results || [])
-        .map(result => `${result.title || mobileLabel("result", "Result")}. ${result.snippet || ""}`)
+        .map(result => `${result.title || "Result"}. ${result.snippet || ""}`)
         .join(" ");
 
     return `${adText} ${resultText}`.replace(/\s+/g, " ").trim();
@@ -170,7 +131,10 @@ const ScenarioEngine = {
         const appsGrid = document.querySelector(".apps");
         if (!scenarioBody || !appsGrid) return;
 
-        scenarioBody.innerHTML = `<p class='loading'>${mobileLabel("loadingScenario", "Loading scenario...")}</p>`;
+        scenarioBody.innerHTML = "<p class='loading'>Loading scenario...</p>";
+        if (mobileLabels.loadingScenario) {
+            scenarioBody.innerHTML = `<p class='loading'>${mobileLabels.loadingScenario}</p>`;
+        }
         appsGrid.style.display = "none";
 
         // Load snippet HTML template
@@ -200,7 +164,7 @@ const ScenarioEngine = {
 
         const data = await res.json();
         if (!data.success) {
-            scenarioBody.innerHTML = `<p>${mobileLabel("errorLoadingScenario", "Error loading scenario.")}</p>`;
+            scenarioBody.innerHTML = `<p>${mobileLabels.errorLoadingScenario || "Error loading scenario."}</p>`;
             console.error("Scenario error:", data.error);
             return;
         }
@@ -208,7 +172,7 @@ const ScenarioEngine = {
         currentDifficulty = data.difficulty;
 
         const diffLabel = document.getElementById("difficultyLabel");
-        if (diffLabel) diffLabel.innerText = `${mobileLabel("level", "Level")}: ${currentDifficulty}`;
+        if (diffLabel) diffLabel.innerText = `${mobileLabels.level || "Level"}: ${currentDifficulty}`;
 
         // Record time scenario was displayed
         scenarioLoadTime = Date.now();
@@ -296,7 +260,7 @@ const ScenarioEngine = {
         if (webActions) webActions.style.display = "none";
         if (resultsBtn) resultsBtn.style.display = "none";
         if (statusText) {
-            statusText.textContent = mobileLabel("searchTopicInspect", "Search a topic, open a result, and inspect the site before choosing REAL or FAKE.");
+            statusText.textContent = mobileLabels.searchAndInspect || "Search a topic, open a result, and inspect the page before deciding if it is real or a scam.";
         }
 
         if (searchBtn && !searchBtn.dataset.bound) {
@@ -341,8 +305,8 @@ const ScenarioEngine = {
         if (searchInput) searchInput.value = normalizedQuery;
         if (webActions) webActions.style.display = "none";
         if (resultsBtn) resultsBtn.style.display = "none";
-        if (statusText) statusText.textContent = `${mobileLabel("searchingFor", "Searching for")} “${normalizedQuery}”...`;
-        if (container) container.innerHTML = `<p class='loading'>${mobileLabel("loadingSearchResults", "Loading search results...")}</p>`;
+        if (statusText) statusText.textContent = `${mobileLabels.searchingFor || "Searching for"} “${normalizedQuery}”...`;
+        if (container) container.innerHTML = `<p class='loading'>${mobileLabels.loadingSearchResults || "Loading search results..."}</p>`;
 
         try {
             const response = await fetch("/generate-web", {
@@ -353,7 +317,7 @@ const ScenarioEngine = {
 
             const data = await response.json();
             if (!data.success || !data.web) {
-                throw new Error(data.error || "Search results failed to load.");
+                throw new Error(data.error || mobileLabels.searchResultsFailed || "Search results failed to load.");
             }
 
             currentDifficulty = data.difficulty;
@@ -367,8 +331,8 @@ const ScenarioEngine = {
             }
         } catch (err) {
             console.error("loadWebSearch error:", err);
-            if (container) container.innerHTML = `<p>${mobileLabel("errorLoadingSearchResults", "Error loading search results.")}</p>`;
-            if (statusText) statusText.textContent = mobileLabel("unableToOpenResult", "Unable to open that result. Please try another one.");
+            if (container) container.innerHTML = `<p>${mobileLabels.errorLoadingSearchResults || "Error loading search results."}</p>`;
+            if (statusText) statusText.textContent = mobileLabels.tryDifferentSearch || "Try a different search or reload the scenario.";
         }
     },
 
@@ -381,8 +345,8 @@ const ScenarioEngine = {
 
         if (!site || !container) return;
 
-        container.innerHTML = `<p class='loading'>${mobileLabel("loadingWebsite", "Loading website...")}</p>`;
-        if (statusText) statusText.textContent = mobileLabel("loadingSelectedWebsite", "Loading the selected website...");
+        container.innerHTML = `<p class='loading'>${mobileLabels.loadingWebsite || "Loading website..."}</p>`;
+        if (statusText) statusText.textContent = mobileLabels.loadingSelectedWebsite || "Loading the selected website...";
 
         try {
             const response = await fetch("/generate-web", {
@@ -410,7 +374,7 @@ const ScenarioEngine = {
             if (resultsBtn) resultsBtn.style.display = "inline-flex";
             if (webActions) webActions.style.display = "grid";
             if (statusText) {
-                statusText.textContent = mobileLabel("inspectWebsiteCarefully", "Inspect the website carefully, then choose REAL or FAKE.");
+                statusText.textContent = mobileLabels.inspectAndChoose || "Inspect the website carefully, then choose REAL or FAKE.";
             }
 
             container.innerHTML = `
@@ -429,8 +393,8 @@ const ScenarioEngine = {
             }
         } catch (err) {
             console.error("openWebResult error:", err);
-            container.innerHTML = `<p>${mobileLabel("errorLoadingWebsite", "Error loading website.")}</p>`;
-            if (statusText) statusText.textContent = mobileLabel("unableToOpenResult", "Unable to open that result. Please try another one.");
+            container.innerHTML = `<p>${mobileLabels.errorLoadingWebsite || "Error loading website."}</p>`;
+            if (statusText) statusText.textContent = mobileLabels.unableToOpenResult || "Unable to open that result. Please try another one.";
         }
     },
 
@@ -451,14 +415,14 @@ const ScenarioEngine = {
         if (pagination) pagination.innerHTML = "";
         if (searchInput) searchInput.value = currentWebQuery;
         if (statusText) {
-            statusText.textContent = `${mobileLabel("showingResultsFor", "Showing results for")} “${currentWebQuery}”. ${mobileLabel("openSiteInspect", "Open a site and inspect it before answering.")}`;
+            statusText.textContent = `${mobileLabels.showingResultsFor || "Showing results for"} “${currentWebQuery}”. ${mobileLabels.openAndInspectBeforeAnswer || "Open a site and inspect it before answering."}`;
         }
 
         container.innerHTML = "";
 
         const stats = document.createElement("div");
         stats.className = "search-results-stats";
-        stats.textContent = `${mobileLabel("about", "About")} ${((sc.results || []).length + (sc.ads || []).length) * 142000} ${mobileLabel("resultsWord", "results")} (0.38 ${mobileLabel("seconds", "seconds")})`;
+        stats.textContent = `${mobileLabels.about || "About"} ${((sc.results || []).length + (sc.ads || []).length) * 142000} results (0.38 ${mobileLabels.seconds || "seconds"})`;
         container.appendChild(stats);
 
         const renderCard = (item, sponsored = false) => {
@@ -466,11 +430,14 @@ const ScenarioEngine = {
             card.type = "button";
             card.className = `search-result ${sponsored ? "sponsored" : ""}`;
             card.innerHTML = `
-                ${sponsored ? `<div class="sponsored-label">${mobileLabel("sponsored", "Sponsored")}</div>` : ''}
-                <div class="search-result-title">${item.title}</div>
+                ${sponsored ? '<div class="sponsored-label">Sponsored</div>' : ''}
+                <div class="search-result-title">${item.title || mobileLabels.searchResult || "Search Result"}</div>
                 <div class="search-result-link">${item.url}</div>
-                <div class="search-result-snippet">${item.snippet}</div>
+                <div class="search-result-snippet">${item.snippet || mobileLabels.noDescriptionProvided || "No description provided."}</div>
             `;
+            if (sponsored) {
+                card.querySelector('.sponsored-label').textContent = mobileLabels.sponsored || 'Sponsored';
+            }
             card.onclick = () => this.openWebResult(item);
             container.appendChild(card);
         };
@@ -479,7 +446,7 @@ const ScenarioEngine = {
         (sc.results || []).forEach(result => renderCard(result, false));
 
         if (pagination) {
-            pagination.innerHTML = `<button id="nextPageBtn">${sc.pagination?.next_page_label || mobileLabel("nextPage", "Next >")}</button>`;
+            pagination.innerHTML = `<button id="nextPageBtn">${sc.pagination?.next_page_label || `${mobileLabels.nextPage || "Next"} >`}</button>`;
             const nextPageBtn = document.getElementById("nextPageBtn");
             if (nextPageBtn) {
                 nextPageBtn.onclick = () => this.loadWebSearch(currentWebQuery);
@@ -526,11 +493,11 @@ const ScenarioEngine = {
         if (type === "sms") {
             document.getElementById("smsBody").innerText = sc.text;
             document.getElementById("smsNumber").innerText = sc.number;
-            document.getElementById("smsTime").innerText = sc.time || mobileLabel("todayTime", "Today 12:04 PM");
+            document.getElementById("smsTime").innerText = sc.time || "Today 12:04 PM";
 
             const smsContactName = document.getElementById("smsContactName");
             const smsAvatar = document.getElementById("smsAvatar");
-            const senderLabel = sc.sender_name || mobileLabel("bankAlerts", "Bank Alerts");
+            const senderLabel = sc.sender_name || mobileLabels.bankAlerts || "Bank Alerts";
 
             if (smsContactName) smsContactName.innerText = senderLabel;
             if (smsAvatar) smsAvatar.innerText = senderLabel.charAt(0).toUpperCase();
@@ -542,7 +509,7 @@ const ScenarioEngine = {
         // CALL
         if (type === "call") {
             document.getElementById("call-number").innerText = sc.number;
-            document.getElementById("call-caller").innerText = sc.caller_name || mobileLabel("unknownCaller", "Unknown Caller");
+            document.getElementById("call-caller").innerText = sc.caller_name || mobileLabels.unknownCaller || "Unknown Caller";
             document.getElementById("call-transcript").innerText = sc.transcript;
             currentMessage = sc.transcript;
             return;
@@ -583,7 +550,7 @@ document.addEventListener('visibilitychange', () => {
 async function analyzeChoice(choice) {
     try {
         if (currentType === "web" && !currentExpectedLabel) {
-            alert(mobileLabel("openResultFirst", "Open a search result and inspect the site before answering."));
+            alert(mobileLabels.openSearchResultFirst || "Open a search result and inspect the site before answering.");
             return;
         }
 
@@ -606,13 +573,13 @@ async function analyzeChoice(choice) {
         const data = await response.json();
 
         if (!data.success) {
-            alert(mobileLabel("errorAnalyzingResponse", "Error analyzing response."));
+            alert(mobileLabels.errorAnalyzingResponse || "Error analyzing response.");
             return;
         }
 
         alert(
             data.feedback.feedback +
-            `\n\n(${mobileLabel("currentDifficulty", "Current difficulty")}: ${data.difficulty_now})`
+            `\n\n(${mobileLabels.currentDifficulty || "Current difficulty"}: ${data.difficulty_now})`
         );
 
         // Reload next scenario automatically
@@ -620,7 +587,7 @@ async function analyzeChoice(choice) {
 
     } catch (err) {
         console.error("analyzeChoice() error:", err);
-        alert(mobileLabel("serverErrorAnalyzingChoice", "Server error analyzing choice."));
+        alert(mobileLabels.serverErrorAnalyzingChoice || "Server error analyzing choice.");
     }
 }
 
