@@ -108,6 +108,24 @@
       display: grid;
       gap: 8px;
     }
+    .likertKeyRow {
+      display: grid;
+      align-items: center;
+      grid-template-columns: minmax(220px, 1.8fr) repeat(var(--scale-count), minmax(56px, 1fr));
+      column-gap: 8px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(36, 85, 154, 0.18);
+      border-radius: 12px;
+      padding: 10px 10px;
+      margin-bottom: 4px;
+    }
+    .likertKeyRow .likertKeyItem {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.3;
+    }
     .likertMatrixScroll {
       overflow-x: auto;
       padding-bottom: 4px;
@@ -335,6 +353,12 @@
           {% if section.type == 'likert' and section.questions and section.questions[0].scale %}
           <div class="likertMatrixScroll">
             <div class="likertMatrix" style="--scale-count: {{ section.questions[0].scale.labels|length }};">
+              <div class="likertKeyRow">
+                <div></div>
+                {% for label in section.questions[0].scale.labels %}
+                <div class="likertKeyItem">{{ label }}</div>
+                {% endfor %}
+              </div>
               <div class="likertHeader">
                 <div class="likertQuestionCol"></div>
                 {% for label in section.questions[0].scale.labels %}
@@ -401,6 +425,43 @@
 
           {% for subsection in section.subsections %}
           <div class="subsection">
+            {% if subsection.topic and section.sectionId != 'S3' %}
+            <h3 style="margin:0 0 12px;font-size:1rem;color:var(--accent);">{{ subsection.topic }}</h3>
+            {% endif %}
+            {% if section.type == 'likert' and subsection.questions and subsection.questions[0].scale %}
+            <div class="likertMatrixScroll">
+              <div class="likertMatrix" style="--scale-count: {{ subsection.questions[0].scale.labels|length }};">
+                <div class="likertKeyRow">
+                  <div></div>
+                  {% for label in subsection.questions[0].scale.labels %}
+                  <div class="likertKeyItem">{{ label }}</div>
+                  {% endfor %}
+                </div>
+                <div class="likertHeader">
+                  <div class="likertQuestionCol"></div>
+                  {% for label in subsection.questions[0].scale.labels %}
+                  <div title="{{ label }}">{{ loop.index }}</div>
+                  {% endfor %}
+                </div>
+                {% for question in subsection.questions %}
+                <div class="likertRow">
+                  <div class="likertQuestion">{{ question.text }}</div>
+                  {% for label in question.scale.labels %}
+                  <div class="likertRadioCell" title="{{ label }}">
+                    <input
+                      type="radio"
+                      name="{{ question.fieldName }}"
+                      value="{{ loop.index }}"
+                      aria-label="{{ question.text }} - {{ label }}"
+                      {% if question.required %}data-required="true"{% endif %}
+                    >
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% else %}
             {% for question in subsection.questions %}
             <div class="questionBlock">
               <p class="questionText">{{ question.text }}</p>
@@ -436,6 +497,7 @@
               {% endif %}
             </div>
             {% endfor %}
+            {% endif %}
           </div>
           {% endfor %}
         </section>
