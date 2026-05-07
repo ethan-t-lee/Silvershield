@@ -1021,7 +1021,7 @@
         "subsections": [
           {
             "subsectionId": "SUS",
-            "topic": "System Usability Scale",
+            "topic": "Usability",
             "questions": [
               {
                 "questionId": "SUS1",
@@ -1072,7 +1072,7 @@
           },
           {
             "subsectionId": "AC",
-            "topic": "Accessibility Supplement",
+            "topic": "Accessibility",
             "questions": [
               {
                 "questionId": "AC1",
