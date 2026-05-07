@@ -3,6 +3,7 @@ import os
 import sqlite3
 import random
 import hashlib
+import database
 from dotenv import load_dotenv
 import requests
 from database import init_database, TEST_USER_USERNAME
@@ -30,6 +31,13 @@ DB_PATH = os.getenv("DB_PATH", "silvershieldDatabase.db")
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+
+# Keep database module path aligned with environment override.
+database.DB_PATH = DB_PATH
+
+if os.environ.get("RESET_DB", "false").lower() == "true" and os.path.exists(DB_PATH):
+    os.remove(DB_PATH)
+
 init_database()
 
 # Babel locale selector
