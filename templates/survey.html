@@ -323,17 +323,17 @@
       {% set page_index = namespace(value=0) %}
 
       {% if survey.consent %}
-      <div class="surveyPage active" data-page="{{ page_index.value }}">
+      <div class="surveyPage active" data-page="{{ page_index.value }}" id="consentPage">
         <section class="sectionCard consentBox">
           <p class="sectionNote">{{ survey.consent.details }}</p>
           <p class="consentPrompt">{{ survey.consent.prompt }}</p>
           <div class="choiceList">
             <label class="choiceItem">
-              <input type="radio" name="consent_response" value="yes">
+              <input type="radio" name="consent_response" value="yes" data-required="true">
               <span>{{ survey.consent.acceptLabel }}</span>
             </label>
             <label class="choiceItem">
-              <input type="radio" name="consent_response" value="no">
+              <input type="radio" name="consent_response" value="no" data-required="true">
               <span>{{ survey.consent.declineLabel }}</span>
             </label>
           </div>
@@ -520,7 +520,24 @@
       const I18N_OF = {{ _('of')|tojson }};
       const I18N_REQUIRED_PAGE = {{ _('Please answer all required questions on this page before continuing.')|tojson }};
       const I18N_REQUIRED_SUBMIT = {{ _('Please answer all required questions before submitting.')|tojson }};
+      const I18N_CONSENT_REQUIRED = {{ _('Consent is required before Silver Shield can collect survey and analytics data.')|tojson }};
       let currentPage = 0;
+
+      function checkConsentResponse() {
+        const consentPage = document.getElementById('consentPage');
+        if (!consentPage) {
+          return true; // No consent page, so consent is not applicable
+        }
+
+        const consentRadios = consentPage.querySelectorAll('input[name="consent_response"]');
+        const selectedConsent = Array.from(consentRadios).find(function(r) { return r.checked; });
+
+        if (!selectedConsent) {
+          return null; // Consent not answered
+        }
+
+        return selectedConsent.value === 'yes'; // True if "yes", false if "no"
+      }
 
       function getPages() {
         return document.querySelectorAll('.surveyPage');
@@ -548,6 +565,18 @@
         const pages = getPages();
         const page = pages[currentPage];
         let valid = true;
+
+        // Special validation for consent page
+        if (currentPage === 0 && document.getElementById('consentPage')) {
+          const consentResponse = checkConsentResponse();
+          if (consentResponse === null) {
+            return false; // Consent not answered
+          }
+          if (consentResponse === false) {
+            return false; // Consent was declined
+          }
+          return true; // Consent was granted, valid
+        }
 
         // radio/select required
         page.querySelectorAll('input[data-required]').forEach(function(input) {
@@ -577,7 +606,12 @@
 
       function surveyNav(direction) {
         if (direction === 1 && !validateCurrentPage()) {
-          alert(I18N_REQUIRED_PAGE);
+          const consentResponse = checkConsentResponse();
+          if (currentPage === 0 && consentResponse === false) {
+            alert(I18N_CONSENT_REQUIRED);
+          } else {
+            alert(I18N_REQUIRED_PAGE);
+          }
           return;
         }
 
@@ -667,8 +701,17 @@
         }
       }
 
-      // Intercept form submit to validate last page
+      // Intercept form submit to validate last page and consent
       document.getElementById('surveyForm').addEventListener('submit', function(e) {
+        const consentResponse = checkConsentResponse();
+        
+        // Check if consent page exists and if consent was declined
+        if (document.getElementById('consentPage') && consentResponse === false) {
+          e.preventDefault();
+          alert(I18N_CONSENT_REQUIRED);
+          return;
+        }
+
         if (!validateCurrentPage()) {
           e.preventDefault();
           alert(I18N_REQUIRED_SUBMIT);
