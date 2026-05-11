@@ -27,6 +27,15 @@
        </div>
 </div>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% set category, message = messages[0] %}
+<div class="dashboardContainer" style="padding-top: 16px;">
+       <div class="dashboardFlash dashboardFlash-{{ category }}">{{ message }}</div>
+</div>
+{% endif %}
+{% endwith %}
+
 <div class="login-container">
 
 <!-- Left side - Login form -->
